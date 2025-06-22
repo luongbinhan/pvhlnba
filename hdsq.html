@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hướng Dẫn Sử Dụng Máy BRS Hãng SQ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      background-color: #f4f4f4;
+      margin: 20px;
+      padding: 20px;
+    }
+    h1, h2, h3 {
+      color: #003366;
+    }
+    section {
+      background-color: #fff;
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      border-left: 5px solid #336699;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    ul {
+      margin-left: 20px;
+    }
+    a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .backlink {
+      font-size: 0.9em;
+      display: block;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>HƯỚNG DẪN SỬ DỤNG MÁY SCAN HÀNH LÝ HÃNG SQ</h1>
+
+  <section>
+    <h2>Chức năng chính</h2>
+    <ul>
+      <li><a href="#flights">FLIGHTS</a> - Thông tin chuyến bay</li>
+      <li><a href="#units">UNITS</a> - Thùng ULD</li>
+      <li><a href="#bags">BAGS</a> - Scan hành lý</li>
+      <li><a href="#tracking">TRACKING</a> - Theo dõi</li>
+      <li><a href="#exit">EXIT APPLICATION</a> - Thoát ứng dụng</li>
+    </ul>
+  </section>
+
+  <!-- GIAO DIỆN FLIGHTS -->
+  <section id="flights">
+    <h2>FLIGHTS - Chức năng chuyến bay</h2>
+    <ul>
+      <li>ASSIGN FLIGHT: Nhập số hiệu chuyến bay</li>
+      <li>FLIGHT INFO: Thông tin chuyến bay</li>
+      <li>RECONCILE FLIGHT: Khớp hành lý</li>
+      <li>MISSING BAGS LIST: Hành lý chưa scan</li>
+      <li>LOADED BAGS LIST: Hành lý đã scan</li>
+    </ul>
+
+    <h3>📌 Hướng dẫn liên quan</h3>
+    <ul>
+      <li><a href="#hd_flight">Hướng dẫn nhập số hiệu chuyến bay</a></li>
+    </ul>
+    <a class="backlink" href="#top">⬆ Quay lại đầu trang</a>
+  </section>
+
+  <!-- HƯỚNG DẪN CHỨC NĂNG FLIGHT -->
+  <section id="hd_flight">
+    <h2>Hướng dẫn nhập số hiệu chuyến bay</h2>
+    <ul>
+      <li>Bước 1: Chọn “FLIGHT” → “ASSIGN FLIGHT”</li>
+      <li>Bước 2: Nhập số hiệu chuyến bay và ngày, tháng</li>
+      <li>Bước 3: Khi giao diện báo “FLIGHT ASSIGNED…” là thành công → Bấm “OK”</li>
+    </ul>
+    <a class="backlink" href="#flights">↩ Quay lại FLIGHTS</a>
+  </section>
+
+  <!-- GIAO DIỆN UNITS -->
+  <section id="units">
+    <h2>UNITS - Chức năng thùng ULD</h2>
+    <ul>
+      <li>ASSIGN UNIT: Nhập thùng ULD</li>
+      <li>EDIT UNIT: Chỉnh sửa thông tin</li>
+      <li>CLOSE UNIT: Đóng thùng</li>
+      <li>RE-OPEN UNIT: Mở lại thùng</li>
+      <li>UNIT REPORT: Báo cáo số lượng hành lý</li>
+    </ul>
+
+    <h3>📌 Hướng dẫn liên quan</h3>
+    <ul>
+      <li><a href="#hd_units">Hướng dẫn nhập số thùng ULD</a></li>
+    </ul>
+    <a class="backlink" href="#top">⬆ Quay lại đầu trang</a>
+  </section>
+
+  <!-- HƯỚNG DẪN CHỨC NĂNG UNITS -->
+  <section id="hd_units">
+    <h2>Hướng dẫn nhập số thùng ULD</h2>
+    <ul>
+      <li>Bước 1: Chọn “UNITS” → “ASSIGN UNIT”</li>
+      <li>Bước 2:
+        <ul>
+          <li>CODE: (Không nhập)</li>
+          <li>UNIT: Số thùng (VD: AKH12345SQ)</li>
+          <li>TYPE: BJ, BY, BT, BM, BS. (BM cho thùng Mixload, BS cho BT-HOT)</li>
+          <li>CLASS(ES): X</li>
+          <li>DEST: (Không nhập)</li>
+        </ul>
+      </li>
+    </ul>
+    <a class="backlink" href="#units">↩ Quay lại UNITS</a>
+  </section>
+
+  <!-- ... Tiếp tục tương tự với BAGS, TRACKING, EXIT, ... -->
+
+<!-- GIAO DIỆN BAGS -->
+<section id="bags">
+  <h2>BAGS - Chức năng hành lý</h2>
+  <ul>
+    <li>SEARCH BAG BY TAG NUMBER: Tìm kiếm số thẻ hành lý</li>
+    <li>LOAD BAG: Scan hành lý</li>
+    <li>SWITCH BAG: Chuyển hành lý giữa các ULD</li>
+    <li>UNLOAD BAG: Gỡ hành lý khỏi hệ thống</li>
+  </ul>
+
+  <h3>📌 Hướng dẫn liên quan</h3>
+  <ul>
+    <li><a href="#hd_scan_bag">Hướng dẫn scan hành lý</a></li>
+    <li><a href="#hd_switch_bag">Hướng dẫn chuyển hành lý sang ULD khác</a></li>
+    <li><a href="#hd_unload_bag">Hướng dẫn Unload hành lý</a></li>
+  </ul>
+  <a class="backlink" href="#top">⬆ Quay lại đầu trang</a>
+</section>
+
+<!-- HƯỚNG DẪN SCAN HÀNH LÝ -->
+<section id="hd_scan_bag">
+  <h2>Hướng dẫn scan hành lý</h2>
+  <ul>
+    <li>Bước 1: Chọn “BAGS” → “LOAD BAG”</li>
+    <li>Bước 2: Nhập số thùng ULD (ví dụ: AKE12345SQ) vào ô “UNIT”, hoặc chọn vào biểu tượng kính núp</li>
+    <li>Bước 3: Bấm “OK” và thực hiện scan bằng phím scan trên máy</li>
+  </ul>
+  <a class="backlink" href="#bags">↩ Quay lại BAGS</a>
+</section>
+
+<!-- HƯỚNG DẪN CHUYỂN HÀNH LÝ -->
+<section id="hd_switch_bag">
+  <h2>Hướng dẫn chuyển hành lý sang ULD khác</h2>
+  <ul>
+    <li>Bước 1: Chọn “BAGS” → “SWITCH BAG”</li>
+    <li>Bước 2: Nhập số ULD cần chuyển đến (ví dụ: AKE10000SQ) vào phần “TO UNIT”</li>
+    <li>Bước 3: Scan lại số thẻ hành lý cần chuyển</li>
+  </ul>
+  <a class="backlink" href="#bags">↩ Quay lại BAGS</a>
+</section>
+
+<!-- HƯỚNG DẪN UNLOAD HÀNH LÝ -->
+<section id="hd_unload_bag">
+  <h2>Hướng dẫn Unload hành lý khỏi hệ thống</h2>
+  <ul>
+    <li>Bước 1: Chọn “BAGS” → “UNLOAD BAG”</li>
+    <li>Bước 2: Nhập số thẻ hành lý vào mục “BAG TAG NO”</li>
+    <li>Bước 3: Bấm “OK” để xác nhận</li>
+  </ul>
+  <a class="backlink" href="#bags">↩ Quay lại BAGS</a>
+</section>
+
+</body>
+</html>

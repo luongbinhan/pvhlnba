@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>PHIẾU IN HÀNH LÝ NỐI CHUYẾN</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      font-family: monospace;
+    }
+
+button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #fff;
+  margin: 6px 4px;
+  transition: background-color 0.3s ease;
+}
+
+button:nth-child(1) { background-color: #007bff; } /* Lọc dữ liệu số 1 */
+button:nth-child(2) { background-color: #dc3545; } /* Lọc dữ liệu số 2 */
+button:nth-child(3) { background-color: #6c757d; } /* In */
+button:nth-child(4) { background-color: #28a745; } /* Xóa */
+
+button:hover {
+  opacity: 0.9;
+}
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+      font-size: 16px;
+    }
+
+    th, td {
+      border: 1px solid #333;
+      padding: 6px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    #small-summary-table {
+      width: auto;
+      font-size: 16px;
+      margin: 20px auto;
+      border: 1px solid #555;
+    }
+
+    #small-summary-table th,
+    #small-summary-table td {
+      padding: 4px 10px;
+    }
+
+    #footer-note, #print-header, #print-footer {
+      display: none;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 5mm 10mm 10mm 10mm;
+        width: auto;
+        height: 29.7cm;
+      }
+
+      textarea, button, #filter-buttons {
+        display: none;
+      }
+
+      #print-header, #print-footer {
+        display: block;
+      }
+
+      #footer-note {
+        display: block;
+        margin-top: 30px;
+        font-size: 16px;
+      }
+
+      .footer-line {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+        font-size: 16px;
+      }
+
+      #print-header {
+        margin-bottom: 20px;
+      }
+
+      #print-footer {
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+
+      #small-summary-table {
+        font-size: 16px;
+        margin: 15px auto;
+      }
+#input-section {
+  display: none;
+}
+    }
+  </style>
+</head>
+<body>
+
+<h2 id="input-section">Nhập thông tin hành lý chuyến bay đến</h2>
+<textarea id="rawData" placeholder="Dán dữ liệu hành lý nối chuyến vào đây..."></textarea>
+
+<div id="filter-buttons">
+  <button onclick="clearTextarea()">XÓA</button>
+  <button onclick="processData('include')">NỘI ĐỊA</button>
+  <button onclick="processData('exclude')">QUỐC TẾ</button>
+  <button onclick="window.print()">In</button>
+</div>
+
+<!-- Header in with 3 equal columns, no border -->
+<div id="print-header" style="padding: 10px; margin-bottom: 10px;">
+  <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+    <tr>
+      <!-- Cột logo trái -->
+      <td style="width: 20%; text-align: left; vertical-align: center;">
+        <img src="logo.png" alt="Logo" style="max-width: 180px; max-height: 180px;" />
+      </td>
+
+      <!-- Cột tiêu đề giữa -->
+      <td style="width: 60%; text-align: center; vertical-align: top;">
+        <div style="font-weight: bold; font-size: 24px; line-height: 1.4;">
+          BIỂU MẪU<br>
+          PHIẾU THÔNG TIN<br>
+          HÀNH LÝ NỐI CHUYẾN
+        </div>
+      </td>
+
+      <!-- Cột thông tin phải -->
+      <td style="width: 20%; text-align: right; font-size: 13px; white-space: pre-line; vertical-align: top;">
+        Mã số: IF/VNBA/PVHK-238<br>
+        Ban hành: 02<br>
+        Hiệu lực: 01/05/2021<br>
+        Trang: 1/1
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+
+
+<!-- Kết quả lọc -->
+<div id="result"></div>
+
+<!-- Footer in -->
+<div id="print-footer">
+  <div id="footer-note">
+    <p><strong>*Các kiện hành lý được đánh dấu là HLNC đón được/ các kiện không đánh dấu là không đón được</strong></p>
+    <p><strong>CB đến:</strong></p>
+    <div class="footer-line">
+      <span><strong>Thời gian bàn giao</strong></span>
+      <span><strong>TTHL ký tên</strong></span>
+      <span><strong>PVHL ký tên</strong></span>
+    </div>
+    <p><strong>Ghi chú:</strong></p>
+    <p>……………………………………………………………………………………………………………………………………………………………………………………………………………………………….</p>
+    <p>……………………………………………………………………………………………………………………………………………………………………………………………………………………………….</p>
+  </div>
+</div>
+
+
+<!-- Bảng phụ -->
+<div id="summary"></div>
+
+<script>
+function processData(mode) {
+  const raw = document.getElementById('rawData').value.trim();
+  if (!raw) return alert('Vui lòng nhập dữ liệu thô!');
+
+  const lines = raw.split('\n');
+  const allowedDest = [
+    "DIN", "HPH", "HAN", "DAD", "VII", "DLI", "SGN", "UIH", "HUI",
+    "VDH", "VCL", "BMV", "PQC", "TBB", "PXU", "VCA", "VSC", "NHA", "VKG", "THD", "CXR"
+  ];
+
+  const resultRows = [];
+  const flightCounter = {};
+  let stt = 1;
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split('\t');
+    if (cols.length < 16) continue;
+
+    const status = cols[12]?.trim().toUpperCase();
+    const bn = cols[9]?.trim();
+    const dest = cols[4]?.trim().toUpperCase();
+
+    if (status !== 'OK' || bn) continue;
+    if (mode === 'include' && !allowedDest.includes(dest)) continue;
+    if (mode === 'exclude' && allowedDest.includes(dest)) continue;
+
+    const tagno = cols[1]?.trim();
+    const flightno = cols[3]?.trim();
+    const dateRaw = cols[2]?.split(' ')[0];
+    const paxname = cols[6]?.trim();
+    const inflight = cols[15]?.trim();
+
+    let formattedDate = '';
+    if (dateRaw) {
+      const [day, monthStr, yearSuffix] = dateRaw.split('-');
+      const monthMap = {
+        Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
+        Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12'
+      };
+      formattedDate = `${day}/${monthMap[monthStr] || '00'}/20${yearSuffix}`;
+    }
+
+    resultRows.push({
+      stt: stt++, tagno, flightno, dest, date: formattedDate, in_flight1: inflight, paxname
+    });
+
+    if (flightno) {
+      flightCounter[flightno] = (flightCounter[flightno] || 0) + 1;
+    }
+  }
+
+  if (resultRows.length === 0) {
+    document.getElementById('result').innerHTML = '<p>Không có dòng nào thỏa mãn điều kiện.</p>';
+    document.getElementById('summary').innerHTML = '';
+    return;
+  }
+
+  let tableHTML = `<table>
+    <thead>
+      <tr>
+        <th>STT</th>
+        <th>SỐ THẺ / TAGNO</th>
+        <th>CB ĐI / FLIGHTNO</th>
+        <th>DEST</th>
+        <th>NGÀY / DATE</th>
+        <th>CB ĐẾN / IN_FLIGHT</th>
+        <th>TÊN KHÁCH / PAXNAME</th>
+      </tr>
+    </thead><tbody>`;
+
+  for (const row of resultRows) {
+    tableHTML += `<tr>
+      <td>${row.stt}</td>
+      <td>${row.tagno}</td>
+      <td>${row.flightno}</td>
+      <td>${row.dest}</td>
+      <td>${row.date}</td>
+      <td>${row.in_flight1}</td>
+      <td>${row.paxname}</td>
+    </tr>`;
+  }
+  tableHTML += '</tbody></table>';
+  document.getElementById('result').innerHTML = tableHTML;
+
+  // Bảng phụ
+  let summaryHTML = `<table id="small-summary-table">
+    <thead><tr><th>Chuyến bay</th><th>Điện</th><th>Nhận</th><th>Giờ bay</th></tr></thead><tbody>`;
+  for (const flight in flightCounter) {
+    summaryHTML += `<tr><td>${flight}</td><td>${flightCounter[flight]}</td><td></td><td></td></tr>`;
+  }
+  summaryHTML += '</tbody></table>';
+  document.getElementById('summary').innerHTML = summaryHTML;
+}
+function clearTextarea() {
+  document.getElementById('rawData').value = ''; // Xóa ô nhập
+  document.getElementById('result').innerHTML = ''; // Xóa bảng chính
+  document.getElementById('summary').innerHTML = ''; // Xóa bảng phụ
+}
+</script>
+
+</body>
+</html>

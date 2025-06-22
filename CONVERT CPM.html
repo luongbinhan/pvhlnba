@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CONVERT CPM</title>
+<style>
+.title h2 {
+    margin: 5px 0; /* Điều chỉnh margin giữa các phần tử h2 */
+}
+.number h2 {
+    margin: 5px 0; /* Điều chỉnh margin giữa các phần tử h2 */
+}
+/* Cấu hình cho body */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #b9d9e4;
+    margin: 0;
+    padding: 20px;
+    display: flex; /* Sử dụng Flexbox để căn giữa nội dung */
+    justify-content: center; /* Căn giữa theo chiều ngang */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    height: 100vh; /* Đảm bảo body có chiều cao đầy đủ của cửa sổ */
+}
+
+/* Cấu hình cho container */
+.container {
+    max-width: 21cm;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Đảm bảo container có chiều rộng linh hoạt */
+    max-width: 21cm; /* Giới hạn chiều rộng tối đa */
+    box-sizing: border-box; /* Đảm bảo padding không ảnh hưởng đến kích thước */
+}
+
+/* Các cấu hình khác cho header và nội dung */
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h2 {
+    margin-top: 30px;
+    margin-bottom: 10px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.logo {
+    width: 100px;
+}
+
+.title {
+    text-align: center;
+}
+
+.number {
+    text-align: right;
+}
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #008B8B;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #DAA520;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    border: 1px solid #000;
+}
+th, td {
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: left;
+    white-space: nowrap;
+}
+th:first-child, td:first-child {
+    padding-left: 20px; /* Giãn cách bên trái */
+}
+th:last-child, td:last-child {
+    padding-right: 20px; /* Giãn cách bên phải */
+}
+.note {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-left: 6px solid #7b68ee;
+}
+.flight-info {
+    margin-bottom: 20px;
+}
+
+/* Thiết lập chiều rộng và chiều cao cho container chứa textarea */
+        .textarea-container {
+            display: flex;
+            justify-content: center; /* Căn giữa theo chiều ngang */
+            align-items: center; /* Căn giữa theo chiều dọc */
+            height: 150px; /* Chiều cao của container */
+            margin: 10px; /* Khoảng cách từ các cạnh */
+        }
+
+        /* Thiết lập chiều rộng, chiều cao và kiểu cho textarea */
+        #inputText {
+            background-color: #f0f0f0; /* Màu xám nhạt */
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            font-weight: bold; /* Phông chữ đậm cho placeholder */
+            font-size: 25px; /* Cỡ chữ 25px cho placeholder */
+            width: calc(100% - 20px); /* Chiều rộng nhỏ hơn trang 10px mỗi bên */
+            height: 100%; /* Chiều cao của textarea */
+            margin: 0; /* Không có khoảng cách */
+            box-sizing: border-box; /* Đảm bảo padding và border không làm tăng kích thước */
+            resize: none; /* Không cho phép thay đổi kích thước */
+            text-align: center; /* Căn giữa văn bản */
+            color: black; /* Màu chữ mặc định */
+        }
+
+        /* Thiết lập placeholder (chữ hiển thị khi textarea trống) */
+        #inputText::placeholder {
+            color: #808080; /* Màu trắng xám */
+            font-size: 25px; /* Cỡ chữ 25px */
+            text-align: center; /* Căn giữa văn bản */
+            font-weight: bold; /* Phông chữ đậm */
+            opacity: 0.6; /* Làm mờ placeholder để nó không chiếm quá nhiều không gian */
+        }
+
+        /* Khi người dùng nhập vào ô trống, placeholder sẽ biến mất */
+        #inputText:focus::placeholder {
+            opacity: 0; /* Ẩn placeholder khi textarea được focus */
+        }
+
+        /* Thiết lập văn bản người dùng nhập vào hoặc dán vào textarea */
+        #inputText {
+            font-family: 'Arial', sans-serif; /* Phông chữ mảnh */
+            font-weight: normal; /* Phông chữ mảnh (không đậm) */
+            font-size: 16px; /* Cỡ chữ 16px */
+            text-align: left; /* Căn lề trái cho văn bản nhập vào */
+        }
+
+/* Ẩn phần nhập văn bản trong cửa sổ xem trước */
+@media print {
+    /* Ẩn các phần tử không cần thiết */
+    .hide-on-preview {
+        display: none !important;
+    }
+    button, .btn, .action-buttons {
+        display: none !important;
+    }
+ .fixed-box-top, .fixed-box-bottom {
+        display: none !important; /* Ẩn các bảng khi in */
+    }
+}
+    /* Loại bỏ margin, padding và viền của trang giấy */
+    body, html {
+        margin: 0;
+        padding: 0;
+        border: none !important;
+    }
+
+    /* Loại bỏ viền và bóng đổ toàn trang */
+    * {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Đảm bảo rằng trang không có viền hoặc khoảng cách không mong muốn */
+    @page {
+        margin: 1cm;
+    }
+
+    /* Chỉ giữ lại viền cho các phần tử có bảng hoặc ô kẻ */
+    .with-border, table, th, td {
+        border: 1px solid black !important;
+        border-collapse: collapse !important;
+    }
+
+    /* Giữ lại khoảng cách giữa các ô */
+    table, th, td {
+        padding: 5px !important;
+    }
+}
+
+    .container {
+        width: 21cm;
+        height: 29.7cm;
+        padding: 20px;
+    }
+    .header {
+        margin-bottom: 10px;
+    }
+    .outputTable {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #000;
+    }
+    .outputTable th, .outputTable td {
+        border: 1px solid #000;
+        padding: 8px;
+        text-align: left;
+        white-space: nowrap;
+    }
+    .outputTable th:first-child, .outputTable td:first-child {
+        padding-left: 20px; /* Giãn cách bên trái */
+    }
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Phần nhập văn bản -->
+    <div class="hide-on-preview">
+        <h2>NHẬP ĐIỆN CPM:</h2>
+        <textarea id="inputText" rows="10" cols="50" placeholder="DÁN ĐIỆN CPM VÀO ĐÂY"></textarea> <!-- Trống để có thể dán văn bản mới -->
+    </div>
+    <button onclick="convert()">CHUYỂN ĐỔI</button>
+    <button onclick="convertSecondTime()">CHUYỂN ĐỔI LẦN 2</button>
+
+    <div class="header hide-on-preview">
+    </div>
+    <button onclick="printPage()">In Phiếu</button>
+<button class="baggage-receipt-btn" onclick="openBaggageReceiptWindow()">In PBG HL RỜI</button>
+
+
+<!-- Thêm vào phần CSS -->
+<style>
+button {
+    padding: 10px 20px;
+    background-color: #008B8B;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px; /* Khoảng cách giữa các nút */
+}
+
+button:hover {
+    background-color: #DAA520;
+}
+
+
+</style>
+    <br><br>
+    <div class="header">
+        <div class="logo">
+            <img src="logo.png" alt="Logo" style="width: 130px; height: auto;" class="logo">
+
+        </div>
+        <div class="title">
+            <h2>PHIẾU GIAO NHẬN HÀNH LÝ</h2>
+            <h2>CHUYẾN BAY ĐẾN</h2>
+        </div>
+        <div class="number">
+            <h2 style="font-size: 10px;">Mã số:IF/VNBA/TTĐH/09</h2>
+            <h2 style="font-size: 10px;">Ban hành: 01</h2>
+            <h2 style="font-size: 10px;">Hiệu lực: 15/08/2016</h2>
+        </div>
+    </div>
+<h2 style="font-size: 14px; display: inline-block; margin-right: 10px; margin-bottom: 10px;">Số hiệu chuyến bay:</h2>
+<div id="flightInfo" class="flight-info" style="display: inline-block; margin-bottom: 10px;"></div>
+<h2 style="font-size: 14px; margin-top: 0; margin-bottom: 10px;">Vị trí băng chuyền:</h2>
+<h2 style="font-size: 14px; margin-top: 0; margin-bottom: 10px;">Thông tin hành lý:</h2>
+<div id="outputTable" style="margin-top: 0; margin-bottom: 19px;"></div>
+</div>
+<script>
+
+function convert() {
+    var originalText = document.getElementById("inputText").value;
+    var lines = originalText.split('\n');
+    var data = [];
+    var noteLines = []; // Thêm biến noteLines để lưu các dòng chứa ghi chú
+    var flightInfo = ''; // Thêm biến flightInfo để lưu thông tin về số hiệu chuyến bay
+    var hasBulk = false;
+
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (line.includes("SI")) {
+            noteLines.push(line.substring(2).trim()); // Lưu nội dung từ dòng "SI" vào biến noteLines
+            if (line.includes("BULK")) {
+                hasBulk = true;
+            }
+            continue; // Bỏ qua dòng chứa "SI" và tiếp tục với dòng tiếp theo
+        }
+        if (noteLines.length > 0) {
+            noteLines.push(line);
+        } else {
+            var matches = line.match(/\b(00|01|02|11|3U|5J|5X|6E|8M|BL|BR|CA|CI|CX|CZ|EK|EY|GI|HO|I9|IO|JG|JL|JX|K6|KE|MH|MU|NH|NX|OZ|QV|QW|SA|SQ|TG|UO|VN|WW|YG)\d+\/\d+\.\w+\b/g); // Tìm kiếm dòng "VNxxx/xx.xxx"
+            if (matches && matches.length > 0) {
+                flightInfo = matches[0];
+            }
+            matches = line.match(/\b(AKE|AKH|PKC|DQF|AQF|AMP|PMC|PAG|MQF|RQF|AAP|DAP|MAP|RAP|ALP|DLP|MLP|RLP|AAF|DAF|MAF|RAF)\d{5}\w{2}\/\w{3,4}\/\d{2,4}\/\w*?(?=[BPTJDF])[\w\/]+/g);
+            if (matches) {
+                matches.forEach(match => {
+                    var parts = match.split('/');
+                    var number = data.length + 1;
+                    var stringPart = parts[0];
+                    var thirdColumn = parts.slice(3).join('/').split('/')[0];
+                    var handoverTime = ''; // Giờ bàn giao
+                    var handoverPerson = ''; // Người bàn giao
+                    var handoverReceiver = ''; // Người nhận
+                    data.push([number, stringPart, thirdColumn, handoverTime, handoverPerson, handoverReceiver]);
+                });
+            }
+        }
+    }
+
+    if (hasBulk) {
+        var bulkRow = ['BULK', '', '']; // Tạo dòng mới cho thông tin "BULK"
+        data.splice(1, 0, bulkRow); // Chèn vào vị trí thứ 2 trong mảng data
+    }
+
+    // Hiển thị thông tin về số hiệu chuyến bay
+    displayFlightInfo(flightInfo);
+
+    // Hiển thị bảng dữ liệu
+    displayTable(data, noteLines.join('<br>')); // Sử dụng noteLines để hiển thị nội dung từ dòng "SI" trong phần ghi chú
+}
+
+document.getElementById("convertButton").addEventListener("click", function() {
+    convert();
+});
+
+function convertSecondTime() {
+    var originalText = document.getElementById("inputText").value;
+    var lines = originalText.split('\n');
+    var data = [];
+    var noteLines = []; // Thêm biến noteLines để lưu các dòng chứa ghi chú
+    var flightInfo = ''; // Thêm biến flightInfo để lưu thông tin về số hiệu chuyến bay
+
+    for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim();
+    
+    // Kiểm tra nếu dòng chứa "SI" thì lưu vào noteLines và bỏ qua dòng này
+    if (line.includes("SI")) {
+        noteLines.push(line.substring(2).trim());
+        continue; // Bỏ qua dòng này và tiếp tục xử lý dòng kế tiếp
+    }
+
+    // Kiểm tra nếu có nội dung trong noteLines, thì thêm dòng vào noteLines
+    if (noteLines.length > 0) {
+        noteLines.push(line);
+    } else {
+        // Tiến hành kiểm tra số hiệu chuyến bay
+        var matches = line.match(/\b(00|01|02|11|3U|5J|5X|6E|8M|BL|BR|CA|CI|CX|CZ|EK|EY|GI|HO|I9|IO|JG|JL|JX|K6|KE|MH|MU|NH|NX|OZ|QV|QW|SA|SQ|TG|UO|VN|WW|YG)\d+\/\d+\.\w+\b/g);
+        if (matches && matches.length > 0) {
+            flightInfo = matches[0];
+        }
+
+        
+// Kiểm tra nếu dòng bắt đầu bằng "-5", lưu vào noteLines
+if (line.startsWith("-5")) {
+    var lineContent = line.substring(2).trim();  // Lấy nội dung dòng sau "-5"
+
+
+
+    // Lưu nội dung vào noteLines sau khi xử lý
+    noteLines.push("BULK: " + lineContent);
+    continue;  // Bỏ qua dòng này và tiếp tục với dòng tiếp theo
+}
+
+
+        // Kiểm tra nếu dòng có ít nhất 3 dấu "/"
+        if (line.indexOf("/") !== -1) {
+            var segments = line.split("/");  // Tách chuỗi theo dấu "/"
+            if (segments.length >= 4) {
+                var luggageNumber = segments[1]; // Lấy số thùng hành lý
+                var thirdSegment = segments[3]; // Phần sau dấu "/" thứ 3
+
+                if (thirdSegment[0] === 'B') { // Kiểm tra nếu ký tự đầu tiên là "B"
+                    var fourthSegment = segments[4] || '';  // Lấy phần sau dấu "/" thứ 4
+                    
+                    // Loại bỏ ".RMK" nếu có
+                    if (fourthSegment.includes(".RMK")) {
+                        fourthSegment = fourthSegment.replace(".RMK", "");
+                    }
+
+                    // Kết nối với dấu "/" thứ 5 nếu có
+                    if (segments.length >= 5) {
+                        var fifthSegment = segments[5] || '';
+                        if (fifthSegment) {
+                            fourthSegment += '/' + fifthSegment;
+                        }
+                    }
+
+                    // Lưu dữ liệu vào bảng
+                    var number = data.length + 1;
+                    var stringPart = luggageNumber;
+                    var thirdColumn = fourthSegment;
+                    var handoverTime = ''; // Giờ bàn giao
+                    var handoverPerson = ''; // Người bàn giao
+                    var handoverReceiver = ''; // Người nhận
+                    data.push([number, stringPart, thirdColumn, handoverTime, handoverPerson, handoverReceiver]);
+                }
+            }
+        }
+    }
+}
+
+
+    // Hiển thị thông tin về số hiệu chuyến bay
+    displayFlightInfo(flightInfo);
+
+    // Hiển thị bảng dữ liệu
+    displayTable(data, noteLines.join('<br>')); // Sử dụng noteLines để hiển thị nội dung từ dòng "SI" trong phần ghi chú
+}
+
+
+function displayFlightInfo(info) {
+    document.getElementById("flightInfo").innerText = info;
+}
+
+function displayTable(data, note) {
+    var table = "<table class='outputTable'>";
+    table += "<tr><th style='padding-left: 10px;'>STT</th><th>Số thùng hành lý</th><th style='padding-right: 20px;'>Loại hành lý</th><th>Giờ bàn giao<br> tại BC Đến</th><th>Người giao<br>DVSĐ</th><th>Người nhận<br>PVHL</th></tr>";
+    
+    // Thêm dòng "BULK" vào bảng dù có "BULK" hay không, nhưng sẽ để trống cột "Loại hành lý"
+    var bulkRow = "<tr><td></td><td>BULK</td><td></td><td></td><td></td></tr>";
+    var siNote = ""; // Biến để lưu thông tin từ phần "SI" vào phần ghi chú
+
+    // Duyệt qua các dòng dữ liệu
+    for (var i = 0; i < data.length; i++) {
+        table += "<tr>";
+
+        // Duyệt qua các cột trong mỗi dòng
+        for (var j = 0; j < data[i].length; j++) {
+            // Nếu "Số thùng hành lý" là "BULK" thì để trống "Loại hành lý"
+            if (data[i][1] === "BULK" && j === 2) {
+                table += "<td></td>"; // Để trống cột "Loại hành lý" khi "Số thùng hành lý" là "BULK"
+            } else {
+                table += "<td>" + data[i][j] + "</td>";
+            }
+        }
+        table += "</tr>";
+
+        // Kiểm tra nếu có phần "SI" và lưu vào biến siNote
+        if (data[i][1].startsWith("SI")) {
+            siNote += "<br>" + data[i][1];
+        }
+    }
+
+    // Thêm dòng "BULK" vào cuối bảng nếu có (dù có "BULK" hay không)
+    table += bulkRow;
+
+    table += "</table>";
+
+    // Thêm thông tin "SI" vào phần ghi chú nếu tồn tại
+    if (siNote) {
+        if (note.length > 0) {
+            table += "<div class='note'><strong>Ghi chú:</strong><br>" + note + siNote + "</div>";
+        } else {
+            table += "<div class='note'><strong>Ghi chú:</strong><br>" + siNote + "</div>";
+        }
+    } else {
+        // Hiển thị ghi chú mà không có thông tin từ phần "SI"
+        if (note.length > 0) {
+            table += "<div class='note'><strong>Ghi chú:</strong><br>" + note + "</div>";
+        }
+    }
+
+    document.getElementById("outputTable").innerHTML = table;
+}
+
+
+
+function printPage() {
+    window.print();
+}
+
+</script>
+
+<style>
+        /* Đặt bảng có kích thước thay đổi theo cỡ chữ */
+        .fixed-box-bottom {
+            position: fixed; /* Đặt bảng cố định */
+            bottom: 10px; /* Khoảng cách từ dưới cùng */
+            right: 10px; /* Khoảng cách từ bên phải */
+            width: 10em; /* Chiều rộng bảng thay đổi theo cỡ chữ */
+            height: 9em; /* Chiều cao bảng thay đổi theo cỡ chữ */
+            background-color: #DAA520; /* Màu nền của bảng */
+            border: 1px solid #ccc; /* Viền bảng */
+            padding: 0.5em; /* Khoảng cách bên trong bảng */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Đổ bóng cho bảng */
+            z-index: 1000; /* Đảm bảo bảng nằm trên tất cả các phần tử khác */
+            overflow: auto; /* Cho phép cuộn nếu nội dung quá nhiều */
+            font-family: Arial, sans-serif;
+            font-size: 12px; /* Cỡ chữ 6px */
+            color: white; /* Màu chữ là trắng để dễ đọc trên nền vàng */
+            word-wrap: break-word; /* Đảm bảo văn bản không tràn ra ngoài */
+        }
+
+
+
+        /* Đảm bảo văn bản không bị tràn và có thể cuộn */
+        .fixed-box-top p {
+            margin: 0;
+            line-height: 1.2;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Bảng chứa văn bản -->
+    <div class="fixed-box-bottom">
+        <p>Mọi thắc mắc về cách sử dụng</p>
+<p>Liên hệ:</p>
+        <p>An 2 - PVHL</p>
+    </div>
+
+
+<style>
+    /* CSS cho các phần tử trong .fixed-box-top */
+    .fixed-box-top p {
+        margin-bottom: 15px; /* Tạo khoảng cách giữa các dòng */
+    }
+
+    /* Nếu bạn muốn xóa khoảng cách dưới cùng của phần tử cuối cùng */
+    .fixed-box-top p:last-child {
+        margin-bottom: 0;
+    }
+</style>
+
+
+</body></html>
+<head>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="top-left-container">
+    <!-- Khu vực chứa lá cờ -->
+    <div class="flag-container">
+      <div class="flying-flag">
+        <div class="flag-front">
+          <img src="flag.png" alt="Front of Flag">
+        </div>
+        <div class="flag-back">
+          <img src="flag-back.png" alt="Back of Flag">
+        </div>
+      </div>
+    </div>
+
+    <!-- Đồng hồ điện tử -->
+    <div class="clock-container">
+      <div id="clock" class="clock"></div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
+
+
+
+
+<head>
+    <link rel="stylesheet" href="style2.css">
+</head>
+<body>
+    <!-- Máy tính thời gian xử lý hành lý -->
+    <table class="table-baggage fixed">
+        <tr>
+            <th>TÍNH GIỜ THEO KIỆN HÀNH LÝ</th>
+        </tr>
+        <tr class="row-blue">
+            <td>
+                <form id="baggageForm">
+                    <label for="baggageCount" style="font-size: 10px;">Nhập số kiện:</label>
+                    <input class="input-field" type="number" placeholder="123..." id="baggageCount" name="baggageCount" min="0" required>
+                    <button class="button-calculate" type="button" onclick="calculateTime()">TÍNH GIỜ</button>
+                </form>
+            </td>
+        </tr>
+        <tr class="row-yellow">
+            <td>
+                <div id="result" class="result">--</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Bảng tính thời gian bắt đầu và kết thúc -->
+    <table class="table-time fixed">
+        <tr>
+            <th>TÍNH THỜI GIAN THEO GIỜ</th>
+        </tr>
+        <tr class="row-blue">
+            <td>
+                <form id="timeForm">
+                    <label for="startTime" style="font-size: 10px; margin-bottom: 10px; display: block;">Nhập thời gian bắt đầu (HHMM)</label>
+                    <input class="input-field" type="number" placeholder="0800" id="startTime" name="startTime" min="0" required>
+                    <label for="endTime" style="font-size: 10px; margin-top: 15px; margin-bottom: 10px; display: block;">Nhập thời gian kết thúc (HHMM)</label>
+                    <input class="input-field" type="number" placeholder="1035" id="endTime" name="endTime" min="0" required>
+                    <button class="button-calculate" type="button" onclick="calculateDuration()">TÍNH GIỜ</button>
+                </form>
+            </td>
+        </tr>
+        <tr class="row-yellow">
+            <td>
+                <div id="timeResult" class="result">--</div>
+            </td>
+        </tr>
+    </table>
+
+<table class="table-time-end fixed">
+    <tr>
+        <th>TÍNH GIỜ KẾT THÚC</th>
+    </tr>
+    <tr class="row-blue">
+        <td>
+            <form id="endTimeForm">
+                <label for="startTime2" style="font-size: 10px; margin-bottom: 10px; display: block;">Nhập giờ bắt đầu (HHMM)</label>
+                <input class="input-field" type="number" placeholder="0800" id="startTime2" name="startTime2" min="0" required>
+                <label for="baggageCount2" style="font-size: 10px; margin-top: 15px; margin-bottom: 10px; display: block;">Nhập số kiện hành lý</label>
+                <input class="input-field" type="number" placeholder="123" id="baggageCount2" name="baggageCount2" min="0" required>
+                <button class="button-calculate" type="button" onclick="calculateEndTime()">TÍNH GIỜ KẾT THÚC</button>
+            </form>
+        </td>
+    </tr>
+    <tr class="row-yellow">
+        <td>
+            <div id="endTimeResult" class="result">--</div>
+        </td>
+    </tr>
+</table>
+
+    <script src="script2.js"></script>
+</body>
+</html>
+
+
+<head>
+    <link rel="stylesheet" href="styles3.css">
+</head>
+<body class="my-unique-body">
+    <div class="my-unique-container">
+        <!-- Header góc phải -->
+        <div class="my-unique-header-section">
+            <h2>TRA CỨU THẺ ƯU TIÊN CÁC HÃNG</h2>
+            <label for="airlineSelect">Chọn hãng:</label>
+            <select id="airlineSelect" onchange="showAirlineInfo()" aria-label="Chọn hãng hàng không">
+                <option value="">--Chọn hãng--</option>
+                <option value="BR">BR (EVA AIRLINE)</option>
+                <option value="CI">CI (CHINA AIRLINE)</option>
+                <option value="CX">CX (CATHAY AIRLINE)</option>
+                <option value="JL">JL (JAPAN AIRLINE)</option>
+                <option value="JX">JX (STARLUX AIRLINE)</option>
+                <option value="KE">KE (KOREA AIRLINE)</option>
+                <option value="NH">NH (ANA AIRLINE)</option>
+                <option value="MH">MH (MALAYSIA AIRLINE)</option>
+                <option value="OZ">OZ (ASA AIRLINE)</option>
+                <option value="SQ">SQ (SINGAPORE AIRLINE)</option>
+                <option value="VN">VN (VIETNAM AIRLINE)</option>
+            </select>
+        </div>
+
+        <!-- Phần hiển thị hình ảnh -->
+        <div id="airlineImages" class="my-unique-airline-images">
+            <!-- Khu vực logo hãng hàng không -->
+            <div id="airlineLogo" class="my-unique-airline-logo"></div>
+            <!-- Danh sách ảnh sẽ được thêm động -->
+        </div>
+    </div>
+
+    <!-- Tập lệnh JavaScript -->
+    <script src="scripts3.js"></script>
+</body>
+</html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="styles4.css">
+</head>
+<body>
+    <script src="scripts4.js"></script>
+</body>
+</html>
+
+<head>
+    <link rel="stylesheet" href="baggage-receipt.css"> <!-- Tải file CSS -->
+</head>
+<body>
+<script src="baggage-receipt.js"></script> <!-- Tải file JS -->
+</body>
+</html>
+
+
+
+<head>
+  <style>
+    /* Thiết lập nền carousel */
+    .carousel-background {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 60px; /* Chiều cao vùng nền */
+      z-index: -1; /* Đặt dưới nội dung chính */
+      overflow: hidden;
+    }
+
+    /* Vùng chứa các hình ảnh */
+    .carousel-wrapper {
+      display: flex;
+      animation: scroll-custom 20s linear infinite;
+      align-items: center;
+      position: relative;
+      left: 300px; /* Bắt đầu cách lề trái 600px */
+    }
+
+    /* Kích thước nhỏ cho ảnh */
+    .carousel-wrapper img {
+      width: 100px; /* Kích thước nhỏ */
+      height: auto; /* Giữ tỷ lệ ảnh */
+      margin: 0 10px;
+      border-radius: 5px; /* Tùy chọn: bo góc cho ảnh */
+    }
+
+    /* Hoạt ảnh tùy chỉnh */
+    @keyframes scroll-custom {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(calc(-100% + 900px)); /* Điều chỉnh để tạo hiệu ứng liền mạch */
+      }
+    }
+
+    /* Nội dung chính */
+    .content {
+      position: relative;
+      z-index: 1; /* Nội dung nằm trên carousel */
+      padding: 20px;
+    }
+
+    /* Ẩn carousel khi in */
+    @media print {
+      .carousel-background {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Carousel nền -->
+  <div class="carousel-background">
+    <div class="carousel-wrapper">
+      <img src="VN/logo.png" alt="Image 1">
+      <img src="BR/logo.png" alt="Image 2">
+      <img src="CI/logo.png" alt="Image 3">
+      <img src="CX/logo.png" alt="Image 4">
+      <img src="JL/logo.png" alt="Image 5">
+      <img src="JX/logo.png" alt="Image 6">
+      <img src="KE/logo.png" alt="Image 7">
+      <img src="MH/logo.png" alt="Image 8">
+      <img src="NH/logo.png" alt="Image 9">
+      <img src="OZ/logo.png" alt="Image 10">
+      <img src="SQ/logo.png" alt="Image 11">
+      <!-- Lặp lại để tạo hiệu ứng liền mạch -->
+      <img src="VN/logo.png" alt="Image 1">
+      <img src="BR/logo.png" alt="Image 2">
+      <img src="CI/logo.png" alt="Image 3">
+      <img src="CX/logo.png" alt="Image 4">
+      <img src="JL/logo.png" alt="Image 5">
+      <img src="JX/logo.png" alt="Image 6">
+      <img src="KE/logo.png" alt="Image 7">
+      <img src="MH/logo.png" alt="Image 8">
+      <img src="NH/logo.png" alt="Image 9">
+      <img src="OZ/logo.png" alt="Image 10">
+      <img src="SQ/logo.png" alt="Image 11">
+    </div>
+  </div>
+
+  <!-- Nội dung chính -->
+  <div class="content">
+  </div>
+</body>
+</html>
+
+<style>
+  .top-right-button {
+    position: absolute;
+    top: 20px;
+    right: 400px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .open-barcode-button {
+    position: absolute;
+    top: 80px;
+    right: 400px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .open-barcode-button:hover {
+    background-color: #e86400;
+  }
+  .open-quiz-button {
+    position: absolute;
+    top: 130px;
+    right: 400px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .open-quiz-button:hover {
+    background-color: #e86400;
+  }
+  .open-pdncnd-button {
+    position: absolute;
+    top: 250px;
+    right: 400px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .open-pdncnd-button:hover {
+    background-color: #e86400;
+  }
+  .open-pbgqknc-button {
+    position: absolute;
+    top: 300px;
+    right: 400px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .open-pdncnd-button:hover {
+    background-color: #e86400;
+  }
+  .open-innc-button {
+    position: absolute;
+    top: 350px;
+    right: 400px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .open-innc-button:hover {
+    background-color: #e86400;
+  }
+</style>
+
+  <!-- Nút bấm mở popup -->
+  <button class="top-right-button" onclick="openCPM()">TÍNH THỜI GIAN THEO KIỆN</button>
+<!-- Nút mới mở file barcode.html -->
+<button class="open-barcode-button" onclick="openBarcode()">SCAN SQ</button>
+<!-- Nút mới mở file index_combined.html -->
+<button class="open-quiz-button" onclick="openquiz()">KIỂM TRA TRÍ THÔNG MINH</button>
+<!-- Nút mới mở file index_combined.html -->
+<button class="open-pdncnd-button" onclick="openpdncnd()">IN PHIẾU ĐẾM HL NCNĐ</button>
+<!-- Nút mới mở file index_combined.html -->
+<button class="open-pbgqknc-button" onclick="openpbgqknc()">IN PBG QUÁ KHỔ NCNĐ</button>
+<!-- Nút mới mở file index_combined.html -->
+<button class="open-innc-button" onclick="openinnc()">IN HÀNH LÝ NỐI CHUYẾN</button>
+  <script>
+    let popupWindow = null;
+
+    function openCPM() {
+      // Kích thước popup
+      const popupWidth = 650;
+      const popupHeight = 680;
+
+      const screenLeft = window.screenLeft !== undefined ? window.screenLeft : screen.left;
+      const screenTop = window.screenTop !== undefined ? window.screenTop : screen.top;
+
+      const width = window.innerWidth || document.documentElement.clientWidth || screen.width;
+      const height = window.innerHeight || document.documentElement.clientHeight || screen.height;
+
+      const left = screenLeft + width - popupWidth - 20;
+      const top = screenTop + height - popupHeight - 50;
+
+      // Mở popup và lưu tham chiếu
+popupWindow = window.open(
+  "timearrival.html",
+  "CPMWindow",
+  `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`
+);
+
+
+      // Kiểm tra nếu popup mở thành công
+      if (popupWindow) {
+        // Hẹn giờ đóng popup sau 30 giây
+        setTimeout(() => {
+          if (popupWindow && !popupWindow.closed) {
+            popupWindow.close();  // Đóng popup sau 30 giây
+          }
+        }, 30000);  // 30 giây
+
+        // Tự động refresh trang web chính sau 60 giây
+        setTimeout(() => {
+          location.reload();  // Refresh trang web chính
+        }, 60000);  // 60 giây
+      }
+    }
+  </script>
+<script>
+  function openBarcode() {
+    window.open(
+      "barcode.html",           // Đường dẫn đến file barcode.html
+      "BarcodeWindow",          // Tên cửa sổ
+      "width=1200,height=800,resizable=yes,scrollbars=yes"
+    );
+  }
+</script>
+<script>
+  function openquiz() {
+    window.open(
+      "quiz/index_combined.html",           // Đường dẫn đến file index_combined.html
+      "KIỂM TRA TRÍ THÔNG MINH",          // Tên cửa sổ
+      "width=1200,height=1200,resizable=yes,scrollbars=yes"
+    );
+  }
+</script>
+<script>
+  function openpdncnd() {
+    window.open(
+      "pdhlncnd.html",           // Đường dẫn đến file index_combined.html
+      "PHIẾU ĐẾM HL NCNĐ",          // Tên cửa sổ
+      "width=1200,height=1200,resizable=yes,scrollbars=yes"
+    );
+  }
+</script>
+<script>
+  function openpbgqknc() {
+    window.open(
+      "pbgqknc.html",           // Đường dẫn đến file index_combined.html
+      "PHIẾU BÀN GIAO QUÁ KHỔ NCNĐ",          // Tên cửa sổ
+      "width=1200,height=1200,resizable=yes,scrollbars=yes"
+    );
+  }
+</script>
+<script>
+  function openinnc() {
+    window.open(
+      "innc.html",           // Đường dẫn đến file index_combined.html
+      "IN HÀNH LÝ NỐI CHUYẾN",          // Tên cửa sổ
+      "width=1200,height=1200,resizable=yes,scrollbars=yes"
+    );
+  }
+</script>
+</body>
+</html>
+

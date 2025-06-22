@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ULD & Tagno Barcode Viewer</title>
+
+  <!-- Nhúng font Code39AzaleaRegular3 -->
+  <style>
+    @font-face {
+      font-family: 'Code39AzaleaRegular3';
+      src: url('Code39AzaleaRegular3.ttf') format('truetype');
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      padding: 20px;
+      color: #212529;
+    }
+
+    h2, h3 {
+      color: #0d6efd;
+    }
+
+    textarea {
+      width: 100%;
+      height: 200px;
+      font-family: monospace;
+      font-size: 14px;
+      padding: 10px;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+      background-color: #fff;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin: 5px 5px 5px 0;
+      padding: 10px 20px;
+      cursor: pointer;
+      border: none;
+      background-color: #0d6efd;
+      color: white;
+      border-radius: 5px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background-color: #0b5ed7;
+    }
+
+    button.active {
+      background-color: #198754 !important;
+      color: white;
+    }
+
+    #uldButtons {
+      margin-bottom: 15px;
+    }
+
+    .barcodes {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: 15px;
+    }
+
+    .barcode-container {
+      width: 18%; /* ~5 barcode mỗi dòng */
+      min-width: 160px;
+      background-color: #ffffff;
+      border: 1px dashed #ced4da;
+      padding: 10px;
+      border-radius: 8px;
+      box-sizing: border-box;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .barcode-text {
+      font-family: 'Code39AzaleaRegular3';
+      font-size: 22px;
+      letter-spacing: 4px;
+      background: #fff;
+      display: inline-block;
+      padding: 6px 4px;
+      line-height: 1;
+    }
+
+    .tagno-label {
+      font-size: 14px;
+      margin-top: 6px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .index-label {
+      font-size: 13px;
+      color: #6c757d;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    #tagnoCount {
+      margin: 15px 0;
+      font-weight: bold;
+      color: #198754;
+    }
+
+    @media print {
+      body {
+        background: white;
+        color: black;
+      }
+      button, textarea, #uldButtons, h2, h3, p {
+        display: none !important;
+      }
+      .barcodes {
+        justify-content: flex-start;
+      }
+      .barcode-container {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>✈️ Quản lý ULD & Tagno</h2>
+  <p>👉 Dán dữ liệu từ Excel hoặc bảng vào ô bên dưới, sau đó bấm <strong>Phân tích dữ liệu</strong>.</p>
+  
+  <textarea id="dataInput" placeholder="Dán dữ liệu bảng vào đây..."></textarea>
+  <br><br>
+  <button onclick="parseData()">📊 Phân tích dữ liệu</button>
+
+  <h3>📦 Danh sách ULD:</h3>
+  <div id="uldButtons"></div>
+
+  <div id="tagnoCount"></div>
+
+  <h3>📇 Quét mã vạch bên dưới:</h3>
+  <div id="tagnoDisplay" class="barcodes"></div>
+
+  <script>
+    let uldMap = {};
+    let activeButton = null;
+
+    function parseData() {
+      const rawData = document.getElementById("dataInput").value.trim();
+      const lines = rawData.split('\n').filter(line => line.trim());
+      
+      uldMap = {}; // Reset dữ liệu
+
+      for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].trim().split('\t').map(cell => cell.trim());
+        if (parts.length < 10) continue;
+
+        const tagno = parts[1];
+        let uldno = parts[9];
+
+        if (!uldno || uldno === "") {
+          uldno = "HL chưa xếp";
+        }
+
+        if (!uldMap[uldno]) uldMap[uldno] = [];
+        uldMap[uldno].push(tagno);
+      }
+
+      showUldButtons();
+      document.getElementById("tagnoDisplay").innerHTML = "";
+      document.getElementById("tagnoCount").textContent = "";
+    }
+
+function showUldButtons() {
+  const container = document.getElementById("uldButtons");
+  container.innerHTML = "";
+
+  // Lấy danh sách ULDno và sắp xếp theo natural order (A-Z, 0-9)
+  const sortedKeys = Object.keys(uldMap).sort((a, b) =>
+    a.localeCompare(b, 'vi', { numeric: true, sensitivity: 'base' })
+  );
+
+  sortedKeys.forEach(uld => {
+    const btn = document.createElement("button");
+    btn.textContent = `${uld} (${uldMap[uld].length})`;
+    btn.onclick = () => {
+      setActiveButton(btn);
+      showTagnoForUld(uld);
+    };
+    container.appendChild(btn);
+  });
+}
+
+
+    function setActiveButton(button) {
+      if (activeButton) activeButton.classList.remove("active");
+      button.classList.add("active");
+      activeButton = button;
+    }
+
+    function showTagnoForUld(uldno) {
+      const tagnos = uldMap[uldno];
+      const container = document.getElementById("tagnoDisplay");
+      const countDisplay = document.getElementById("tagnoCount");
+
+      container.innerHTML = "";
+      countDisplay.textContent = `🧾 Tổng: ${tagnos.length} kiện`;
+
+      tagnos.forEach((tag, index) => {
+        const div = document.createElement("div");
+        div.className = "barcode-container";
+
+        const indexLabel = document.createElement("span");
+        indexLabel.className = "index-label";
+        indexLabel.textContent = `#${index + 1}`;
+
+        const barcodeText = document.createElement("div");
+        barcodeText.className = "barcode-text";
+        barcodeText.textContent = `*${tag}*`;
+
+        const label = document.createElement("span");
+        label.className = "tagno-label";
+        label.textContent = tag;
+
+        div.appendChild(indexLabel);
+        div.appendChild(barcodeText);
+        div.appendChild(label);
+        container.appendChild(div);
+      });
+    }
+  </script>
+
+</body>
+</html>

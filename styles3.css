@@ -1,0 +1,141 @@
+/* Đặt lớp riêng cho body */
+.my-unique-body {
+    margin: 0; /* Loại bỏ khoảng cách ngoài */
+    padding: 0; /* Loại bỏ khoảng cách trong */
+    height: 100vh; /* Đặt chiều cao của body là 100% chiều cao cửa sổ trình duyệt */
+    display: flex; /* Sử dụng Flexbox cho body */
+    justify-content: flex-end; /* Căn chỉnh nội dung về phía cuối theo trục ngang */
+    align-items: flex-start; /* Căn chỉnh nội dung về phía đầu theo trục dọc */
+}
+
+/* Đặt lớp riêng cho container của bạn */
+.my-unique-container {
+    width: auto; /* Thiết lập chiều rộng tự động */
+    margin: 20px; /* Thêm khoảng cách 20px xung quanh container */
+}
+
+/* Đặt lớp riêng cho header của phần bạn muốn thay đổi */
+.my-unique-container .my-unique-header-section {
+    text-align: right; /* Căn chỉnh nội dung trong header sang bên phải */
+    margin-bottom: 10px; /* Thêm khoảng cách dưới header */
+}
+
+/* Các thay đổi cho tiêu đề trong phần này */
+.my-unique-container .my-unique-header-section h2 {
+    font-size: 18px; /* Đặt kích thước chữ của tiêu đề */
+    color: #176A87; /* Đặt màu chữ của tiêu đề */
+    margin: 0 0 10px; /* Loại bỏ margin trên và dưới, thêm margin dưới */
+}
+
+/* Các thay đổi cho label trong phần header */
+.my-unique-container .my-unique-header-section label {
+    font-size: 14px; /* Đặt kích thước chữ cho label */
+    margin: 0 0 5px; /* Thêm khoảng cách dưới label */
+    display: inline-block; /* Đảm bảo label hiển thị inline nhưng có block behavior */
+    color: #176986; /* Màu sắc của label */
+    font-weight: bold; /* Đặt chữ in đậm cho label */
+}
+
+/* Cấu hình dropdown */
+.my-unique-container .my-unique-header-section select {
+    padding: 10px; /* Thêm padding cho dropdown */
+    font-size: 14px; /* Đặt kích thước chữ cho dropdown */
+    width: 200px; /* Đặt chiều rộng của dropdown */
+    margin: 5px 0; /* Thêm khoảng cách trên và dưới dropdown */
+    color: #176986; /* Màu sắc của chữ trong dropdown */
+    font-weight: bold; /* Đặt chữ in đậm trong dropdown */
+}
+
+/* Khi chuột hover vào một mục trong dropdown */
+.my-unique-container .my-unique-header-section select option:hover {
+    background-color: #DAA520; /* Đổi màu nền của mục trong dropdown thành màu vàng khi hover */
+}
+
+
+/* Cấu hình phần hình ảnh */
+.my-unique-container .my-unique-airline-images {
+    background-color: #fff; /* Đặt nền màu trắng cho phần hình ảnh */
+    border: 1px solid #ccc; /* Đặt viền màu xám cho phần hình ảnh */
+    padding: 20px; /* Thêm khoảng cách 20px xung quanh nội dung */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Thêm bóng cho phần hình ảnh */
+    max-width: 300px; /* Đặt chiều rộng tối đa cho phần hình ảnh */
+    height: 600px; /* Đặt chiều cao của phần hình ảnh */
+    overflow-y: auto; /* Cho phép cuộn dọc nếu nội dung vượt quá chiều cao */
+    display: none; /* Mặc định ẩn phần hình ảnh */
+}
+
+/* Chỉ hiển thị phần này khi có lớp active */
+.my-unique-container .my-unique-airline-images.active {
+    display: block; /* Hiển thị phần hình ảnh khi có lớp active */
+}
+
+/* Cấu hình cho từng ảnh hãng hàng không */
+.my-unique-container .my-unique-airline-images .my-unique-image-container {
+    display: flex; /* Sử dụng Flexbox cho container ảnh */
+    justify-content: space-between; /* Căn chỉnh các ảnh cách xa nhau */
+    align-items: center; /* Căn giữa các ảnh theo chiều dọc */
+    margin-bottom: 15px; /* Thêm khoảng cách dưới mỗi ảnh */
+    padding-bottom: 10px; /* Thêm padding dưới cho container ảnh */
+    border-bottom: 1px solid #DAA520; /* Thêm viền dưới cho các container ảnh */
+}
+
+/* Đảm bảo phần tử cuối không có viền dưới */
+.my-unique-container .my-unique-airline-images .my-unique-image-container:last-child {
+    border-bottom: none; /* Loại bỏ viền dưới cho phần tử cuối cùng */
+}
+
+/* Cấu hình cho nhãn của hình ảnh */
+.my-unique-container .my-unique-airline-images .my-unique-image-label {
+    font-weight: bold; /* Đặt chữ in đậm cho nhãn */
+    font-size: 18px; /* Đặt kích thước chữ cho nhãn */
+    color: #008B8B; /* Đặt màu sắc cho nhãn */
+    margin: 0; /* Loại bỏ margin */
+    text-align: left; /* Căn trái nhãn */
+    flex: 1; /* Cho phép nhãn chiếm không gian còn lại */
+}
+
+/* Cấu hình cho ảnh hãng hàng không */
+.my-unique-container .my-unique-airline-images .my-unique-airline-image {
+    width: 100%; /* Đặt chiều rộng của ảnh là 100% */
+    height: auto; /* Đảm bảo chiều cao tự động để giữ tỷ lệ */
+    max-width: 250px; /* Đặt chiều rộng tối đa cho ảnh */
+    max-height: 200px; /* Đặt chiều cao tối đa cho ảnh */
+    object-fit: contain; /* Giữ tỷ lệ ảnh */
+    display: block; /* Đảm bảo ảnh hiển thị dưới dạng block */
+    margin: 0 auto; /* Căn giữa ảnh */
+}
+
+/* Cấu hình cho logo hãng hàng không */
+.my-unique-container .my-unique-airline-logo {
+    text-align: center; /* Căn giữa logo */
+    margin-bottom: 15px; /* Thêm khoảng cách dưới logo */
+}
+
+.my-unique-container .my-unique-airline-logo img {
+    width: 80px; /* Đặt chiều rộng của logo */
+    height: auto; /* Đảm bảo chiều cao tự động để giữ tỷ lệ */
+    display: inline-block; /* Hiển thị logo dưới dạng inline-block */
+}
+
+/* Đảm bảo CSS của website hiện tại không bị ảnh hưởng */
+
+/* Nếu có xung đột, bạn có thể thêm !important vào các thuộc tính sau */
+.my-unique-body .my-unique-container {
+    width: auto !important; /* Đảm bảo container không bị ảnh hưởng bởi các quy tắc khác */
+}
+
+/* Ví dụ, để đảm bảo dropdown không bị ảnh hưởng */
+.my-unique-container .my-unique-header-section select {
+    color: #176986 !important; /* Đảm bảo màu sắc của dropdown không bị thay đổi */
+}
+
+
+@media print {
+    /* Ẩn phần tử có ID 'airlineImages' và 'airlineLogo' khi in */
+    #airlineImages, #airlineLogo {
+        display: none !important; /* Ẩn các phần tử khi in */
+    }
+    .my-unique-header-section {
+        display: none !important; /* Ẩn phần header khi in */
+    }
+}

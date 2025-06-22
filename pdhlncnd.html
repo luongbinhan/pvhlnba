@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Phiếu Đếm Hành Lý Nối Chuyến</title>
+  <style>
+    body {
+      font-family: "Times New Roman", serif;
+      font-size: 14px;
+      padding: 30px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid black;
+      text-align: center;
+      padding: 4px;
+      height: 28px;
+    }
+
+    th {
+      background-color: #f8f8f8;
+    }
+
+    .title {
+      font-weight: bold;
+      text-align: left;
+      line-height: 1.4;
+      margin-bottom: 5px;
+    }
+
+    .note-line {
+      border-bottom: 1px dotted #000;
+      height: 25px;
+    }
+
+    .stt-col {
+      width: 4%;
+    }
+
+    .flight-col {
+      width: 14%;
+    }
+
+    .note-text {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-weight: normal;
+    }
+
+    .note-section {
+      margin-top: 30px;
+    }
+
+    button {
+      margin-bottom: 20px;
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    @media print {
+      button {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <button onclick="window.print()">🖨️ In phiếu</button>
+
+  <!-- Tiêu đề lề trái -->
+  <div class="title">
+    TRUNG TÂM PHỤC VỤ HÀNH KHÁCH<br>
+    PHÒNG PHỤC VỤ HÀNH KHÁCH CÁC HÃNG<br>
+    <u>ĐỘI PHỤC VỤ HÀNH LÝ</u>
+  </div>
+
+  <h3 style="text-align: center; margin: 10px 0 5px;">PHIẾU ĐẾM HÀNH LÝ NỐI CHUYẾN</h3>
+  <div style="text-align:center; margin-bottom:10px;">
+    (Sử dụng cho việc đếm hành lý NCNĐ đi các chuyến bay có ít hành lý được xếp chung)
+  </div>
+
+  <!-- Phần ngày tháng và số thùng (không có ô) -->
+  <div class="note-text">
+    <div>Ngày…… tháng…… năm 20...</div>
+    <div>Số thùng: ……………………….</div>
+  </div>
+
+  <!-- Bảng -->
+  <table>
+  <tr>
+    <th class="stt-col" rowspan="2">STT</th>
+    <th class="flight-col" rowspan="2">CHUYẾN BAY ĐẾN</th>
+    <th class="flight-col" rowspan="2">CHUYẾN BAY ĐI</th>
+    <th colspan="10">SỐ KIỆN</th>
+  </tr>
+  <tr>
+    <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+    <th>6</th><th>7</th><th>8</th><th>9</th><th>10</th>
+  </tr>
+
+  <!-- Dòng dữ liệu + dòng trống -->
+  <tr><td>1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td colspan="13" style="height:8px; border:none;"></td></tr>
+
+  <tr><td>2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td colspan="13" style="height:8px; border:none;"></td></tr>
+
+  <tr><td>3</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td colspan="13" style="height:8px; border:none;"></td></tr>
+
+  <tr><td>4</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td colspan="13" style="height:8px; border:none;"></td></tr>
+
+  <tr><td>5</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td colspan="13" style="height:8px; border:none;"></td></tr>
+
+  <tr><td>6</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td colspan="13" style="height:8px; border:none;"></td></tr>
+
+  <tr><td>7</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td colspan="13" style="height:8px; border:none;"></td></tr>
+
+  <tr><td>8</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td colspan="13" style="height:8px; border:none;"></td></tr>
+
+  <tr><td>9</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td colspan="13" style="height:8px; border:none;"></td></tr>
+
+  <tr><td>10</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+
+
+  <!-- Ghi chú -->
+  <div class="note-section">
+    <div><strong>Ghi chú:</strong></div>
+    <div class="note-line"></div>
+    <div class="note-line"></div>
+  </div>
+
+</body>
+</html>

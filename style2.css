@@ -1,0 +1,121 @@
+/* Các bảng khác */
+.table-baggage, .table-time, .table-time-end {
+    border-collapse: collapse;
+    width: 260px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    font-size: 14px !important;  /* Sử dụng !important để ưu tiên áp dụng */
+}
+
+.table-baggage th, .table-time th, .table-time-end th {
+    background-color: #DBA527;
+    color: #176A87;
+    padding: 7px;
+    font-size: 16px;
+}
+
+.table-baggage td, .table-time td, .table-time-end th {
+    padding: 6px;
+    font-size: 16px;
+}
+
+.table-baggage .row-blue, .table-time .row-blue, .table-time-end .row-blue {
+    background-color: #008B8B;
+    color: white;
+}
+
+.table-baggage .row-yellow, .table-time .row-yellow, .table-time-end .row-yellow {
+    background-color: #008B8B;
+    color: white;
+}
+
+.input-field {
+    margin: 4px 0;
+    display: block;
+    width: 50%;
+    height: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #176A87;
+}
+
+.button-calculate {
+    padding: 5px;
+    background-color: #DBA527;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 16px;
+    transition: all 0.2s ease; /* Hiệu ứng chuyển động mượt. */
+}
+
+.button-calculate:hover {
+    background-color: #FF6600;
+}
+
+.result {
+    margin-top: 6px;
+    font-size: 18px;
+    font-weight: bold;
+    color: red;
+    width: 240px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Cố định vị trí các bảng */
+.table-baggage.fixed, .table-time.fixed {
+    position: fixed;
+}
+
+.table-baggage.fixed {
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    z-index: 10;
+}
+
+.table-time.fixed {
+    bottom: 30px;
+    left: 10px;
+    z-index: 5;
+}
+
+.input-field::placeholder {
+    color: #cccccc; /* Màu xám nhạt */
+    font-style: italic; /* Kiểu chữ nghiêng */
+}
+
+.input-field:focus::placeholder {
+    opacity: 0; /* Ẩn placeholder khi focus */
+}
+
+.table-time-end {
+    position: fixed; /* Giữ bảng cố định khi cuộn trang */
+    top: 100px;      /* Cách lề trên 200px */
+    left: 10px;      /* Cách lề trái 10px */
+    z-index: 10;     /* Đảm bảo bảng hiển thị phía trên các phần tử khác nếu cần */
+
+}
+
+
+
+/* Phần để ẩn bảng khi in */
+@media print {
+    .table-baggage.fixed, .table-time.fixed, .table-time-end {
+        display: none;
+    }
+.input-field::placeholder {
+        color: transparent; /* Làm placeholder không hiển thị */
+    }
+
+}

@@ -1,0 +1,33 @@
+/* baggage-receipt.css */
+.baggage-receipt-btn {
+    padding: 10px 20px;
+    background-color: #008B8B;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.baggage-receipt-btn:hover {
+    background-color: #DAA520;
+}
+
+.note {
+    margin-top: 20px;
+}
+
+.dotted-line {
+    font-size: 16px;  /* Đảm bảo chữ có kích thước 16px */
+    white-space: nowrap;  /* Đảm bảo không có xuống dòng */
+    display: block;
+    width: 100%;
+    border-bottom: 1px dotted #000;  /* Tạo dòng chấm */
+    margin: 15px 0;  /* Tăng khoảng cách giữa các dòng chấm */
+}
+
+.note p {
+    font-size: 16px;  /* Đảm bảo kích thước chữ cho phần ghi chú */
+    margin: 0;
+}
+
+

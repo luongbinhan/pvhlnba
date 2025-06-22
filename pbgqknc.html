@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Phiếu Bàn Giao Hành Lý Quá Khổ</title>
+  <style>
+    body {
+      font-family: "Times New Roman", serif;
+      font-size: 14px;
+      padding: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid black;
+      text-align: center;
+      padding: 4px;
+      height: 28px;
+    }
+    .header-table td {
+      border: none;
+      padding: 2px;
+      font-weight: bold;
+      vertical-align: top;
+    }
+    .nowrap {
+      white-space: nowrap;
+    }
+    .no-border {
+      border: none !important;
+    }
+    .signature-block td {
+      border: none;
+      text-align: center;
+      padding: 6px;
+    }
+    .signature-line {
+      border-bottom: 1px dotted black;
+      height: 25px;
+      width: 90%;
+      margin: auto;
+    }
+    h2 {
+      margin: 0;
+      text-align: center;
+    }
+    .print-btn {
+      margin-bottom: 20px;
+      padding: 10px 16px;
+      font-size: 14px;
+    }
+    @media print {
+      .print-btn {
+        display: none;
+      }
+      @page {
+        size: A4 portrait;
+        margin: 20mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="print-btn" onclick="window.print()">🖨️ In phiếu</button>
+
+  <table class="header-table">
+    <tr>
+      <td style="width: 25%; text-align:left;">
+        <img src="logo.png" alt="Logo VIAGS" style="height:40px;"><br>
+<span style="font-size: 9px;">CHI NHÁNH NỘI BÀI</span>
+      </td>
+      <td style="width: 50%; text-align:center;">
+        <h2>PHIẾU BÀN GIAO HÀNH LÝ<br>QUÁ KHỔ NỐI CHUYẾN</h2>
+      </td>
+      <td style="width: 25%; text-align:right;">
+        IF/VNBA/HKP2<br>
+        Ngày: 20/04/2022
+      </td>
+    </tr>
+  </table>
+
+  <br>
+  <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+    <div>Ngày……tháng…..năm 20……</div>
+    <div>Lần:…………….</div>
+  </div>
+
+  <br>
+  <table>
+    <tr>
+      <th>STT</th>
+      <th>CHUYẾN BAY ĐẾN</th>
+      <th>CHUYẾN BAY ĐI</th>
+      <th>SỐ KIỆN</th>
+      <th>GHI CHÚ</th>
+    </tr>
+    <tr><td>1</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>2</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>3</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>4</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>5</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>6</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>7</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>8</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>9</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td>10</td><td></td><td></td><td></td><td></td></tr>
+  </table>
+
+  <br>
+  <strong>TỔNG SỐ KIỆN:……………………….</strong>
+
+  <br><br>
+  <table class="signature-block" style="width:100%; margin-top: 30px;">
+    <tr>
+      <td><strong>Nhân viên PVHL<br>T2</strong><br><em>Giờ bàn giao</em></td>
+      <td></td>
+      <td><strong>Nhân viên lái xe</strong></td>
+      <td></td>
+      <td><strong>Nhân viên PVHL<br>T1</strong><br><em>Giờ nhận</em></td>
+    </tr>
+    <tr>
+      <td><div class="signature-line"></div></td>
+      <td></td>
+      <td><div class="signature-line"></div></td>
+      <td></td>
+      <td><div class="signature-line"></div></td>
+    </tr>
+    <tr>
+      <td>Ký nhận</td>
+      <td></td>
+      <td>Ký nhận</td>
+      <td></td>
+      <td>Ký nhận</td>
+    </tr>
+    <tr>
+      <td><div class="signature-line"></div></td>
+      <td></td>
+      <td><div class="signature-line"></div></td>
+      <td></td>
+      <td><div class="signature-line"></div></td>
+    </tr>
+  </table>
+
+</body>
+</html>

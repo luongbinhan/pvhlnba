@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ULD & Tagno Barcode Viewer</title>
+
+  <!-- Nhúng font Code39AzaleaRegular3 -->
+  <style>
+    @font-face {
+      font-family: 'Code39AzaleaRegular3';
+      src: url('Code39AzaleaRegular3.ttf') format('truetype');
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      padding: 20px;
+      color: #212529;
+    }
+
+    h2, h3 {
+      color: #0d6efd;
+    }
+
+    textarea {
+      width: 100%;
+      height: 200px;
+      font-family: monospace;
+      font-size: 14px;
+      padding: 10px;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+      background-color: #fff;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin: 5px 5px 5px 0;
+      padding: 10px 20px;
+      cursor: pointer;
+      border: none;
+      background-color: #0d6efd;
+      color: white;
+      border-radius: 5px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background-color: #0b5ed7;
+    }
+
+    button.active {
+      background-color: #198754 !important;
+      color: white;
+    }
+
+    #uldButtons {
+      margin-bottom: 15px;
+    }
+
+    .barcodes {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: 15px;
+    }
+
+    .barcode-container {
+      width: 18%; /* ~5 barcode mỗi dòng */
+      min-width: 160px;
+      background-color: #ffffff;
+      border: 1px dashed #ced4da;
+      padding: 10px;
+      border-radius: 8px;
+      box-sizing: border-box;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .barcode-text {
+      font-family: 'Code39AzaleaRegular3';
+      font-size: 22px;
+      letter-spacing: 4px;
+      background: #fff;
+      display: inline-block;
+      padding: 6px 4px;
+      line-height: 1;
+    }
+
+    .tagno-label {
+      font-size: 14px;
+      margin-top: 6px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .index-label {
+      font-size: 13px;
+      color: #6c757d;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    #tagnoCount {
+      margin: 15px 0;
+      font-weight: bold;
+      color: #198754;
+    }
+
+    /* Popup chọn ULD in */
+    #printPopup {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 10%;
+      width: 80%;
+      height: 80%;
+      background: #fff;
+      border: 2px solid #333;
+      padding: 20px;
+      overflow: auto;
+      z-index: 9999;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      border-radius: 8px;
+    }
+
+    #printPopup h3, #printPopup h4 {
+      margin-top: 0;
+      color: #0d6efd;
+    }
+
+    #printUldList {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 15px;
+    }
+
+    #printPopup label {
+      font-weight: normal;
+    }
+
+    #printPopup input[type="text"],
+    #printPopup input[type="number"] {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 4px 6px;
+      font-size: 14px;
+    }
+
+    #printPopup button {
+      margin-right: 10px;
+    }
+
+    @media print {
+      body {
+        background: white;
+        color: black;
+      }
+      button, textarea, #uldButtons, h2, h3, p, #printPopup {
+        display: none !important;
+      }
+      .barcodes {
+        justify-content: flex-start;
+      }
+      .barcode-container {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>✈️ Quản lý ULD & Tagno</h2>
+  <p>👉 Dán dữ liệu từ Excel hoặc bảng vào ô bên dưới, sau đó bấm <strong>Phân tích dữ liệu</strong>.</p>
+  
+  <textarea id="dataInput" placeholder="Dán dữ liệu bảng vào đây..."></textarea>
+  <br><br>
+  <button onclick="parseData()">📊 Phân tích dữ liệu</button>
+  
+  <!-- Nút in từng ULDno -->
+  <button onclick="openPrintPopup()" style="background:#198754;">🖨️ IN TỪNG ULDno</button>
+
+  <h3>📦 Danh sách ULD:</h3>
+  <div id="uldButtons"></div>
+
+  <div id="tagnoCount"></div>
+
+  <h3>📇 Quét mã vạch bên dưới:</h3>
+  <div id="tagnoDisplay" class="barcodes"></div>
+
+  <!-- Popup chọn ULD in -->
+  <div id="printPopup">
+    <h3>Chọn ULDno muốn in</h3>
+    <div id="printUldList"></div>
+
+    <h4>Thông tin header</h4>
+    <div style="margin-bottom: 15px;">
+      <label>Số hiệu chuyến bay: <input type="text" id="flightNo" style="width:120px" value="SQ0191"></label> &nbsp;
+      <label>Loại hành lý: <input type="text" id="baggageType" style="width:120px" value="Hành lý ký gửi"></label> &nbsp;
+      <label>Ngày: <input type="number" id="day" min="1" max="31" value="18" style="width:50px"></label> 
+      <label>Tháng: <input type="number" id="month" min="1" max="12" value="6" style="width:50px"></label> 
+      <label>Năm: <input type="number" id="year" min="2000" max="2100" value="2025" style="width:60px"></label>
+    </div>
+    <div style="margin-bottom: 15px;">
+      <label>NV xếp: <input type="text" id="packer" style="width:150px" value=""></label> &nbsp;
+      <label>NV kiểm tra cuống lưu: <input type="text" id="storer" style="width:150px" value=""></label> &nbsp;
+    </div>
+    <div style="margin-bottom: 15px;">
+      <label>Tổng số kiện: <input type="number" id="totalPackages" readonly style="width:80px; background:#eee;"></label> &nbsp;
+      <label>NV kiểm tra ULD: <input type="text" id="checker" style="width:150px" value=""></label>
+    </div>
+
+    <button onclick="doPrint()" style="background:#198754;">In ngay</button>
+    <button onclick="closePrintPopup()" style="background:#dc3545;">Đóng</button>
+  </div>
+
+  <script>
+    let uldMap = {};
+    let activeButton = null;
+
+    function parseData() {
+      const rawData = document.getElementById("dataInput").value.trim();
+      const lines = rawData.split('\n').filter(line => line.trim());
+      
+      uldMap = {}; // Reset dữ liệu
+
+      for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].trim().split('\t').map(cell => cell.trim());
+        if (parts.length < 10) continue;
+
+        const tagno = parts[1];
+        let uldno = parts[9];
+
+        if (!uldno || uldno === "") {
+          uldno = "HL chưa xếp";
+        }
+
+        if (!uldMap[uldno]) uldMap[uldno] = [];
+        uldMap[uldno].push(tagno);
+      }
+
+      showUldButtons();
+      document.getElementById("tagnoDisplay").innerHTML = "";
+      document.getElementById("tagnoCount").textContent = "";
+    }
+
+    function showUldButtons() {
+      const container = document.getElementById("uldButtons");
+      container.innerHTML = "";
+
+      // Sắp xếp theo thứ tự tự nhiên
+      const sortedKeys = Object.keys(uldMap).sort((a, b) =>
+        a.localeCompare(b, 'vi', { numeric: true, sensitivity: 'base' })
+      );
+
+      sortedKeys.forEach(uld => {
+        const btn = document.createElement("button");
+        btn.textContent = `${uld} (${uldMap[uld].length})`;
+        btn.onclick = () => {
+          setActiveButton(btn);
+          showTagnoForUld(uld);
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function setActiveButton(button) {
+      if (activeButton) activeButton.classList.remove("active");
+      button.classList.add("active");
+      activeButton = button;
+    }
+
+    function showTagnoForUld(uldno) {
+      const tagnos = uldMap[uldno];
+      const container = document.getElementById("tagnoDisplay");
+      const countDisplay = document.getElementById("tagnoCount");
+
+      container.innerHTML = "";
+      countDisplay.textContent = `🧾 Tổng: ${tagnos.length} kiện`;
+
+      tagnos.forEach((tag, index) => {
+        const div = document.createElement("div");
+        div.className = "barcode-container";
+
+        const indexLabel = document.createElement("span");
+        indexLabel.className = "index-label";
+        indexLabel.textContent = `#${index + 1}`;
+
+        const barcodeText = document.createElement("div");
+        barcodeText.className = "barcode-text";
+        barcodeText.textContent = `*${tag}*`;
+
+        const label = document.createElement("span");
+        label.className = "tagno-label";
+        label.textContent = tag;
+
+        div.appendChild(indexLabel);
+        div.appendChild(barcodeText);
+        div.appendChild(label);
+        container.appendChild(div);
+      });
+    }
+
+    // Mở popup in chọn ULD
+    function openPrintPopup() {
+      const popup = document.getElementById('printPopup');
+      const listDiv = document.getElementById('printUldList');
+      listDiv.innerHTML = "";
+
+      // Sắp xếp danh sách ULD theo thứ tự tự nhiên
+      Object.keys(uldMap).sort((a,b) => a.localeCompare(b, 'vi', {numeric:true, sensitivity:'base'})).forEach(uld => {
+        const id = `print_uld_${uld.replace(/\s+/g,'_')}`;
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = id;
+        checkbox.value = uld;
+        checkbox.onchange = updateTotalPackages;
+
+        const label = document.createElement('label');
+        label.htmlFor = id;
+        label.style.marginRight = "15px";
+        label.textContent = `${uld} (${uldMap[uld].length} kiện)`;
+
+        listDiv.appendChild(checkbox);
+        listDiv.appendChild(label);
+        listDiv.appendChild(document.createElement('br'));
+      });
+
+      // Reset các input header
+      document.getElementById("flightNo").value = "SQ0191";
+      document.getElementById("baggageType").value = "Hành lý ký gửi";
+      const today = new Date();
+      document.getElementById("day").value = today.getDate();
+      document.getElementById("month").value = today.getMonth() + 1;
+      document.getElementById("year").value = today.getFullYear();
+      document.getElementById("packer").value = "";
+      document.getElementById("storer").value = "";
+      document.getElementById("totalPackages").value = 0;
+      document.getElementById("checker").value = "";
+
+      popup.style.display = 'block';
+    }
+
+    // Đóng popup in
+    function closePrintPopup() {
+      document.getElementById('printPopup').style.display = 'none';
+    }
+
+    // Cập nhật tổng số kiện đã chọn
+    function updateTotalPackages() {
+      const checkboxes = document.querySelectorAll('#printUldList input[type=checkbox]');
+      let total = 0;
+      checkboxes.forEach(chk => {
+        if (chk.checked && uldMap[chk.value]) {
+          total += uldMap[chk.value].length;
+        }
+      });
+      document.getElementById("totalPackages").value = total;
+    }
+
+    // Hàm in
+    function doPrint() {
+      const checkboxes = document.querySelectorAll('#printUldList input[type=checkbox]');
+      const selectedUlds = [];
+      checkboxes.forEach(chk => {
+        if (chk.checked) selectedUlds.push(chk.value);
+      });
+
+      if(selectedUlds.length === 0){
+        alert('Vui lòng chọn ít nhất một ULD để in!');
+        return;
+      }
+
+      // Lấy dữ liệu header
+      const flightNo = document.getElementById("flightNo").value.trim();
+      const baggageType = document.getElementById("baggageType").value.trim();
+      const day = document.getElementById("day").value.trim().padStart(2, '0');
+      const month = document.getElementById("month").value.trim().padStart(2, '0');
+      const year = document.getElementById("year").value.trim();
+      const packer = document.getElementById("packer").value.trim();
+      const storer = document.getElementById("storer").value.trim();
+      const checker = document.getElementById("checker").value.trim();
+
+      let html = `<html><head><title>In mã vạch ULD</title>
+      <style>
+        @font-face {
+          font-family: 'Code39AzaleaRegular3';
+          src: url('Code39AzaleaRegular3.ttf') format('truetype');
+        }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .page { page-break-after: always; margin-bottom: 30px; }
+        .header {
+          border-bottom: 2px solid #333; padding-bottom: 8px; margin-bottom: 12px;
+          font-size: 14px; line-height: 1.4; color: #222;
+        }
+        .header-row {
+          display: flex; flex-wrap: wrap; gap: 20px;
+          margin-bottom: 6px;
+        }
+        .header-label {
+          font-weight: 600;
+          min-width: 140px;
+        }
+        .print-barcode {
+          font-family: 'Code39AzaleaRegular3';
+          font-size: 36px;
+          letter-spacing: 6px;
+          margin: 10px 0 4px 0;
+          background: white;
+          display: inline-block;
+          padding: 4px 6px;
+          border: 1px solid black;
+        }
+        .print-tagno {
+          font-size: 18px;
+          font-weight: 700;
+          color: #000;
+        }
+      </style>
+      </head><body>`;
+
+      selectedUlds.forEach(uld => {
+        const tagnos = uldMap[uld] || [];
+        html += `<div class="page">
+          <div class="header">
+            <div class="header-row">
+              <span class="header-label">Số hiệu chuyến bay:</span> ${flightNo}
+              <span class="header-label">Loại hành lý:</span> ${baggageType}
+              <span class="header-label">Ngày:</span> ${day} tháng ${month} năm ${year}
+            </div>
+            <div class="header-row">
+              <span class="header-label">NV xếp:</span> ${packer}
+              <span class="header-label">NV kiểm tra cuống lưu:</span> ${storer}
+              <span class="header-label">Tổng số kiện:</span> ${tagnos.length}
+              <span class="header-label">NV kiểm tra ULD:</span> ${checker}
+            </div>
+          </div>`;
+
+        tagnos.forEach(tag => {
+          html += `
+            <div>
+              <div class="print-barcode">*${tag}*</div><br/>
+              <div class="print-tagno">${tag}</div>
+            </div>
+          `;
+        });
+
+        html += `</div>`; // end page
+      });
+
+      html += `</body></html>`;
+
+      // Mở popup in
+      const printWindow = window.open('', '_blank');
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+
+      // Đóng popup in chọn ULD sau khi in
+      closePrintPopup();
+    }
+  </script>
+
+</body>
+</html>
