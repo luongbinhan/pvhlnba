@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ULD List · QR A5 (Netlify + Local QR Render)</title>
+<title>ULD List · QR A5 (QR cố định theo ULD, offline)</title>
 <style>
   :root{
     --bg:#eef1f5; --panel:#fff; --ink:#1f2937; --muted:#6b7280;
@@ -13,13 +13,24 @@
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-  .window{height:60%;display:grid;grid-template-rows:auto 1fr auto;max-width:1400px;margin:0 auto;background:var(--panel);border:1px solid var(--grid)}
-  /* Gọn phần trên */
+
+  /* Viewer Mode (khi mở ?id=...) */
+  .viewer{display:none;min-height:100vh;background:#0b1220;color:#e5e7eb;padding:16px}
+  .viewer .card{max-width:720px;margin:0 auto;background:#111827;border:1px solid #263043;border-radius:12px;padding:16px}
+  .viewer h1{margin:0 0 10px 0;font-size:20px}
+  .viewer pre{white-space:pre-wrap;word-break:break-word;background:#0b1220;padding:12px;border-radius:10px;border:1px solid #263043;font-size:18px}
+  .viewer .row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+  .viewer .btn{background:#334155;border:1px solid #475569;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer}
+  .viewer small{color:#94a3b8}
+
+  /* App */
+  .window{height:100%;display:grid;grid-template-rows:auto 1fr auto;max-width:1400px;margin:0 auto;background:var(--panel);border:1px solid var(--grid)}
   .tabbar{display:flex;align-items:center;gap:.4rem;background:#f1f4f9;border-bottom:1px solid var(--grid);padding:.2rem .4rem}
   .tab{background:var(--panel);border:1px solid var(--grid);border-bottom:none;padding:.25rem .55rem;border-top-left-radius:6px;border-top-right-radius:6px;font-weight:600;line-height:1}
   .toolbar-top{display:flex;align-items:center;gap:.4rem;padding:.3rem .5rem;border-bottom:1px solid var(--grid);background:#fafbfe;flex-wrap:wrap}
   .toolbar-top .fld{display:flex;align-items:center;gap:.3rem}
   .toolbar-top input{height:28px;border:1px solid #d9dfe6;border-radius:6px;padding:0 .45rem;font:inherit}
+
   .grid-wrap{overflow:auto}
   table.grid{width:100%;border-collapse:collapse;table-layout:fixed;background:#fff}
   thead th{position:sticky;top:0;z-index:1;background:var(--head);border:1px solid var(--grid);padding:.3rem .45rem;font-size:.9rem;white-space:nowrap}
@@ -29,8 +40,8 @@
   td.right, th.right{text-align:right}
   td.checkbox, th.checkbox{width:32px;text-align:center}
   td.narrow{width:56px}
-  .cell-input, .cell-select{width:100%;height:26px;border:1px solid #d9dfe6;border-radius:6px;background:#fff;padding:0 .35rem;font:inherit;color:inherit;outline:none}
-  .cell-input:focus, .cell-select:focus{border-color:#7aa2ff;box-shadow:0 0 0 3px rgba(122,162,255,.25)}
+  .cell-input,.cell-select{width:100%;height:26px;border:1px solid #d9dfe6;border-radius:6px;background:#fff;padding:0 .35rem;font:inherit;color:inherit;outline:none}
+  .cell-input:focus,.cell-select:focus{border-color:#7aa2ff;box-shadow:0 0 0 3px rgba(122,162,255,.25)}
   .cell-input.align-right{text-align:right}
   .cell-input.align-center{text-align:center}
   .cell-select[data-st="OK"]{background:linear-gradient(#fff,#f8fffb)}
@@ -39,6 +50,7 @@
   .cell-select[data-st="LK"]{background:linear-gradient(#fff,#f2f8ff)}
   .cell-select[data-st="XX"]{background:linear-gradient(#fff,#fff2f2)}
   .al-view{font:inherit;color:#111;background:#fff;padding:0 .2rem;height:26px;display:flex;align-items:center;border-radius:4px}
+
   .totals{display:grid;grid-template-columns:1fr auto auto auto;gap:.4rem;align-items:center;padding:.4rem .5rem;border-top:1px solid var(--grid);background:#fafbfe}
   .total-cell{min-width:68px;text-align:center;padding:.2rem .45rem;border:1px solid var(--grid);background:#fff9;font-weight:700}
   .toolbar-bottom{display:flex;align-items:center;gap:.5rem;justify-content:flex-start;padding:.4rem .5rem;border-top:1px solid var(--grid);background:#f7f9fc}
@@ -50,7 +62,7 @@
   label.red{display:inline-flex;align-items:center;gap:.35rem;color:#b91c1c;font-weight:600}
 
   @media print{
-    .tabbar,.toolbar-top,.toolbar-bottom{display:none !important}
+    .tabbar,.toolbar-top,.toolbar-bottom{display:none!important}
     .window{border:none}
     .totals{border-top:1px solid #000}
     .hide-remark-print tbody td:nth-child(8),
@@ -60,8 +72,23 @@
 </style>
 </head>
 <body>
+
+<!-- Viewer Mode: index.html?id=<ID> -->
+<section class="viewer" id="viewer">
+  <div class="card">
+    <h1>🔎 A/L Data</h1>
+    <div class="row">
+      <button class="btn" id="vRefresh">Refresh</button>
+      <button class="btn" id="vCopy">Copy</button>
+    </div>
+    <pre id="vContent">(đang tải…)</pre>
+    <small id="vMeta"></small>
+  </div>
+</section>
+
+<!-- App Mode -->
 <div class="window" id="app">
-  <div class="tabbar"><div class="tab">Danh sách ULD</div></div>
+  <div class="tabbar"><div class="tab">Danh sách ULD : VN219-16Aug2025</div></div>
 
   <div class="toolbar-top">
     <button class="btn" id="selectAll">Select All</button>
@@ -94,7 +121,7 @@
         </tr>
       </thead>
       <tbody>
-        <!-- 5 hàng mẫu -->
+        <!-- Hàng mẫu -->
         <tr>
           <td class="checkbox"><input type="checkbox" class="rowcheck"></td>
           <td><input class="cell-input align-center" value="1"></td>
@@ -126,7 +153,7 @@
           <td class="right">—</td>
         </tr>
         <tr>
-          <td class="checkbox"><input class="rowcheck" type="checkbox"></td>
+          <td class="checkbox"><input type="checkbox" class="rowcheck"></td>
           <td><input class="cell-input align-center" value="3"></td>
           <td><input class="cell-input align-center v-dest" value="SGN"></td>
           <td><input class="cell-input align-center v-conts" value="BYW"></td>
@@ -137,36 +164,6 @@
           <td><select class="cell-select v-st"><option>OK</option><option>OP</option><option>CL</option><option>LK</option><option>XX</option></select></td>
           <td class="center"></td><td class="center"></td>
           <td class="right v-scanpcs">16</td><td class="right v-scanw">238</td>
-          <td><div class="al-view v-aldata"></div></td>
-          <td class="right">—</td>
-        </tr>
-        <tr>
-          <td class="checkbox"><input class="rowcheck" type="checkbox"></td>
-          <td><input class="cell-input align-center" value="4"></td>
-          <td><input class="cell-input align-center v-dest" value="SGN"></td>
-          <td><input class="cell-input align-center v-conts" value="BYJW"></td>
-          <td><input class="cell-input v-uld" value="AKE55199VN"></td>
-          <td><input class="cell-input align-right v-vol" value="1"></td>
-          <td><input class="cell-input align-right v-pcs" value="1"></td>
-          <td><input class="cell-input v-remark" value="BJ"></td>
-          <td><select class="cell-select v-st"><option>OK</option><option>OP</option><option>CL</option><option>LK</option><option>XX</option></select></td>
-          <td class="center"></td><td class="center"></td>
-          <td class="right v-scanpcs">1</td><td class="right v-scanw">13</td>
-          <td><div class="al-view v-aldata"></div></td>
-          <td class="right">—</td>
-        </tr>
-        <tr>
-          <td class="checkbox"><input class="rowcheck" type="checkbox"></td>
-          <td><input class="cell-input align-center" value="5"></td>
-          <td><input class="cell-input align-center v-dest" value="SGN"></td>
-          <td><input class="cell-input align-center v-conts" value="TJYW"></td>
-          <td><input class="cell-input v-uld" value="AKE55323VN"></td>
-          <td><input class="cell-input align-right v-vol" value="12"></td>
-          <td><input class="cell-input align-right v-pcs" value="12"></td>
-          <td><input class="cell-input v-remark" value="BT"></td>
-          <td><select class="cell-select v-st"><option>OK</option><option>OP</option><option>CL</option><option>LK</option><option>XX</option></select></td>
-          <td class="center"></td><td class="center"></td>
-          <td class="right v-scanpcs">12</td><td class="right v-scanw">222</td>
           <td><div class="al-view v-aldata"></div></td>
           <td class="right">—</td>
         </tr>
@@ -186,222 +183,228 @@
     <button class="btn" id="btnRefresh">Refresh</button>
     <div class="spacer"></div>
     <label class="red"><input type="checkbox" id="cbPrintRemark"> Print Remark</label>
-    <button class="btn primary" id="btnPrintQR4">Print QR A4</button>
     <button class="btn primary" id="btnPrintQR5">Print QR A5</button>
-    <button class="btn" id="btnBarCode">Print BarCode</button>
     <button class="btn danger" id="btnClose">Close</button>
   </div>
 </div>
 
-<!-- Lib render QR + Barcode (CDN) -->
+<!-- Thư viện render QR & Barcode (CDN) -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 
 <script>
-  /* ===================== CONFIG (Netlify) ===================== */
-  const URL_BASE  = location.origin;                  // https://<site>.netlify.app
-  const API_ENSURE= URL_BASE + "/api/ensure-id?uld="; // GET
-  const API_UPDATE= URL_BASE + "/api/update-al";      // POST
-  const QR_URL    = URL_BASE + "/qr?id=";             // GET
+/* ================== Viewer Mode: index.html?id=<ID> ================== */
+(function initViewer(){
+  const params = new URL(location.href).searchParams;
+  const id = params.get('id');
+  if(!id) { document.getElementById('app').style.display='grid'; return; }
+  const v = document.getElementById('viewer');
+  v.style.display = 'block';
+  document.getElementById('app').style.display='none';
 
-  /* ===================== Helpers ===================== */
-  const $ = (s,r=document)=>r.querySelector(s);
-  const $$= (s,r=document)=>[...r.querySelectorAll(s)];
-  const nf = new Intl.NumberFormat('en-US');
-  function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function load(){
+    const val = localStorage.getItem('al:'+id) || '';
+    document.getElementById('vContent').textContent = val || '(chưa có dữ liệu cho ID này)';
+    document.getElementById('vMeta').textContent = 'ID: '+id+' · nguồn: localStorage thiết bị này';
+  }
+  document.getElementById('vRefresh').onclick = load;
+  document.getElementById('vCopy').onclick = () => {
+    const s = document.getElementById('vContent').textContent || '';
+    navigator.clipboard.writeText(s).then(()=> alert('Đã copy nội dung.'));
+  };
+  load();
+})();
 
-  /* ===================== Totals ===================== */
-  function recalcTotals(){
-    const pcs=$$('.v-pcs').map(i=>+i.value||0).reduce((a,b)=>a+b,0);
-    const sp =$$('.v-scanpcs').map(td=>+td.textContent||0).reduce((a,b)=>a+b,0);
-    const sw =$$('.v-scanw').map(td=>+td.textContent||0).reduce((a,b)=>a+b,0);
-    $('#totalPcs').textContent=nf.format(pcs);
-    $('#totalScanPcs').textContent=nf.format(sp);
-    $('#totalScanW').textContent=nf.format(sw);
-  }
-  $$('.v-pcs,.v-vol').forEach(i=>i.addEventListener('input',recalcTotals));
-  recalcTotals();
+/* ================== App logic ================== */
+const $ = (s,r=document)=>r.querySelector(s);
+const $$= (s,r=document)=>[...r.querySelectorAll(s)];
+const nf = new Intl.NumberFormat('en-US');
 
-  /* ===================== A/L Data auto (khi St=CL) ===================== */
-  function tintSelect(sel){ sel.dataset.st = sel.value; }
-  function buildAL(tr){
-    const get=s=>(tr.querySelector(s)?.value??'').trim();
-    return [get('.v-dest'),get('.v-uld'),get('.v-conts'),get('.v-pcs'),get('.v-remark')].filter(Boolean).join(' - ');
+function recalcTotals(){
+  const pcs = $$('.v-pcs').map(i=>+i.value||0).reduce((a,b)=>a+b,0);
+  const sp  = $$('.v-scanpcs').map(td=>+td.textContent||0).reduce((a,b)=>a+b,0);
+  const sw  = $$('.v-scanw').map(td=>+td.textContent||0).reduce((a,b)=>a+b,0);
+  $('#totalPcs').textContent = nf.format(pcs);
+  $('#totalScanPcs').textContent = nf.format(sp);
+  $('#totalScanW').textContent = nf.format(sw);
+}
+recalcTotals();
+$$('.v-pcs,.v-vol').forEach(i=>i.addEventListener('input',recalcTotals));
+
+/* ====== QRID cố định theo ULD (deterministic) ====== */
+function makeIdFromULD(uld){
+  return 'uld:'+ (uld||'').trim().toUpperCase();
+}
+
+/* ====== A/L Data auto khi St = CL (và lưu localStorage) ====== */
+function buildAL(tr){
+  const get = s => (tr.querySelector(s)?.value ?? '').trim();
+  return [get('.v-dest'),get('.v-uld'),get('.v-conts'),get('.v-pcs'),get('.v-remark')].filter(Boolean).join(' - ');
+}
+function tintSelect(sel){ sel.dataset.st = sel.value; }
+async function syncAL(tr){
+  const sel = tr.querySelector('.v-st'), box = tr.querySelector('.v-aldata');
+  if(!sel || !box) return;
+  if(sel.value === 'CL'){
+    const al = buildAL(tr);
+    box.textContent = al;
+    const uld = (tr.querySelector('.v-uld')?.value || '').trim();
+    if(uld){
+      const id = makeIdFromULD(uld);
+      tr.setAttribute('data-qrid', id);                 // gắn id cố định theo ULD
+      localStorage.setItem('al:'+id, al);               // lưu dữ liệu
+    }
+  }else{
+    box.textContent = '';
   }
-  async function syncAL(tr){
-    const sel=tr.querySelector('.v-st'), box=tr.querySelector('.v-aldata');
-    if(!sel||!box) return;
-    if(sel.value==='CL'){
-      const al=buildAL(tr);
-      box.textContent=al;
-      const qrid=await ensureQRID(tr); // có id thì lưu server
-      if(qrid){
-        try{
-          await fetch(API_UPDATE,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({qrid,aldata:al,row:collectRow(tr)})});
-        }catch(e){ console.warn('update-al failed:',e); }
-      }
-    }else{ box.textContent=''; }
-  }
-  $$('.v-st').forEach(s=>{ tintSelect(s); s.addEventListener('change',e=>{ tintSelect(e.target); syncAL(e.target.closest('tr')); }); });
-  ['.v-dest','.v-uld','.v-conts','.v-pcs','.v-remark'].forEach(sel=>{
-    $$(sel).forEach(inp=>{ inp.addEventListener('input',e=>{ const tr=e.target.closest('tr'); if(tr.querySelector('.v-st')?.value==='CL') syncAL(tr); }); });
+}
+$$('.v-st').forEach(s=>{
+  tintSelect(s);
+  s.addEventListener('change', e=>{ tintSelect(e.target); syncAL(e.target.closest('tr')); });
+});
+['.v-dest','.v-uld','.v-conts','.v-pcs','.v-remark'].forEach(sel=>{
+  $$(sel).forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const tr = e.target.closest('tr');
+      if(tr.querySelector('.v-st')?.value === 'CL') syncAL(tr);
+    });
   });
+});
 
-  /* ===================== Row helpers ===================== */
-  const checkAll=$('#checkAll');
-  checkAll.addEventListener('change',e=> $$('.rowcheck').forEach(c=>c.checked=e.target.checked));
-  $('#selectAll').onclick=()=>{ checkAll.checked=true; checkAll.dispatchEvent(new Event('change')); }
-  $('#clearAll').onclick =()=>{ checkAll.checked=false;checkAll.dispatchEvent(new Event('change')); }
-  $('#btnPrint').onclick =()=> window.print();
-  $('#btnRefresh').onclick=recalcTotals;
-  $('#btnBarCode').onclick=()=> alert('Demo: Print BarCode');
-  $('#btnClose').onclick =()=> alert('Demo: Close');
-  const cbRemark=$('#cbPrintRemark');
-  cbRemark.addEventListener('change',()=>$('#app').classList.toggle('hide-remark-print',!cbRemark.checked));
-  $('#app').classList.add('hide-remark-print');
+/* ====== chọn/bỏ chọn ====== */
+const checkAll = $('#checkAll');
+checkAll.addEventListener('change', e=> $$('.rowcheck').forEach(c=>c.checked=e.target.checked));
+$('#selectAll').onclick = ()=>{ checkAll.checked=true; checkAll.dispatchEvent(new Event('change')); }
+$('#clearAll').onclick  = ()=>{ checkAll.checked=false; checkAll.dispatchEvent(new Event('change')); }
 
-  function selectedTRs(){
-    const trs=$$('tbody tr').filter(tr=>tr.querySelector('.rowcheck')?.checked);
-    if(trs.length===0){ const first=$('tbody tr'); if(first) trs.push(first); }
-    return trs;
-  }
-  function collectRow(tr){
-    const v=s=>(tr.querySelector(s)?.value||'').trim();
-    return { uld:v('.v-uld'), dest:v('.v-dest'), conts:v('.v-conts'), pcs:v('.v-pcs'), remark:v('.v-remark') };
-  }
+$('#btnPrint').onclick = ()=> window.print();
+$('#btnRefresh').onclick = recalcTotals;
+$('#btnClose').onclick = ()=> alert('Demo: Close');
+const cbRemark = $('#cbPrintRemark');
+cbRemark.addEventListener('change', ()=>$('#app').classList.toggle('hide-remark-print', !cbRemark.checked));
+$('#app').classList.add('hide-remark-print');
 
-  /* ===================== QRID từ server (cố định theo ULD) ===================== */
-  async function ensureQRID(tr){
-    let id=tr.getAttribute('data-qrid')||'';
-    if(id) return id;
-    const uld=(tr.querySelector('.v-uld')?.value||'').trim();
-    if(!uld){ alert('ULD trống!'); return ''; }
-    try{
-      const res=await fetch(API_ENSURE+encodeURIComponent(uld));
-      if(!res.ok) throw new Error('ensure-id HTTP '+res.status);
-      const js=await res.json();
-      if(js.ok && js.qrid){ id=js.qrid; tr.setAttribute('data-qrid',id); return id; }
-      console.warn('ensure-id not ok',js);
-    }catch(e){ console.error('ensure-id failed:',e); }
-    return ''; // cho phép in fallback
-  }
+function selectedTRs(){
+  const trs = $$('tbody tr').filter(tr=> tr.querySelector('.rowcheck')?.checked);
+  if(trs.length===0){ const first = $('tbody tr'); if(first) trs.push(first); }
+  return trs;
+}
+function collectRow(tr){
+  const val = s => (tr.querySelector(s)?.value || '').trim();
+  return { uld:val('.v-uld'), dest:val('.v-dest'), conts:val('.v-conts'), pcs:val('.v-pcs'), remark:val('.v-remark') };
+}
 
-  /* ===================== PRINT QR A5 (QR render nội bộ) ===================== */
-  document.getElementById('btnPrintQR5').onclick = async ()=>{
-    const loadAt=$('#fldLoadAt').value.trim();
-    const flight=$('#fldFlight').value.trim();
-    const date  =$('#fldDate').value.trim();
+/* ====== Print QR A5 (QR render nội bộ, cố định theo ULD) ====== */
+document.getElementById('btnPrintQR5').onclick = async ()=>{
+  const loadAt = $('#fldLoadAt').value.trim();
+  const flight = $('#fldFlight').value.trim();
+  const date   = $('#fldDate').value.trim();
 
-    const trs=selectedTRs();
-    if(trs.length===0){ alert('Chưa có dòng nào để in'); return; }
+  const trs = selectedTRs();
+  if(trs.length===0){ alert('Chưa có dòng nào để in'); return; }
 
-    const rows=[]; let hadApiError=false;
+  const rows = [];
 
-    for(const tr of trs){
-      const r=collectRow(tr);
-      const qrid=await ensureQRID(tr); r.qrid=qrid||null;
+  for (const tr of trs){
+    const r = collectRow(tr);
+    if(!r.uld){ alert('Thiếu ULD No.'); continue; }
+    const id = makeIdFromULD(r.uld);
+    tr.setAttribute('data-qrid', id);
 
-      let al=(tr.querySelector('.v-aldata')?.textContent||'').trim();
-      if(tr.querySelector('.v-st')?.value==='CL'){
-        if(!al) al=buildAL(tr);
-        try{
-          if(qrid){
-            await fetch(API_UPDATE,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({qrid,aldata:al,row:r})});
-          }
-        }catch(e){ console.warn('update-al failed:',e); hadApiError=true; }
-      }
-
-      r.qrData = qrid ? (QR_URL+encodeURIComponent(qrid))
-                      : (al || `ULD:${r.uld || ''}`);
-      rows.push(r);
+    // nếu đang ở CL, đảm bảo đã lưu A/L Data mới nhất
+    if(tr.querySelector('.v-st')?.value === 'CL'){
+      const alNow = buildAL(tr);
+      localStorage.setItem('al:'+id, alNow);
+      tr.querySelector('.v-aldata').textContent = alNow;
     }
 
-    if(rows.length===0){ alert('Không có dòng hợp lệ để in'); return; }
-    if(hadApiError){ alert('Cảnh báo: API lưu A/L Data không phản hồi. Vẫn in QR (fallback).'); }
+    r.qrid  = id;
+    r.qrUrl = location.origin + location.pathname + '?id=' + encodeURIComponent(id); // URL cố định
+    r.al    = localStorage.getItem('al:'+id) || '';
+    rows.push(r);
+  }
 
-    const w=window.open('','_blank');
-    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>QR A5</title>
-      <style>
-        @page { size: A5 portrait; margin: 7mm; }
-        body{ font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:#374151; }
-        .sheet{ width:100%; display:flex; }
-        .label{ border:1px solid #9aa4b2; padding:8px; display:grid;
-          grid-template-rows:auto auto auto 1fr auto auto; gap:8px; width:100%; }
-        .row3{ display:grid; grid-template-columns:1fr 1fr 1fr; }
-        .cell{ border:1px solid #9aa4b2; padding:6px; }
-        .ttl{ font-weight:700; font-size:12px; color:#6b7280; }
-        .big{ font-weight:800; font-size:54px; text-align:center; color:#4b5563; letter-spacing:2px }
-        .mid{ font-weight:800; font-size:28px; text-align:center; color:#4b5563; letter-spacing:1px }
-        .code{ font-weight:800; font-size:22px; text-align:center; color:#4b5563; letter-spacing:1px }
-        .foot{ font-size:12px; text-align:center; color:#6b7280; margin-top:2px }
-        .flex{ display:flex; align-items:center; justify-content:center; gap:8px; }
-        .qr{ width:118px; height:118px; }
-        svg.bar{ width:100%; height:38px }
-      </style>
-    </head><body>`);
+  if(rows.length===0){ alert('Không có dòng hợp lệ để in'); return; }
 
-    rows.forEach((r,idx)=>{
-      const footLine=`${r.uld||''}-${r.conts||''}-${flight||''}`;
-      w.document.write(`
-        <div class="sheet">
-          <div class="label">
-            <div class="cell">
-              <div class="ttl">ID CODE</div>
-              <svg class="bar" id="bar_${idx}"></svg>
-              <div class="code">${escapeHtml(r.uld||'')}</div>
-            </div>
-            <div class="cell"><div class="ttl">DESTINATION</div><div class="big">${escapeHtml(r.dest||'')}</div></div>
-            <div class="row3">
-              <div class="cell"><div class="ttl">LOAD AT</div><div class="mid">${escapeHtml(loadAt)}</div></div>
-              <div class="cell"><div class="ttl">FLIGHT</div><div class="mid">${escapeHtml(flight)}</div></div>
-              <div class="cell"><div class="ttl">DATE</div><div class="mid">${escapeHtml(date)}</div></div>
-            </div>
-            <div class="cell"><div class="ttl">CONTENTS</div><div class="mid">${escapeHtml(r.conts||'')}</div></div>
-            <div class="cell">
-              <div class="ttl">REMARKS</div>
-              <div class="flex">
-                <div style="flex:1">${escapeHtml(r.remark||'')}</div>
-                <div id="qr_${idx}" class="qr"></div>
-              </div>
-            </div>
-            <div class="foot">${escapeHtml(footLine)}</div>
-          </div>
-        </div>
-        ${idx<rows.length-1?'<div style="page-break-after:always"></div>':''}
-      `);
-    });
+  const w = window.open('', '_blank');
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>QR A5</title>
+    <style>
+      @page { size: A5 portrait; margin: 7mm; }
+      body{ font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:#374151; }
+      .sheet{ width:100%; display:flex; }
+      .label{ border:1px solid #9aa4b2; padding:8px; display:grid;
+        grid-template-rows:auto auto auto 1fr auto auto; gap:8px; width:100%; }
+      .row3{ display:grid; grid-template-columns:1fr 1fr 1fr; }
+      .cell{ border:1px solid #9aa4b2; padding:6px; }
+      .ttl{ font-weight:700; font-size:12px; color:#6b7280; }
+      .big{ font-weight:800; font-size:54px; text-align:center; color:#4b5563; letter-spacing:2px }
+      .mid{ font-weight:800; font-size:28px; text-align:center; color:#4b5563; letter-spacing:1px }
+      .code{ font-weight:800; font-size:22px; text-align:center; color:#4b5563; letter-spacing:1px }
+      .foot{ font-size:12px; text-align:center; color:#6b7280; margin-top:2px }
+      .flex{ display:flex; align-items:center; justify-content:center; gap:8px; }
+      .qr{ width:118px; height:118px; }
+      svg.bar{ width:100%; height:38px }
+    </style>
+  </head><body>`);
 
-    // Script để vẽ barcode + QR (render ngay trong trang in)
+  rows.forEach((r, idx)=>{
+    const footLine = `${r.uld||''}-${r.conts||''}-${flight||''}`;
     w.document.write(`
-      <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
-      <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"><\/script>
-      <script>
-        (function(){
-          const rows = ${JSON.stringify(rows)};
-          // Vẽ barcode
-          rows.forEach((r,i)=>{ try{ JsBarcode('#bar_'+i, r.uld||'', {format:'code128', displayValue:false, margin:0}); }catch(e){} });
-          // Vẽ QR (canvas) – không phụ thuộc ảnh ngoài
-          let promises = rows.map((r,i)=> new Promise((resolve)=>{
-            const el = document.getElementById('qr_'+i);
-            if(!el){ resolve(); return; }
-            try{
-              QRCode.toCanvas(r.qrData, { width: 180, margin: 1 }, function(err, canvas){
-                if(err){ el.textContent='QR error'; resolve(); return; }
-                el.innerHTML=''; el.appendChild(canvas); resolve();
-              });
-            }catch(e){ el.textContent='QR error'; resolve(); }
-          }));
-          Promise.all(promises).then(()=> setTimeout(()=>window.print(), 350));
-        })();
-      <\/script>
+      <div class="sheet">
+        <div class="label">
+          <div class="cell">
+            <div class="ttl">ID CODE</div>
+            <svg class="bar" id="bar_${idx}"></svg>
+            <div class="code">${r.uld}</div>
+          </div>
+          <div class="cell"><div class="ttl">DESTINATION</div><div class="big">${r.dest||''}</div></div>
+          <div class="row3">
+            <div class="cell"><div class="ttl">LOAD AT</div><div class="mid">${loadAt}</div></div>
+            <div class="cell"><div class="ttl">FLIGHT</div><div class="mid">${flight}</div></div>
+            <div class="cell"><div class="ttl">DATE</div><div class="mid">${date}</div></div>
+          </div>
+          <div class="cell"><div class="ttl">CONTENTS</div><div class="mid">${r.conts||''}</div></div>
+          <div class="cell">
+            <div class="ttl">REMARKS</div>
+            <div class="flex">
+              <div style="flex:1">${r.remark||''}</div>
+              <div id="qr_${idx}" class="qr"></div>
+            </div>
+          </div>
+          <div class="foot">${footLine}</div>
+        </div>
+      </div>
+      ${idx<rows.length-1 ? '<div style="page-break-after:always"></div>' : '' }
     `);
+  });
 
-    w.document.write(`</body></html>`);
-    w.document.close();
-  };
+  w.document.write(`
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"><\/script>
+    <script>
+      (function(){
+        const rows = ${JSON.stringify(rows)};
+        // Barcode (ULD)
+        rows.forEach((r,i)=>{ try{ JsBarcode('#bar_'+i, r.uld||'', {format:'code128', displayValue:false, margin:0}); }catch(e){} });
+        // QR render nội bộ: URL cố định index.html?id=<ID>
+        let tasks = rows.map((r,i)=> new Promise((ok)=>{
+          const el = document.getElementById('qr_'+i);
+          if(!el){ ok(); return; }
+          try{
+            QRCode.toCanvas(r.qrUrl, { width: 180, margin: 1 }, function(err, canvas){
+              if(err){ el.textContent='QR error'; ok(); return; }
+              el.innerHTML=''; el.appendChild(canvas); ok();
+            });
+          }catch(e){ el.textContent='QR error'; ok(); }
+        }));
+        Promise.all(tasks).then(()=> setTimeout(()=>window.print(), 350));
+      })();
+    <\/script>
+  `);
 
-  // A4 demo
-  document.getElementById('btnPrintQR4').onclick = ()=> alert('Demo A4: sẽ dựng giống A5 nếu cần.');
+  w.document.write(`</body></html>`);
+  w.document.close();
+};
 </script>
 </body>
 </html>
