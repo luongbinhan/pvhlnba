@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ULD List · QR A5 (Persistent QR)</title>
+<title>ULD List · QR A5 (Netlify + Local QR Render)</title>
 <style>
   :root{
     --bg:#eef1f5; --panel:#fff; --ink:#1f2937; --muted:#6b7280;
@@ -13,46 +13,32 @@
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-  .window{
-    height:50%; display:grid; grid-template-rows:auto 1fr auto;
-    max-width:1400px; margin:0 auto; background:var(--panel); border:1px solid var(--grid)
-  }
+  .window{height:60%;display:grid;grid-template-rows:auto 1fr auto;max-width:1400px;margin:0 auto;background:var(--panel);border:1px solid var(--grid)}
   /* Gọn phần trên */
   .tabbar{display:flex;align-items:center;gap:.4rem;background:#f1f4f9;border-bottom:1px solid var(--grid);padding:.2rem .4rem}
   .tab{background:var(--panel);border:1px solid var(--grid);border-bottom:none;padding:.25rem .55rem;border-top-left-radius:6px;border-top-right-radius:6px;font-weight:600;line-height:1}
-  .toolbar-top{
-    display:flex;align-items:center;gap:.4rem;padding:.3rem .5rem;border-bottom:1px solid var(--grid);
-    background:#fafbfe;flex-wrap:wrap
-  }
+  .toolbar-top{display:flex;align-items:center;gap:.4rem;padding:.3rem .5rem;border-bottom:1px solid var(--grid);background:#fafbfe;flex-wrap:wrap}
   .toolbar-top .fld{display:flex;align-items:center;gap:.3rem}
   .toolbar-top input{height:28px;border:1px solid #d9dfe6;border-radius:6px;padding:0 .45rem;font:inherit}
-
   .grid-wrap{overflow:auto}
   table.grid{width:100%;border-collapse:collapse;table-layout:fixed;background:#fff}
   thead th{position:sticky;top:0;z-index:1;background:var(--head);border:1px solid var(--grid);padding:.3rem .45rem;font-size:.9rem;white-space:nowrap}
   tbody td{border:1px solid var(--grid);padding:.18rem .3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#fff;height:32px}
-  tbody tr:nth-child(odd) td{background:var(--row)}
+  tbody tr:nth-child(odd) td{background:#fbfdff}
   td.center, th.center{text-align:center}
   td.right, th.right{text-align:right}
   td.checkbox, th.checkbox{width:32px;text-align:center}
   td.narrow{width:56px}
-
-  .cell-input, .cell-select{
-    width:100%;height:26px;border:1px solid #d9dfe6;border-radius:6px;background:#fff;
-    padding:0 .35rem;font:inherit;color:inherit;outline:none
-  }
+  .cell-input, .cell-select{width:100%;height:26px;border:1px solid #d9dfe6;border-radius:6px;background:#fff;padding:0 .35rem;font:inherit;color:inherit;outline:none}
   .cell-input:focus, .cell-select:focus{border-color:#7aa2ff;box-shadow:0 0 0 3px rgba(122,162,255,.25)}
   .cell-input.align-right{text-align:right}
   .cell-input.align-center{text-align:center}
-
   .cell-select[data-st="OK"]{background:linear-gradient(#fff,#f8fffb)}
   .cell-select[data-st="OP"]{background:linear-gradient(#fff,#fffbe6)}
   .cell-select[data-st="CL"]{background:linear-gradient(#fff,#f1fff2)}
   .cell-select[data-st="LK"]{background:linear-gradient(#fff,#f2f8ff)}
   .cell-select[data-st="XX"]{background:linear-gradient(#fff,#fff2f2)}
-
   .al-view{font:inherit;color:#111;background:#fff;padding:0 .2rem;height:26px;display:flex;align-items:center;border-radius:4px}
-
   .totals{display:grid;grid-template-columns:1fr auto auto auto;gap:.4rem;align-items:center;padding:.4rem .5rem;border-top:1px solid var(--grid);background:#fafbfe}
   .total-cell{min-width:68px;text-align:center;padding:.2rem .45rem;border:1px solid var(--grid);background:#fff9;font-weight:700}
   .toolbar-bottom{display:flex;align-items:center;gap:.5rem;justify-content:flex-start;padding:.4rem .5rem;border-top:1px solid var(--grid);background:#f7f9fc}
@@ -75,7 +61,7 @@
 </head>
 <body>
 <div class="window" id="app">
-  <div class="tabbar"><div class="tab">Danh sách ULD : VN219-16Aug2025</div></div>
+  <div class="tabbar"><div class="tab">Danh sách ULD</div></div>
 
   <div class="toolbar-top">
     <button class="btn" id="selectAll">Select All</button>
@@ -86,7 +72,6 @@
     <div class="fld">Date: <input id="fldDate" value="16AUG" style="width:90px"></div>
   </div>
 
-  <!-- Grid -->
   <div class="grid-wrap">
     <table class="grid" id="grid">
       <thead>
@@ -141,7 +126,7 @@
           <td class="right">—</td>
         </tr>
         <tr>
-          <td class="checkbox"><input type="checkbox" class="rowcheck"></td>
+          <td class="checkbox"><input class="rowcheck" type="checkbox"></td>
           <td><input class="cell-input align-center" value="3"></td>
           <td><input class="cell-input align-center v-dest" value="SGN"></td>
           <td><input class="cell-input align-center v-conts" value="BYW"></td>
@@ -156,7 +141,7 @@
           <td class="right">—</td>
         </tr>
         <tr>
-          <td class="checkbox"><input type="checkbox" class="rowcheck"></td>
+          <td class="checkbox"><input class="rowcheck" type="checkbox"></td>
           <td><input class="cell-input align-center" value="4"></td>
           <td><input class="cell-input align-center v-dest" value="SGN"></td>
           <td><input class="cell-input align-center v-conts" value="BYJW"></td>
@@ -171,7 +156,7 @@
           <td class="right">—</td>
         </tr>
         <tr>
-          <td class="checkbox"><input type="checkbox" class="rowcheck"></td>
+          <td class="checkbox"><input class="rowcheck" type="checkbox"></td>
           <td><input class="cell-input align-center" value="5"></td>
           <td><input class="cell-input align-center v-dest" value="SGN"></td>
           <td><input class="cell-input align-center v-conts" value="TJYW"></td>
@@ -189,7 +174,6 @@
     </table>
   </div>
 
-  <!-- Totals -->
   <div class="totals">
     <div></div>
     <div class="total-cell"><span id="totalPcs">0</span></div>
@@ -197,7 +181,6 @@
     <div class="total-cell"><span id="totalScanW">0</span></div>
   </div>
 
-  <!-- Bottom -->
   <div class="toolbar-bottom">
     <button class="btn" id="btnPrint">Print</button>
     <button class="btn" id="btnRefresh">Refresh</button>
@@ -210,151 +193,134 @@
   </div>
 </div>
 
-<script>
-  // ====== Config ======
-  const URL_BASE = location.origin; // https://ten-site.netlify.app
-  const API_ENSURE = URL_BASE + "/api/ensure-id?uld=";     // GET
-  const API_UPDATE = URL_BASE + "/api/update-al";           // POST
-  const QR_URL     = URL_BASE + "/qr?id=";                  // GET (đọc A/L Data mới nhất)
+<!-- Lib render QR + Barcode (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 
-  // ====== Helpers ======
-  const nf=(n)=> new Intl.NumberFormat('en-US').format(n);
+<script>
+  /* ===================== CONFIG (Netlify) ===================== */
+  const URL_BASE  = location.origin;                  // https://<site>.netlify.app
+  const API_ENSURE= URL_BASE + "/api/ensure-id?uld="; // GET
+  const API_UPDATE= URL_BASE + "/api/update-al";      // POST
+  const QR_URL    = URL_BASE + "/qr?id=";             // GET
+
+  /* ===================== Helpers ===================== */
   const $ = (s,r=document)=>r.querySelector(s);
   const $$= (s,r=document)=>[...r.querySelectorAll(s)];
-  const escapeHtml=s=>(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+  const nf = new Intl.NumberFormat('en-US');
+  function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 
-  // ====== Totals ======
+  /* ===================== Totals ===================== */
   function recalcTotals(){
-    const pcs = $$('.v-pcs').map(i=>+i.value||0).reduce((a,b)=>a+b,0);
-    const sp  = $$('.v-scanpcs').map(td=>+td.textContent||0).reduce((a,b)=>a+b,0);
-    const sw  = $$('.v-scanw').map(td=>+td.textContent||0).reduce((a,b)=>a+b,0);
-    $('#totalPcs').textContent = nf(pcs);
-    $('#totalScanPcs').textContent = nf(sp);
-    $('#totalScanW').textContent = nf(sw);
+    const pcs=$$('.v-pcs').map(i=>+i.value||0).reduce((a,b)=>a+b,0);
+    const sp =$$('.v-scanpcs').map(td=>+td.textContent||0).reduce((a,b)=>a+b,0);
+    const sw =$$('.v-scanw').map(td=>+td.textContent||0).reduce((a,b)=>a+b,0);
+    $('#totalPcs').textContent=nf.format(pcs);
+    $('#totalScanPcs').textContent=nf.format(sp);
+    $('#totalScanW').textContent=nf.format(sw);
   }
   $$('.v-pcs,.v-vol').forEach(i=>i.addEventListener('input',recalcTotals));
   recalcTotals();
 
-  // ====== A/L Data khi St = CL ======
+  /* ===================== A/L Data auto (khi St=CL) ===================== */
   function tintSelect(sel){ sel.dataset.st = sel.value; }
   function buildAL(tr){
-    const get = s => (tr.querySelector(s)?.value ?? '').trim();
+    const get=s=>(tr.querySelector(s)?.value??'').trim();
     return [get('.v-dest'),get('.v-uld'),get('.v-conts'),get('.v-pcs'),get('.v-remark')].filter(Boolean).join(' - ');
   }
   async function syncAL(tr){
-    const sel = tr.querySelector('.v-st');
-    const box = tr.querySelector('.v-aldata');
-    if(!sel || !box) return;
-    if(sel.value === 'CL'){
-      const al = buildAL(tr);
-      box.textContent = al;
-      // Ghi server (giữ dữ liệu tập trung)
-      const qrid = await ensureQRID(tr); // đảm bảo có id cố định
-      await fetch(API_UPDATE,{
-        method:'POST',
-        headers:{'content-type':'application/json'},
-        body:JSON.stringify({
-          qrid,
-          aldata: al,
-          row: collectRow(tr)
-        })
-      }).catch(()=>{});
-    }else{
-      box.textContent = '';
-    }
+    const sel=tr.querySelector('.v-st'), box=tr.querySelector('.v-aldata');
+    if(!sel||!box) return;
+    if(sel.value==='CL'){
+      const al=buildAL(tr);
+      box.textContent=al;
+      const qrid=await ensureQRID(tr); // có id thì lưu server
+      if(qrid){
+        try{
+          await fetch(API_UPDATE,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({qrid,aldata:al,row:collectRow(tr)})});
+        }catch(e){ console.warn('update-al failed:',e); }
+      }
+    }else{ box.textContent=''; }
   }
-  $$('.v-st').forEach(s=>{
-    tintSelect(s);
-    s.addEventListener('change', e=>{ tintSelect(e.target); syncAL(e.target.closest('tr')); });
-  });
+  $$('.v-st').forEach(s=>{ tintSelect(s); s.addEventListener('change',e=>{ tintSelect(e.target); syncAL(e.target.closest('tr')); }); });
   ['.v-dest','.v-uld','.v-conts','.v-pcs','.v-remark'].forEach(sel=>{
-    $$(sel).forEach(inp=>{
-      inp.addEventListener('input', e=>{
-        const tr = e.target.closest('tr');
-        if(tr.querySelector('.v-st')?.value === 'CL') syncAL(tr);
-      });
-    });
+    $$(sel).forEach(inp=>{ inp.addEventListener('input',e=>{ const tr=e.target.closest('tr'); if(tr.querySelector('.v-st')?.value==='CL') syncAL(tr); }); });
   });
 
-  // ====== Check all ======
-  const checkAll = $('#checkAll');
-  checkAll.addEventListener('change', e=> $$('.rowcheck').forEach(c=>c.checked=e.target.checked));
-  $('#selectAll').onclick = ()=>{ checkAll.checked=true; checkAll.dispatchEvent(new Event('change')); }
-  $('#clearAll').onclick  = ()=>{ checkAll.checked=false; checkAll.dispatchEvent(new Event('change')); }
-
-  // ====== Base buttons ======
-  $('#btnPrint').onclick = ()=> window.print();
-  $('#btnRefresh').onclick = recalcTotals;
-  $('#btnBarCode').onclick = ()=> alert('Demo: Print BarCode');
-  $('#btnClose').onclick = ()=> alert('Demo: Close');
-  const cbRemark = $('#cbPrintRemark');
-  cbRemark.addEventListener('change', ()=>$('#app').classList.toggle('hide-remark-print', !cbRemark.checked));
+  /* ===================== Row helpers ===================== */
+  const checkAll=$('#checkAll');
+  checkAll.addEventListener('change',e=> $$('.rowcheck').forEach(c=>c.checked=e.target.checked));
+  $('#selectAll').onclick=()=>{ checkAll.checked=true; checkAll.dispatchEvent(new Event('change')); }
+  $('#clearAll').onclick =()=>{ checkAll.checked=false;checkAll.dispatchEvent(new Event('change')); }
+  $('#btnPrint').onclick =()=> window.print();
+  $('#btnRefresh').onclick=recalcTotals;
+  $('#btnBarCode').onclick=()=> alert('Demo: Print BarCode');
+  $('#btnClose').onclick =()=> alert('Demo: Close');
+  const cbRemark=$('#cbPrintRemark');
+  cbRemark.addEventListener('change',()=>$('#app').classList.toggle('hide-remark-print',!cbRemark.checked));
   $('#app').classList.add('hide-remark-print');
 
-  // ====== QRID (trên server, cố định theo ULD) ======
-  async function ensureQRID(tr){
-    let id = tr.getAttribute('data-qrid') || '';
-    if (id) return id;
-    const uld = (tr.querySelector('.v-uld')?.value || '').trim();
-    if(!uld){ alert('ULD trống!'); return ''; }
-    try{
-      const res = await fetch(API_ENSURE + encodeURIComponent(uld));
-      const js = await res.json();
-      if(js.ok && js.qrid){
-        id = js.qrid;
-        tr.setAttribute('data-qrid', id);
-        return id;
-      }
-    }catch(e){}
-    return '';
-  }
-
-  function collectRow(tr){
-    const val = s => (tr.querySelector(s)?.value || '').trim();
-    return {
-      uld: val('.v-uld'),
-      dest: val('.v-dest'),
-      conts: val('.v-conts'),
-      pcs: val('.v-pcs'),
-      remark: val('.v-remark')
-    };
-  }
-
   function selectedTRs(){
-    const trs = $$('tbody tr').filter(tr=> tr.querySelector('.rowcheck')?.checked);
-    if(trs.length===0){ const first = $('tbody tr'); if(first) trs.push(first); }
+    const trs=$$('tbody tr').filter(tr=>tr.querySelector('.rowcheck')?.checked);
+    if(trs.length===0){ const first=$('tbody tr'); if(first) trs.push(first); }
     return trs;
   }
+  function collectRow(tr){
+    const v=s=>(tr.querySelector(s)?.value||'').trim();
+    return { uld:v('.v-uld'), dest:v('.v-dest'), conts:v('.v-conts'), pcs:v('.v-pcs'), remark:v('.v-remark') };
+  }
 
-  // ====== Print QR A5 (QR = URL cố định /qr?id=<qrid>) ======
-  $('#btnPrintQR5').onclick = async ()=>{
-    const loadAt = $('#fldLoadAt').value.trim();
-    const flight = $('#fldFlight').value.trim();
-    const date   = $('#fldDate').value.trim();
+  /* ===================== QRID từ server (cố định theo ULD) ===================== */
+  async function ensureQRID(tr){
+    let id=tr.getAttribute('data-qrid')||'';
+    if(id) return id;
+    const uld=(tr.querySelector('.v-uld')?.value||'').trim();
+    if(!uld){ alert('ULD trống!'); return ''; }
+    try{
+      const res=await fetch(API_ENSURE+encodeURIComponent(uld));
+      if(!res.ok) throw new Error('ensure-id HTTP '+res.status);
+      const js=await res.json();
+      if(js.ok && js.qrid){ id=js.qrid; tr.setAttribute('data-qrid',id); return id; }
+      console.warn('ensure-id not ok',js);
+    }catch(e){ console.error('ensure-id failed:',e); }
+    return ''; // cho phép in fallback
+  }
 
-    const trs = selectedTRs();
+  /* ===================== PRINT QR A5 (QR render nội bộ) ===================== */
+  document.getElementById('btnPrintQR5').onclick = async ()=>{
+    const loadAt=$('#fldLoadAt').value.trim();
+    const flight=$('#fldFlight').value.trim();
+    const date  =$('#fldDate').value.trim();
+
+    const trs=selectedTRs();
     if(trs.length===0){ alert('Chưa có dòng nào để in'); return; }
 
-    const rows = [];
-    for (const tr of trs){
-      const qrid = await ensureQRID(tr);
-      if(!qrid) continue;
-      const r = collectRow(tr);
-      r.qrid = qrid;
-      rows.push(r);
-      // nếu đang ở CL thì cũng ghi server để chắc dữ liệu có sẵn
-      if(tr.querySelector('.v-st')?.value === 'CL'){
-        const al = (tr.querySelector('.v-aldata')?.textContent || '').trim();
-        await fetch(API_UPDATE,{
-          method:'POST',
-          headers:{'content-type':'application/json'},
-          body:JSON.stringify({ qrid, aldata: al, row: r })
-        }).catch(()=>{});
+    const rows=[]; let hadApiError=false;
+
+    for(const tr of trs){
+      const r=collectRow(tr);
+      const qrid=await ensureQRID(tr); r.qrid=qrid||null;
+
+      let al=(tr.querySelector('.v-aldata')?.textContent||'').trim();
+      if(tr.querySelector('.v-st')?.value==='CL'){
+        if(!al) al=buildAL(tr);
+        try{
+          if(qrid){
+            await fetch(API_UPDATE,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({qrid,aldata:al,row:r})});
+          }
+        }catch(e){ console.warn('update-al failed:',e); hadApiError=true; }
       }
+
+      r.qrData = qrid ? (QR_URL+encodeURIComponent(qrid))
+                      : (al || `ULD:${r.uld || ''}`);
+      rows.push(r);
     }
 
-    const w = window.open('', '_blank');
-    w.document.write(`<!doctype html><meta charset="utf-8"><title>QR A5</title>
+    if(rows.length===0){ alert('Không có dòng hợp lệ để in'); return; }
+    if(hadApiError){ alert('Cảnh báo: API lưu A/L Data không phản hồi. Vẫn in QR (fallback).'); }
+
+    const w=window.open('','_blank');
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>QR A5</title>
       <style>
         @page { size: A5 portrait; margin: 7mm; }
         body{ font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:#374151; }
@@ -369,14 +335,13 @@
         .code{ font-weight:800; font-size:22px; text-align:center; color:#4b5563; letter-spacing:1px }
         .foot{ font-size:12px; text-align:center; color:#6b7280; margin-top:2px }
         .flex{ display:flex; align-items:center; justify-content:center; gap:8px; }
-        .qr{ width:118px; height:118px; object-fit:contain; }
+        .qr{ width:118px; height:118px; }
         svg.bar{ width:100%; height:38px }
-      </style>`);
+      </style>
+    </head><body>`);
 
-    rows.forEach((r, idx)=>{
-      const qrUrl = QR_URL + encodeURIComponent(r.qrid); // URL cố định
-      const footLine = `${r.uld||''}-${r.conts||''}-${flight||''}`;
-      const qrData = encodeURIComponent(qrUrl);
+    rows.forEach((r,idx)=>{
+      const footLine=`${r.uld||''}-${r.conts||''}-${flight||''}`;
       w.document.write(`
         <div class="sheet">
           <div class="label">
@@ -396,35 +361,47 @@
               <div class="ttl">REMARKS</div>
               <div class="flex">
                 <div style="flex:1">${escapeHtml(r.remark||'')}</div>
-                <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${qrData}" alt="QR">
+                <div id="qr_${idx}" class="qr"></div>
               </div>
             </div>
             <div class="foot">${escapeHtml(footLine)}</div>
           </div>
         </div>
-        ${idx<rows.length-1 ? '<div style="page-break-after:always"></div>' : '' }
+        ${idx<rows.length-1?'<div style="page-break-after:always"></div>':''}
       `);
     });
 
-    w.document.write(`<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
-    <script>
-      function makeBar(id, code){
-        try{ JsBarcode('#'+id, code, {format:'code128', displayValue:false, margin:0}); }catch(e){}
-      }
-      const rows = ${JSON.stringify(rows)};
-      rows.forEach((r,i)=> makeBar('bar_'+i, r.uld||''));
-      setTimeout(()=>window.print(), 250);
-    <\/script>`);
+    // Script để vẽ barcode + QR (render ngay trong trang in)
+    w.document.write(`
+      <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+      <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"><\/script>
+      <script>
+        (function(){
+          const rows = ${JSON.stringify(rows)};
+          // Vẽ barcode
+          rows.forEach((r,i)=>{ try{ JsBarcode('#bar_'+i, r.uld||'', {format:'code128', displayValue:false, margin:0}); }catch(e){} });
+          // Vẽ QR (canvas) – không phụ thuộc ảnh ngoài
+          let promises = rows.map((r,i)=> new Promise((resolve)=>{
+            const el = document.getElementById('qr_'+i);
+            if(!el){ resolve(); return; }
+            try{
+              QRCode.toCanvas(r.qrData, { width: 180, margin: 1 }, function(err, canvas){
+                if(err){ el.textContent='QR error'; resolve(); return; }
+                el.innerHTML=''; el.appendChild(canvas); resolve();
+              });
+            }catch(e){ el.textContent='QR error'; resolve(); }
+          }));
+          Promise.all(promises).then(()=> setTimeout(()=>window.print(), 350));
+        })();
+      <\/script>
+    `);
+
+    w.document.write(`</body></html>`);
     w.document.close();
   };
 
-  // ====== Viewer Mode (khi mở index.html?id=... trực tiếp trên file) ======
-  (function viewerMode(){
-    const id = new URL(location.href).searchParams.get('id');
-    if(!id) return; // không phải xem QR
-    // Khi chạy trên Netlify, đường /qr đã được function xử lý; phần này chủ yếu để chạy thử local
-    location.href = QR_URL + encodeURIComponent(id);
-  })();
+  // A4 demo
+  document.getElementById('btnPrintQR4').onclick = ()=> alert('Demo A4: sẽ dựng giống A5 nếu cần.');
 </script>
 </body>
 </html>
