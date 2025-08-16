@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ULD List · QR A5 (Persistent QR)</title>
+<style>
+  :root{
+    --bg:#eef1f5; --panel:#fff; --ink:#1f2937; --muted:#6b7280;
+    --grid:#c7ced6; --head:#e6ebf2; --row:#f9fbff;
+    --btn:#f3f4f6; --btn-bd:#d1d5db; --btn-h:#e5e7eb;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .window{
+    height:50%; display:grid; grid-template-rows:auto 1fr auto;
+    max-width:1400px; margin:0 auto; background:var(--panel); border:1px solid var(--grid)
+  }
+  /* Gọn phần trên */
+  .tabbar{display:flex;align-items:center;gap:.4rem;background:#f1f4f9;border-bottom:1px solid var(--grid);padding:.2rem .4rem}
+  .tab{background:var(--panel);border:1px solid var(--grid);border-bottom:none;padding:.25rem .55rem;border-top-left-radius:6px;border-top-right-radius:6px;font-weight:600;line-height:1}
+  .toolbar-top{
+    display:flex;align-items:center;gap:.4rem;padding:.3rem .5rem;border-bottom:1px solid var(--grid);
+    background:#fafbfe;flex-wrap:wrap
+  }
+  .toolbar-top .fld{display:flex;align-items:center;gap:.3rem}
+  .toolbar-top input{height:28px;border:1px solid #d9dfe6;border-radius:6px;padding:0 .45rem;font:inherit}
+
+  .grid-wrap{overflow:auto}
+  table.grid{width:100%;border-collapse:collapse;table-layout:fixed;background:#fff}
+  thead th{position:sticky;top:0;z-index:1;background:var(--head);border:1px solid var(--grid);padding:.3rem .45rem;font-size:.9rem;white-space:nowrap}
+  tbody td{border:1px solid var(--grid);padding:.18rem .3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#fff;height:32px}
+  tbody tr:nth-child(odd) td{background:var(--row)}
+  td.center, th.center{text-align:center}
+  td.right, th.right{text-align:right}
+  td.checkbox, th.checkbox{width:32px;text-align:center}
+  td.narrow{width:56px}
+
+  .cell-input, .cell-select{
+    width:100%;height:26px;border:1px solid #d9dfe6;border-radius:6px;background:#fff;
+    padding:0 .35rem;font:inherit;color:inherit;outline:none
+  }
+  .cell-input:focus, .cell-select:focus{border-color:#7aa2ff;box-shadow:0 0 0 3px rgba(122,162,255,.25)}
+  .cell-input.align-right{text-align:right}
+  .cell-input.align-center{text-align:center}
+
+  .cell-select[data-st="OK"]{background:linear-gradient(#fff,#f8fffb)}
+  .cell-select[data-st="OP"]{background:linear-gradient(#fff,#fffbe6)}
+  .cell-select[data-st="CL"]{background:linear-gradient(#fff,#f1fff2)}
+  .cell-select[data-st="LK"]{background:linear-gradient(#fff,#f2f8ff)}
+  .cell-select[data-st="XX"]{background:linear-gradient(#fff,#fff2f2)}
+
+  .al-view{font:inherit;color:#111;background:#fff;padding:0 .2rem;height:26px;display:flex;align-items:center;border-radius:4px}
+
+  .totals{display:grid;grid-template-columns:1fr auto auto auto;gap:.4rem;align-items:center;padding:.4rem .5rem;border-top:1px solid var(--grid);background:#fafbfe}
+  .total-cell{min-width:68px;text-align:center;padding:.2rem .45rem;border:1px solid var(--grid);background:#fff9;font-weight:700}
+  .toolbar-bottom{display:flex;align-items:center;gap:.5rem;justify-content:flex-start;padding:.4rem .5rem;border-top:1px solid var(--grid);background:#f7f9fc}
+  .btn{background:var(--btn);border:1px solid var(--btn-bd);border-radius:6px;padding:.32rem .6rem;cursor:pointer;font-weight:600;line-height:1}
+  .btn:hover{background:var(--btn-h)}
+  .btn.primary{background:#e8f0ff;border-color:#c7d7ff}
+  .btn.danger{background:#ffe8e8;border-color:#ffcaca}
+  .spacer{flex:1}
+  label.red{display:inline-flex;align-items:center;gap:.35rem;color:#b91c1c;font-weight:600}
+
+  @media print{
+    .tabbar,.toolbar-top,.toolbar-bottom{display:none !important}
+    .window{border:none}
+    .totals{border-top:1px solid #000}
+    .hide-remark-print tbody td:nth-child(8),
+    .hide-remark-print thead th:nth-child(8){display:none}
+    .cell-input,.cell-select{border:none}
+  }
+</style>
+</head>
+<body>
+<div class="window" id="app">
+  <div class="tabbar"><div class="tab">Danh sách ULD : VN219-16Aug2025</div></div>
+
+  <div class="toolbar-top">
+    <button class="btn" id="selectAll">Select All</button>
+    <button class="btn" id="clearAll">Clear</button>
+    <div class="spacer"></div>
+    <div class="fld">Load At: <input id="fldLoadAt" value="HAN" style="width:70px"></div>
+    <div class="fld">Flight: <input id="fldFlight" value="VN219" style="width:90px"></div>
+    <div class="fld">Date: <input id="fldDate" value="16AUG" style="width:90px"></div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid-wrap">
+    <table class="grid" id="grid">
+      <thead>
+        <tr>
+          <th class="checkbox"><input type="checkbox" id="checkAll"></th>
+          <th class="center narrow">No.</th>
+          <th class="center">Dest</th>
+          <th class="center">Conts</th>
+          <th>ULD No.</th>
+          <th class="right">Vol</th>
+          <th class="right">Pcs</th>
+          <th>Remark</th>
+          <th class="center">St</th>
+          <th class="center">Flt OB</th>
+          <th class="center">R-Tag</th>
+          <th class="right">Scan Pcs</th>
+          <th class="right">Scan Weight</th>
+          <th class="right">A/L Data</th>
+          <th class="right">Except Data</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 5 hàng mẫu -->
+        <tr>
+          <td class="checkbox"><input type="checkbox" class="rowcheck"></td>
+          <td><input class="cell-input align-center" value="1"></td>
+          <td><input class="cell-input align-center v-dest" value="SGN"></td>
+          <td><input class="cell-input align-center v-conts" value="BY"></td>
+          <td><input class="cell-input v-uld" value="AKE51495VN"></td>
+          <td><input class="cell-input align-right v-vol" value="42"></td>
+          <td><input class="cell-input align-right v-pcs" value="42"></td>
+          <td><input class="cell-input v-remark" value=""></td>
+          <td><select class="cell-select v-st"><option>OK</option><option>OP</option><option>CL</option><option>LK</option><option>XX</option></select></td>
+          <td class="center"></td><td class="center"></td>
+          <td class="right v-scanpcs">42</td><td class="right v-scanw">575</td>
+          <td><div class="al-view v-aldata"></div></td>
+          <td class="right">—</td>
+        </tr>
+        <tr>
+          <td class="checkbox"><input type="checkbox" class="rowcheck"></td>
+          <td><input class="cell-input align-center" value="2"></td>
+          <td><input class="cell-input align-center v-dest" value="SGN"></td>
+          <td><input class="cell-input align-center v-conts" value="BY"></td>
+          <td><input class="cell-input v-uld" value="AKE51518VN"></td>
+          <td><input class="cell-input align-right v-vol" value="20"></td>
+          <td><input class="cell-input align-right v-pcs" value="20"></td>
+          <td><input class="cell-input v-remark" value=""></td>
+          <td><select class="cell-select v-st"><option>OK</option><option>OP</option><option>CL</option><option>LK</option><option>XX</option></select></td>
+          <td class="center"></td><td class="center"></td>
+          <td class="right v-scanpcs">20</td><td class="right v-scanw">214</td>
+          <td><div class="al-view v-aldata"></div></td>
+          <td class="right">—</td>
+        </tr>
+        <tr>
+          <td class="checkbox"><input type="checkbox" class="rowcheck"></td>
+          <td><input class="cell-input align-center" value="3"></td>
+          <td><input class="cell-input align-center v-dest" value="SGN"></td>
+          <td><input class="cell-input align-center v-conts" value="BYW"></td>
+          <td><input class="cell-input v-uld" value="AKE55211VN"></td>
+          <td><input class="cell-input align-right v-vol" value="16"></td>
+          <td><input class="cell-input align-right v-pcs" value="16"></td>
+          <td><input class="cell-input v-remark" value="BP"></td>
+          <td><select class="cell-select v-st"><option>OK</option><option>OP</option><option>CL</option><option>LK</option><option>XX</option></select></td>
+          <td class="center"></td><td class="center"></td>
+          <td class="right v-scanpcs">16</td><td class="right v-scanw">238</td>
+          <td><div class="al-view v-aldata"></div></td>
+          <td class="right">—</td>
+        </tr>
+        <tr>
+          <td class="checkbox"><input type="checkbox" class="rowcheck"></td>
+          <td><input class="cell-input align-center" value="4"></td>
+          <td><input class="cell-input align-center v-dest" value="SGN"></td>
+          <td><input class="cell-input align-center v-conts" value="BYJW"></td>
+          <td><input class="cell-input v-uld" value="AKE55199VN"></td>
+          <td><input class="cell-input align-right v-vol" value="1"></td>
+          <td><input class="cell-input align-right v-pcs" value="1"></td>
+          <td><input class="cell-input v-remark" value="BJ"></td>
+          <td><select class="cell-select v-st"><option>OK</option><option>OP</option><option>CL</option><option>LK</option><option>XX</option></select></td>
+          <td class="center"></td><td class="center"></td>
+          <td class="right v-scanpcs">1</td><td class="right v-scanw">13</td>
+          <td><div class="al-view v-aldata"></div></td>
+          <td class="right">—</td>
+        </tr>
+        <tr>
+          <td class="checkbox"><input type="checkbox" class="rowcheck"></td>
+          <td><input class="cell-input align-center" value="5"></td>
+          <td><input class="cell-input align-center v-dest" value="SGN"></td>
+          <td><input class="cell-input align-center v-conts" value="TJYW"></td>
+          <td><input class="cell-input v-uld" value="AKE55323VN"></td>
+          <td><input class="cell-input align-right v-vol" value="12"></td>
+          <td><input class="cell-input align-right v-pcs" value="12"></td>
+          <td><input class="cell-input v-remark" value="BT"></td>
+          <td><select class="cell-select v-st"><option>OK</option><option>OP</option><option>CL</option><option>LK</option><option>XX</option></select></td>
+          <td class="center"></td><td class="center"></td>
+          <td class="right v-scanpcs">12</td><td class="right v-scanw">222</td>
+          <td><div class="al-view v-aldata"></div></td>
+          <td class="right">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Totals -->
+  <div class="totals">
+    <div></div>
+    <div class="total-cell"><span id="totalPcs">0</span></div>
+    <div class="total-cell"><span id="totalScanPcs">0</span></div>
+    <div class="total-cell"><span id="totalScanW">0</span></div>
+  </div>
+
+  <!-- Bottom -->
+  <div class="toolbar-bottom">
+    <button class="btn" id="btnPrint">Print</button>
+    <button class="btn" id="btnRefresh">Refresh</button>
+    <div class="spacer"></div>
+    <label class="red"><input type="checkbox" id="cbPrintRemark"> Print Remark</label>
+    <button class="btn primary" id="btnPrintQR4">Print QR A4</button>
+    <button class="btn primary" id="btnPrintQR5">Print QR A5</button>
+    <button class="btn" id="btnBarCode">Print BarCode</button>
+    <button class="btn danger" id="btnClose">Close</button>
+  </div>
+</div>
+
+<script>
+  // ====== Config ======
+  const URL_BASE = location.origin; // https://ten-site.netlify.app
+  const API_ENSURE = URL_BASE + "/api/ensure-id?uld=";     // GET
+  const API_UPDATE = URL_BASE + "/api/update-al";           // POST
+  const QR_URL     = URL_BASE + "/qr?id=";                  // GET (đọc A/L Data mới nhất)
+
+  // ====== Helpers ======
+  const nf=(n)=> new Intl.NumberFormat('en-US').format(n);
+  const $ = (s,r=document)=>r.querySelector(s);
+  const $$= (s,r=document)=>[...r.querySelectorAll(s)];
+  const escapeHtml=s=>(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+
+  // ====== Totals ======
+  function recalcTotals(){
+    const pcs = $$('.v-pcs').map(i=>+i.value||0).reduce((a,b)=>a+b,0);
+    const sp  = $$('.v-scanpcs').map(td=>+td.textContent||0).reduce((a,b)=>a+b,0);
+    const sw  = $$('.v-scanw').map(td=>+td.textContent||0).reduce((a,b)=>a+b,0);
+    $('#totalPcs').textContent = nf(pcs);
+    $('#totalScanPcs').textContent = nf(sp);
+    $('#totalScanW').textContent = nf(sw);
+  }
+  $$('.v-pcs,.v-vol').forEach(i=>i.addEventListener('input',recalcTotals));
+  recalcTotals();
+
+  // ====== A/L Data khi St = CL ======
+  function tintSelect(sel){ sel.dataset.st = sel.value; }
+  function buildAL(tr){
+    const get = s => (tr.querySelector(s)?.value ?? '').trim();
+    return [get('.v-dest'),get('.v-uld'),get('.v-conts'),get('.v-pcs'),get('.v-remark')].filter(Boolean).join(' - ');
+  }
+  async function syncAL(tr){
+    const sel = tr.querySelector('.v-st');
+    const box = tr.querySelector('.v-aldata');
+    if(!sel || !box) return;
+    if(sel.value === 'CL'){
+      const al = buildAL(tr);
+      box.textContent = al;
+      // Ghi server (giữ dữ liệu tập trung)
+      const qrid = await ensureQRID(tr); // đảm bảo có id cố định
+      await fetch(API_UPDATE,{
+        method:'POST',
+        headers:{'content-type':'application/json'},
+        body:JSON.stringify({
+          qrid,
+          aldata: al,
+          row: collectRow(tr)
+        })
+      }).catch(()=>{});
+    }else{
+      box.textContent = '';
+    }
+  }
+  $$('.v-st').forEach(s=>{
+    tintSelect(s);
+    s.addEventListener('change', e=>{ tintSelect(e.target); syncAL(e.target.closest('tr')); });
+  });
+  ['.v-dest','.v-uld','.v-conts','.v-pcs','.v-remark'].forEach(sel=>{
+    $$(sel).forEach(inp=>{
+      inp.addEventListener('input', e=>{
+        const tr = e.target.closest('tr');
+        if(tr.querySelector('.v-st')?.value === 'CL') syncAL(tr);
+      });
+    });
+  });
+
+  // ====== Check all ======
+  const checkAll = $('#checkAll');
+  checkAll.addEventListener('change', e=> $$('.rowcheck').forEach(c=>c.checked=e.target.checked));
+  $('#selectAll').onclick = ()=>{ checkAll.checked=true; checkAll.dispatchEvent(new Event('change')); }
+  $('#clearAll').onclick  = ()=>{ checkAll.checked=false; checkAll.dispatchEvent(new Event('change')); }
+
+  // ====== Base buttons ======
+  $('#btnPrint').onclick = ()=> window.print();
+  $('#btnRefresh').onclick = recalcTotals;
+  $('#btnBarCode').onclick = ()=> alert('Demo: Print BarCode');
+  $('#btnClose').onclick = ()=> alert('Demo: Close');
+  const cbRemark = $('#cbPrintRemark');
+  cbRemark.addEventListener('change', ()=>$('#app').classList.toggle('hide-remark-print', !cbRemark.checked));
+  $('#app').classList.add('hide-remark-print');
+
+  // ====== QRID (trên server, cố định theo ULD) ======
+  async function ensureQRID(tr){
+    let id = tr.getAttribute('data-qrid') || '';
+    if (id) return id;
+    const uld = (tr.querySelector('.v-uld')?.value || '').trim();
+    if(!uld){ alert('ULD trống!'); return ''; }
+    try{
+      const res = await fetch(API_ENSURE + encodeURIComponent(uld));
+      const js = await res.json();
+      if(js.ok && js.qrid){
+        id = js.qrid;
+        tr.setAttribute('data-qrid', id);
+        return id;
+      }
+    }catch(e){}
+    return '';
+  }
+
+  function collectRow(tr){
+    const val = s => (tr.querySelector(s)?.value || '').trim();
+    return {
+      uld: val('.v-uld'),
+      dest: val('.v-dest'),
+      conts: val('.v-conts'),
+      pcs: val('.v-pcs'),
+      remark: val('.v-remark')
+    };
+  }
+
+  function selectedTRs(){
+    const trs = $$('tbody tr').filter(tr=> tr.querySelector('.rowcheck')?.checked);
+    if(trs.length===0){ const first = $('tbody tr'); if(first) trs.push(first); }
+    return trs;
+  }
+
+  // ====== Print QR A5 (QR = URL cố định /qr?id=<qrid>) ======
+  $('#btnPrintQR5').onclick = async ()=>{
+    const loadAt = $('#fldLoadAt').value.trim();
+    const flight = $('#fldFlight').value.trim();
+    const date   = $('#fldDate').value.trim();
+
+    const trs = selectedTRs();
+    if(trs.length===0){ alert('Chưa có dòng nào để in'); return; }
+
+    const rows = [];
+    for (const tr of trs){
+      const qrid = await ensureQRID(tr);
+      if(!qrid) continue;
+      const r = collectRow(tr);
+      r.qrid = qrid;
+      rows.push(r);
+      // nếu đang ở CL thì cũng ghi server để chắc dữ liệu có sẵn
+      if(tr.querySelector('.v-st')?.value === 'CL'){
+        const al = (tr.querySelector('.v-aldata')?.textContent || '').trim();
+        await fetch(API_UPDATE,{
+          method:'POST',
+          headers:{'content-type':'application/json'},
+          body:JSON.stringify({ qrid, aldata: al, row: r })
+        }).catch(()=>{});
+      }
+    }
+
+    const w = window.open('', '_blank');
+    w.document.write(`<!doctype html><meta charset="utf-8"><title>QR A5</title>
+      <style>
+        @page { size: A5 portrait; margin: 7mm; }
+        body{ font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:#374151; }
+        .sheet{ width:100%; display:flex; }
+        .label{ border:1px solid #9aa4b2; padding:8px; display:grid;
+          grid-template-rows:auto auto auto 1fr auto auto; gap:8px; width:100%; }
+        .row3{ display:grid; grid-template-columns:1fr 1fr 1fr; }
+        .cell{ border:1px solid #9aa4b2; padding:6px; }
+        .ttl{ font-weight:700; font-size:12px; color:#6b7280; }
+        .big{ font-weight:800; font-size:54px; text-align:center; color:#4b5563; letter-spacing:2px }
+        .mid{ font-weight:800; font-size:28px; text-align:center; color:#4b5563; letter-spacing:1px }
+        .code{ font-weight:800; font-size:22px; text-align:center; color:#4b5563; letter-spacing:1px }
+        .foot{ font-size:12px; text-align:center; color:#6b7280; margin-top:2px }
+        .flex{ display:flex; align-items:center; justify-content:center; gap:8px; }
+        .qr{ width:118px; height:118px; object-fit:contain; }
+        svg.bar{ width:100%; height:38px }
+      </style>`);
+
+    rows.forEach((r, idx)=>{
+      const qrUrl = QR_URL + encodeURIComponent(r.qrid); // URL cố định
+      const footLine = `${r.uld||''}-${r.conts||''}-${flight||''}`;
+      const qrData = encodeURIComponent(qrUrl);
+      w.document.write(`
+        <div class="sheet">
+          <div class="label">
+            <div class="cell">
+              <div class="ttl">ID CODE</div>
+              <svg class="bar" id="bar_${idx}"></svg>
+              <div class="code">${escapeHtml(r.uld||'')}</div>
+            </div>
+            <div class="cell"><div class="ttl">DESTINATION</div><div class="big">${escapeHtml(r.dest||'')}</div></div>
+            <div class="row3">
+              <div class="cell"><div class="ttl">LOAD AT</div><div class="mid">${escapeHtml(loadAt)}</div></div>
+              <div class="cell"><div class="ttl">FLIGHT</div><div class="mid">${escapeHtml(flight)}</div></div>
+              <div class="cell"><div class="ttl">DATE</div><div class="mid">${escapeHtml(date)}</div></div>
+            </div>
+            <div class="cell"><div class="ttl">CONTENTS</div><div class="mid">${escapeHtml(r.conts||'')}</div></div>
+            <div class="cell">
+              <div class="ttl">REMARKS</div>
+              <div class="flex">
+                <div style="flex:1">${escapeHtml(r.remark||'')}</div>
+                <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${qrData}" alt="QR">
+              </div>
+            </div>
+            <div class="foot">${escapeHtml(footLine)}</div>
+          </div>
+        </div>
+        ${idx<rows.length-1 ? '<div style="page-break-after:always"></div>' : '' }
+      `);
+    });
+
+    w.document.write(`<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+    <script>
+      function makeBar(id, code){
+        try{ JsBarcode('#'+id, code, {format:'code128', displayValue:false, margin:0}); }catch(e){}
+      }
+      const rows = ${JSON.stringify(rows)};
+      rows.forEach((r,i)=> makeBar('bar_'+i, r.uld||''));
+      setTimeout(()=>window.print(), 250);
+    <\/script>`);
+    w.document.close();
+  };
+
+  // ====== Viewer Mode (khi mở index.html?id=... trực tiếp trên file) ======
+  (function viewerMode(){
+    const id = new URL(location.href).searchParams.get('id');
+    if(!id) return; // không phải xem QR
+    // Khi chạy trên Netlify, đường /qr đã được function xử lý; phần này chủ yếu để chạy thử local
+    location.href = QR_URL + encodeURIComponent(id);
+  })();
+</script>
+</body>
+</html>
