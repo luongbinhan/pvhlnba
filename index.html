@@ -197,7 +197,11 @@
                             <label class="text-[10px] font-black uppercase text-slate-400 ml-2 italic">Tiểu sử công tác (Mỗi dòng một mốc):</label>
                             <textarea x-model="form.bio" class="w-full input-v10 h-28 text-sm mt-1" placeholder="Vd: 10/1974 - 10/1979: Học viên Đại học..."></textarea>
                         </div>
-                        <button @click="savePersonnel()" class="w-full bg-brand text-white py-4 rounded-2xl font-black text-xl shadow-lg hover:brightness-110 active:scale-95 transition">LƯU HỒ SƠ CHI TIẾT</button>
+                        <button @click="savePersonnel()" 
+        style="background-color: #1FA3B0;" 
+        class="w-full text-white py-4 rounded-2xl font-black text-xl shadow-lg hover:brightness-110 active:scale-95 transition">
+    LƯU HỒ SƠ CHI TIẾT
+</button>
                     </div>
 
                     <div class="bg-white p-6 rounded-[2rem] border-2 border-dashed border-slate-200">
@@ -238,9 +242,10 @@
                         </template>
                     </div>
                     
-                    <button @click="saveBlockOrder()" class="w-full mt-8 bg-highlight text-white py-4 rounded-2xl font-black shadow-md hover:scale-[1.02] transition uppercase text-xs tracking-widest">
-                        Cập nhật thứ tự cho <span x-text="sortCat"></span>
-                    </button>
+                    <button @click="saveBlockOrder()" 
+        class="w-full mt-8 bg-brand text-white py-4 rounded-2xl font-black shadow-md hover:scale-[1.02] transition uppercase text-xs tracking-widest">
+    Cập nhật thứ tự cho <span x-text="sortCat"></span>
+</button>
                     
                     <div class="mt-10 pt-6 border-t border-slate-200">
                         <h4 class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest italic text-center">Danh sách nhân sự (Tra cứu nhanh)</h4>
