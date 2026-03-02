@@ -1,357 +1,363 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ULD List · QR A5 (Static, no Functions)</title>
-<style>
-  :root{
-    --bg:#eef1f5; --panel:#fff; --ink:#1f2937; --muted:#6b7280;
-    --grid:#c7ced6; --head:#e6ebf2;
-    --btn:#f3f4f6; --btn-bd:#d1d5db; --btn-h:#e5e7eb;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Nhân Sự PVHK v11.1 - Final Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-  /* Viewer Mode (index.html?id=<ID>) */
-  .viewer{display:none;min-height:100vh;background:#0b1220;color:#e5e7eb;padding:16px}
-  .viewer .card{max-width:720px;margin:0 auto;background:#111827;border:1px solid #263043;border-radius:12px;padding:16px}
-  .viewer h1{margin:0 0 10px 0;font-size:20px}
-  .viewer pre{white-space:pre-wrap;word-break:break-word;background:#0b1220;padding:12px;border-radius:10px;border:1px solid #263043;font-size:18px}
-  .viewer .row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
-  .viewer .btn{background:#334155;border:1px solid #475569;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer}
-  .viewer small{color:#94a3b8}
-
-  /* App */
-  .window{height:50%;display:grid;grid-template-rows:auto 1fr auto;max-width:1200px;margin:0 auto;background:var(--panel);border:1px solid var(--grid)}
-  .tabbar{display:flex;align-items:center;gap:.4rem;background:#f1f4f9;border-bottom:1px solid var(--grid);padding:.2rem .4rem}
-  .tab{background:var(--panel);border:1px solid var(--grid);border-bottom:none;padding:.25rem .55rem;border-top-left-radius:6px;border-top-right-radius:6px;font-weight:600;line-height:1}
-  .toolbar-top{display:flex;align-items:center;gap:.4rem;padding:.3rem .5rem;border-bottom:1px solid var(--grid);background:#fafbfe;flex-wrap:wrap}
-  .toolbar-top .fld{display:flex;align-items:center;gap:.3rem}
-  .toolbar-top input{height:28px;border:1px solid #d9dfe6;border-radius:6px;padding:0 .45rem;font:inherit}
-  .grid-wrap{overflow:auto}
-  table.grid{width:100%;border-collapse:collapse;table-layout:fixed;background:#fff}
-  thead th{position:sticky;top:0;z-index:1;background:var(--head);border:1px solid var(--grid);padding:.3rem .45rem;font-size:.9rem;white-space:nowrap}
-  tbody td{border:1px solid var(--grid);padding:.18rem .3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#fff;height:32px}
-  tbody tr:nth-child(odd) td{background:#fbfdff}
-  td.center, th.center{text-align:center}
-  td.right, th.right{text-align:right}
-  td.checkbox, th.checkbox{width:32px;text-align:center}
-  .cell-input,.cell-select{width:100%;height:26px;border:1px solid #d9dfe6;border-radius:6px;background:#fff;padding:0 .35rem;font:inherit;color:inherit;outline:none}
-  .cell-input.align-right{text-align:right}
-  .cell-input.align-center{text-align:center}
-  .cell-select[data-st="OK"]{background:linear-gradient(#fff,#f8fffb)}
-  .cell-select[data-st="OP"]{background:linear-gradient(#fff,#fffbe6)}
-  .cell-select[data-st="CL"]{background:linear-gradient(#fff,#f1fff2)}
-  .al-view{font:inherit;color:#111;background:#fff;padding:0 .2rem;height:26px;display:flex;align-items:center;border-radius:4px}
-  .totals{display:flex;gap:.6rem;align-items:center;padding:.4rem .5rem;border-top:1px solid var(--grid);background:#fafbfe;justify-content:flex-end}
-  .total-cell{min-width:68px;text-align:center;padding:.2rem .45rem;border:1px solid var(--grid);background:#fff9;font-weight:700}
-  .toolbar-bottom{display:flex;align-items:center;gap:.5rem;justify-content:flex-start;padding:.4rem .5rem;border-top:1px solid var(--grid);background:#f7f9fc}
-  .btn{background:var(--btn);border:1px solid var(--btn-bd);border-radius:6px;padding:.32rem .6rem;cursor:pointer;font-weight:600;line-height:1}
-  .btn:hover{background:var(--btn-h)}
-  .btn.primary{background:#e8f0ff;border-color:#c7d7ff}
-  .btn.danger{background:#ffe8e8;border-color:#ffcaca}
-  .spacer{flex:1}
-  label.red{display:inline-flex;align-items:center;gap:.35rem;color:#b91c1c;font-weight:600}
-
-  @media print{
-    .tabbar,.toolbar-top,.toolbar-bottom{display:none!important}
-    .window{border:none}
-    .cell-input,.cell-select{border:none}
-  }
-</style>
-</head>
-<body>
-
-<!-- Viewer Mode: index.html?id=<ID> -->
-<section class="viewer" id="viewer">
-  <div class="card">
-    <h1>🔎 A/L Data</h1>
-    <div class="row">
-      <button class="btn" id="vRefresh">Refresh</button>
-      <button class="btn" id="vCopy">Copy</button>
-    </div>
-    <pre id="vContent">(đang tải…)</pre>
-    <small id="vMeta"></small>
-  </div>
-</section>
-
-<!-- App Mode -->
-<div class="window" id="app">
-  <div class="tabbar"><div class="tab">Danh sách ULD</div></div>
-
-  <div class="toolbar-top">
-    <button class="btn" id="selectAll">Select All</button>
-    <button class="btn" id="clearAll">Clear</button>
-    <div class="spacer"></div>
-    <div class="fld">Load At: <input id="fldLoadAt" value="HAN" style="width:70px"></div>
-    <div class="fld">Flight: <input id="fldFlight" value="VN219" style="width:90px"></div>
-    <div class="fld">Date: <input id="fldDate" value="16AUG" style="width:90px"></div>
-  </div>
-
-  <div class="grid-wrap">
-    <table class="grid" id="grid">
-      <thead>
-        <tr>
-          <th class="checkbox"><input type="checkbox" id="checkAll"></th>
-          <th class="center">No.</th>
-          <th class="center">Dest</th>
-          <th class="center">Conts</th>
-          <th>ULD No.</th>
-          <th class="right">Vol</th>
-          <th class="right">Pcs</th>
-          <th>Remark</th>
-          <th class="center">St</th>
-          <th class="right">Scan Pcs</th>
-          <th class="right">Scan Weight</th>
-          <th class="right">A/L Data</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="checkbox"><input type="checkbox" class="rowcheck"></td>
-          <td><input class="cell-input align-center" value="1"></td>
-          <td><input class="cell-input align-center v-dest" value="SGN"></td>
-          <td><input class="cell-input align-center v-conts" value="BY"></td>
-          <td><input class="cell-input v-uld" value="AKE51495VN"></td>
-          <td><input class="cell-input align-right v-vol" value="42"></td>
-          <td><input class="cell-input align-right v-pcs" value="42"></td>
-          <td><input class="cell-input v-remark" value=""></td>
-          <td>
-            <select class="cell-select v-st">
-              <option>OK</option><option>OP</option><option>CL</option><option>LK</option><option>XX</option>
-            </select>
-          </td>
-          <td class="right v-scanpcs">42</td>
-          <td class="right v-scanw">575</td>
-          <td><div class="al-view v-aldata"></div></td>
-        </tr>
-        <tr>
-          <td class="checkbox"><input type="checkbox" class="rowcheck"></td>
-          <td><input class="cell-input align-center" value="2"></td>
-          <td><input class="cell-input align-center v-dest" value="SGN"></td>
-          <td><input class="cell-input align-center v-conts" value="BY"></td>
-          <td><input class="cell-input v-uld" value="AKE51518VN"></td>
-          <td><input class="cell-input align-right v-vol" value="20"></td>
-          <td><input class="cell-input align-right v-pcs" value="20"></td>
-          <td><input class="cell-input v-remark" value=""></td>
-          <td><select class="cell-select v-st"><option>OK</option><option>OP</option><option>CL</option><option>LK</option><option>XX</option></select></td>
-          <td class="right v-scanpcs">20</td>
-          <td class="right v-scanw">214</td>
-          <td><div class="al-view v-aldata"></div></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="totals">
-    <div class="total-cell"><span id="totalPcs">0</span> Pcs</div>
-    <div class="total-cell"><span id="totalScanPcs">0</span> Scan Pcs</div>
-    <div class="total-cell"><span id="totalScanW">0</span> Scan W</div>
-  </div>
-
-  <div class="toolbar-bottom">
-    <button class="btn" id="btnPrint">Print</button>
-    <div class="spacer"></div>
-    <label class="red"><input type="checkbox" id="cbPrintRemark"> Print Remark</label>
-    <button class="btn primary" id="btnPrintQR5">Print QR A5</button>
-  </div>
-</div>
-
-<!-- Lib QR + Barcode (chỉ load ở trang chính, KHÔNG load trong cửa sổ in) -->
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-
-<script>
-/* ===== Viewer Mode: index.html?id=<ID> ===== */
-(function(){
-  const id = new URL(location.href).searchParams.get('id');
-  if(!id){ document.getElementById('app').style.display='grid'; return; }
-  const v = document.getElementById('viewer');
-  v.style.display='block';
-  document.getElementById('app').style.display='none';
-  function load(){
-    const val = localStorage.getItem('al:'+id) || '';
-    document.getElementById('vContent').textContent = val || '(chưa có dữ liệu cho ID này trên thiết bị này)';
-    document.getElementById('vMeta').textContent = 'ID: '+id+'  ·  nguồn: localStorage (thiết bị hiện tại)';
-  }
-  document.getElementById('vRefresh').onclick = load;
-  document.getElementById('vCopy').onclick = ()=> {
-    navigator.clipboard.writeText(document.getElementById('vContent').textContent||'');
-    alert('Đã copy.');
-  };
-  load();
-})();
-
-/* ===== Helpers & totals ===== */
-const $ = (s,r=document)=>r.querySelector(s);
-const $$= (s,r=document)=>[...r.querySelectorAll(s)];
-const nf = new Intl.NumberFormat('en-US');
-function recalcTotals(){
-  const pcs=$$('.v-pcs').map(i=>+i.value||0).reduce((a,b)=>a+b,0);
-  const sp =$$('.v-scanpcs').map(td=>+td.textContent||0).reduce((a,b)=>a+b,0);
-  const sw =$$('.v-scanw').map(td=>+td.textContent||0).reduce((a,b)=>a+b,0);
-  $('#totalPcs').textContent=nf.format(pcs);
-  $('#totalScanPcs').textContent=nf.format(sp);
-  $('#totalScanW').textContent=nf.format(sw);
-}
-recalcTotals();
-$$('.v-pcs,.v-vol').forEach(i=>i.addEventListener('input',recalcTotals));
-
-/* ===== ID cố định theo ULD ===== */
-const makeId = (uld)=> 'uld:'+(uld||'').trim().toUpperCase();
-
-/* ===== A/L Data khi St=CL (lưu localStorage) ===== */
-function tintSelect(sel){ sel.dataset.st=sel.value; }
-function buildAL(tr){
-  const g=s=>(tr.querySelector(s)?.value||'').trim();
-  return [g('.v-dest'),g('.v-uld'),g('.v-conts'),g('.v-pcs'),g('.v-remark')].filter(Boolean).join(' - ');
-}
-function onMaybeSync(tr){
-  const st = tr.querySelector('.v-st')?.value;
-  const box= tr.querySelector('.v-aldata');
-  if(st==='CL'){
-    const al = buildAL(tr);
-    box.textContent = al;
-    const uld = tr.querySelector('.v-uld')?.value.trim();
-    if(uld){ localStorage.setItem('al:'+makeId(uld), al); }
-  }else{
-    box.textContent='';
-  }
-}
-$$('.v-st').forEach(s=>{ tintSelect(s); s.addEventListener('change',e=>{ tintSelect(e.target); onMaybeSync(e.target.closest('tr')); }); });
-['.v-dest','.v-uld','.v-conts','.v-pcs','.v-remark'].forEach(sel=>{
-  $$(sel).forEach(inp=> inp.addEventListener('input',e=>{
-    const tr=e.target.closest('tr'); if(tr.querySelector('.v-st')?.value==='CL') onMaybeSync(tr);
-  }));
-});
-
-/* ===== chọn all ===== */
-const checkAll=$('#checkAll');
-checkAll.addEventListener('change',e=> $$('.rowcheck').forEach(c=>c.checked=e.target.checked));
-$('#selectAll')?.addEventListener('click',()=>{ checkAll.checked=true; checkAll.dispatchEvent(new Event('change')); });
-$('#clearAll')?.addEventListener('click',()=>{ checkAll.checked=false; checkAll.dispatchEvent(new Event('change')); });
-
-/* ===== Print QR A5 =====
-   - Render QR & Barcode ở TRANG HIỆN TẠI thành ảnh (data URL)
-   - Mở cửa sổ in, chỉ nhúng ảnh => không cần CDN ở cửa sổ in
-*/
-document.getElementById('btnPrintQR5').onclick = async ()=>{
-  const loadAt=$('#fldLoadAt').value.trim();
-  const flight=$('#fldFlight').value.trim();
-  const date  =$('#fldDate').value.trim();
-
-  const trs = $$('tbody tr').filter(tr=> tr.querySelector('.rowcheck')?.checked);
-  if(trs.length===0) trs.push($('tbody tr'));       // mặc định lấy dòng đầu
-
-  const rows = [];
-  for(const tr of trs){
-    const v=s=>(tr.querySelector(s)?.value||'').trim();
-    const uld=v('.v-uld'); if(!uld){ alert('Thiếu ULD'); continue; }
-    const id = makeId(uld);
-    const obj={
-      id, uld, dest:v('.v-dest'), conts:v('.v-conts'),
-      pcs:v('.v-pcs'), remark:v('.v-remark')
-    };
-    // đảm bảo A/L data mới nhất nếu đang CL
-    if(tr.querySelector('.v-st')?.value==='CL'){
-      const al=buildAL(tr);
-      tr.querySelector('.v-aldata').textContent=al;
-      localStorage.setItem('al:'+id, al);
-    }
-    obj.al = localStorage.getItem('al:'+id) || '';
-    obj.viewerUrl = location.origin + location.pathname + '?id=' + encodeURIComponent(id);
-    rows.push(obj);
-  }
-  if(rows.length===0){ alert('Không có dòng hợp lệ'); return; }
-
-  // 1) Render BARCODE & QR thành data URL ngay bây giờ
-  async function mkBarcodeDataUrl(code){
-    return new Promise((ok)=>{
-      try{
-        const c=document.createElement('canvas');
-        JsBarcode(c, code||'', {format:'code128', displayValue:false, margin:0});
-        ok(c.toDataURL('image/png'));
-      }catch(e){ ok(''); }
-    });
-  }
-  async function mkQrDataUrl(text){
-    return new Promise((ok)=>{
-      try{
-        const c=document.createElement('canvas');
-        QRCode.toCanvas(c, text||'', {width:180, margin:1}, (err)=>{
-          ok(err ? '' : c.toDataURL('image/png'));
-        });
-      }catch(e){ ok(''); }
-    });
-  }
-  const barImgs = await Promise.all(rows.map(r=> mkBarcodeDataUrl(r.uld)));
-  const qrImgs  = await Promise.all(rows.map(r=> mkQrDataUrl(r.viewerUrl)));
-
-  // 2) Mở cửa sổ in và nhúng IMG bằng data URL
-  const w=window.open('','_blank');
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>QR A5</title>
     <style>
-      @page { size: A5 portrait; margin: 7mm; }
-      body{ font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:#374151; }
-      .sheet{ width:100%; display:flex; }
-      .label{ border:1px solid #9aa4b2; padding:8px; display:grid;
-        grid-template-rows:auto auto auto 1fr auto auto; gap:8px; width:100%; }
-      .row3{ display:grid; grid-template-columns:1fr 1fr 1fr; }
-      .cell{ border:1px solid #9aa4b2; padding:6px; }
-      .ttl{ font-weight:700; font-size:12px; color:#6b7280; }
-      .big{ font-weight:800; font-size:54px; text-align:center; color:#4b5563; letter-spacing:2px }
-      .mid{ font-weight:800; font-size:28px; text-align:center; color:#4b5563; letter-spacing:1px }
-      .code{ font-weight:800; font-size:22px; text-align:center; color:#4b5563; letter-spacing:1px }
-      .foot{ font-size:12px; text-align:center; color:#6b7280; margin-top:2px }
-      .flex{ display:flex; align-items:center; justify-content:center; gap:8px; }
-      .qr{ width:118px; height:118px; object-fit:contain; }
-      .bar{ width:100%; height:38px; object-fit:contain; }
+        :root { --brand: #1FA3B0; --highlight: #D4A017; --bg-soft: #F0F7F9; --banner-text: #334155; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-soft); color: #1e293b; }
+        [x-cloak] { display: none !important; }
+        
+        /* Giao diện Banner v11 */
+        .header-v11 { background-color: var(--brand); border-bottom: 4px solid var(--highlight); }
+        .banner-text-highlight { color: var(--banner-text); }
+        
+        /* Giao diện Người dùng v10/v11 */
+        .tab-v11 { background-color: var(--highlight); color: white; border-radius: 0.75rem; transition: all 0.3s; font-size: 11px; font-weight: 800; }
+        .tab-active-v11 { background-color: white !important; color: var(--brand) !important; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .sidebar-compact { width: 280px; flex-shrink: 0; }
+        .card-v11 { background: white; border-radius: 1.5rem; border: 1px solid rgba(31,163,176,0.1); transition: all 0.3s; }
+        .card-v11:hover { transform: translateY(-5px); border-color: var(--brand); box-shadow: 0 15px 30px rgba(31,163,176,0.15); }
+        .block-divider { height: 2px; background: var(--brand); opacity: 0.15; flex-grow: 1; margin-left: 1.5rem; }
+
+        /* Giao diện Admin v10 (Giữ nguyên theo yêu cầu) */
+        .input-v10 { border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px; font-weight: 600; outline: none; transition: 0.3s; }
+        .input-v10:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(31,163,176,0.1); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
-  </head><body>`);
+</head>
+<body x-data="app()" x-init="init()">
 
-  rows.forEach((r,i)=>{
-    const foot = `${r.uld}-${r.conts}-${flight}`;
-    w.document.write(`
-      <div class="sheet">
-        <div class="label">
-          <div class="cell">
-            <div class="ttl">ID CODE</div>
-            <img class="bar" src="${barImgs[i]||''}" alt="BAR">
-            <div class="code">${r.uld}</div>
-          </div>
-          <div class="cell"><div class="ttl">DESTINATION</div><div class="big">${r.dest||''}</div></div>
-          <div class="row3">
-            <div class="cell"><div class="ttl">LOAD AT</div><div class="mid">${$('#fldLoadAt').value}</div></div>
-            <div class="cell"><div class="ttl">FLIGHT</div><div class="mid">${$('#fldFlight').value}</div></div>
-            <div class="cell"><div class="ttl">DATE</div><div class="mid">${$('#fldDate').value}</div></div>
-          </div>
-          <div class="cell"><div class="ttl">CONTENTS</div><div class="mid">${r.conts||''}</div></div>
-          <div class="cell">
-            <div class="ttl">REMARKS</div>
-            <div class="flex">
-              <div style="flex:1">${r.remark||''}</div>
-              <img class="qr" src="${qrImgs[i]||''}" alt="QR">
+    <header class="header-v11 sticky top-0 z-40 shadow-xl">
+        <div class="container mx-auto px-4 flex justify-between items-center py-3">
+            <div class="flex items-center gap-4">
+                <img src="viags.png" alt="Logo" class="w-12 h-12 object-contain bg-white rounded-lg p-1 shadow-md">
+                <div class="leading-none">
+                    <h1 class="font-black text-xl tracking-tighter uppercase banner-text-highlight">Dữ liệu nhân sự</h1>
+                    <span class="text-[9px] banner-text-highlight font-bold uppercase tracking-widest opacity-80">Hệ thống v11.1 Final</span>
+                </div>
             </div>
-          </div>
-          <div class="foot">${foot}</div>
+            
+            <div class="hidden md:flex flex-1 max-w-md mx-8 relative">
+                <input type="text" x-model="search" placeholder="Tìm tên, chức danh, quê quán..." 
+                    class="w-full bg-white/20 border border-white/30 rounded-full px-10 py-2 text-sm text-white placeholder-white/70 outline-none focus:bg-white focus:text-brand transition-all">
+                <span class="absolute left-4 top-2.5">🔍</span>
+            </div>
+
+            <button @click="loginAdmin()" class="bg-white text-brand px-5 py-2 rounded-full text-[10px] font-black shadow-md hover:bg-highlight hover:text-white transition-all">
+                <span x-text="isAdmin ? 'ĐÓNG QUẢN TRỊ' : '⚙️ QUẢN TRỊ'"></span>
+            </button>
         </div>
-      </div>
-      ${i<rows.length-1 ? '<div style="page-break-after:always"></div>' : '' }
-    `);
-  });
+    </header>
 
-  w.document.write(`</body></html>`);
-  w.document.close();
-  setTimeout(()=> w.print(), 300);
-};
+    <div class="flex flex-row min-h-screen">
+        <aside class="sidebar-compact bg-white p-6 shadow-2xl border-r border-slate-200 hidden lg:block">
+            <div class="sticky top-28">
+                <h2 class="text-xl font-black text-slate-800 mb-6 pb-2 border-b-2 border-brand/10" x-text="filterCategory"></h2>
+                <div class="space-y-3 mb-10">
+                    <template x-for="t in types" :key="t">
+                        <div class="flex items-center justify-between p-3 rounded-xl border" 
+                             :class="t === 'Tái cử' ? 'bg-red-50 border-red-100 text-red-600' : (t === 'Giữ nguyên' ? 'bg-amber-50 border-amber-100 text-amber-600' : 'bg-slate-50 border-slate-100 text-slate-600')">
+                            <span class="text-[9px] font-black uppercase" x-text="t"></span>
+                            <span class="text-lg font-black" x-text="countStats('type', t)"></span>
+                        </div>
+                    </template>
+                </div>
+                <div class="space-y-4">
+                    <h4 class="text-[10px] font-black text-brand uppercase tracking-widest mb-4">Cơ cấu đơn vị</h4>
+                    <template x-for="block in getActiveBlocks()" :key="block">
+                        <div class="mb-3">
+                            <div class="flex justify-between text-[10px] font-bold mb-1">
+                                <span x-text="block" class="truncate pr-2"></span>
+                                <span class="text-brand font-black" x-text="calculatePercent(block) + '%'"></span>
+                            </div>
+                            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-brand transition-all duration-1000" :style="'width: ' + calculatePercent(block) + '%'"></div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </aside>
 
-/* ===== UI smalls ===== */
-document.getElementById('btnPrint').onclick = ()=> window.print();
-const cbRemark = document.getElementById('cbPrintRemark');
-cbRemark.addEventListener('change', ()=> document.getElementById('app').classList.toggle('hide-remark-print', !cbRemark.checked));
-document.getElementById('app').classList.add('hide-remark-print');
-</script>
+        <main class="flex-1 p-6 md:p-8">
+            <nav class="flex gap-2 mb-10 overflow-x-auto no-scrollbar">
+                <button @click="filterCategory = 'Tất cả'" 
+                    :class="filterCategory === 'Tất cả' ? 'tab-active-v11' : ''" 
+                    class="tab-v11 px-6 py-3 whitespace-nowrap uppercase shadow-sm">Tất cả</button>
+                <template x-for="cat in categories" :key="cat">
+                    <button @click="filterCategory = cat" 
+                        :class="filterCategory === cat ? 'tab-active-v11' : ''" 
+                        class="tab-v11 px-6 py-3 whitespace-nowrap uppercase shadow-sm" x-text="cat"></button>
+                </template>
+            </nav>
+
+            <div class="space-y-12">
+                <template x-for="blockName in blocksOrderFiltered()" :key="blockName">
+                    <div class="block-group" x-show="getPeopleByBlock(blockName).length > 0">
+                        <div class="flex items-center mb-6">
+                            <h3 class="text-sm font-black text-brand uppercase tracking-widest whitespace-nowrap" x-text="blockName"></h3>
+                            <div class="block-divider"></div>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                            <template x-for="person in getPeopleByBlock(blockName)" :key="person.id">
+                                <div @click="selectedPerson = person" class="card-v11 overflow-hidden group cursor-pointer shadow-md">
+                                    <div class="aspect-[3/4] overflow-hidden">
+                                        <img :src="getImgUrl(person.img)" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                                    </div>
+                                    <div class="p-4 text-center bg-white border-b-4 border-brand">
+                                        <h3 class="font-black text-slate-800 text-[13px] leading-tight mb-1" x-text="person.name"></h3>
+                                        <p class="text-[9px] text-brand font-bold uppercase truncate" x-text="person.mainRole"></p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </main>
+    </div>
+
+    <div x-show="selectedPerson" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+        <div @click.away="selectedPerson = null" class="bg-white rounded-[3rem] w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl relative border-t-8 border-brand">
+            <button @click="selectedPerson = null" class="absolute top-6 right-6 bg-slate-100 rounded-2xl w-10 h-10 flex items-center justify-center font-bold">✕</button>
+            <div class="p-8 md:p-12">
+                <div class="flex flex-col md:flex-row gap-10 mb-10 border-b pb-10">
+                    <img :src="getImgUrl(selectedPerson?.img)" class="w-48 h-64 object-cover rounded-[2rem] shadow-2xl border-4 border-white">
+                    <div class="flex-1 pt-4">
+                        <p class="text-brand font-black text-xs uppercase mb-2 tracking-widest" x-text="selectedPerson?.mainRole"></p>
+                        <h2 class="text-4xl font-black text-red-600 mb-6 leading-none" x-text="selectedPerson?.name"></h2>
+                        <div class="space-y-2 text-sm">
+                            <template x-for="f in [['Ngày sinh','dob'],['Quê quán','hometown'],['Dân tộc','ethnic'],['Trình độ','education']]">
+                                <p><span class="font-black text-slate-400 uppercase text-[10px] w-24 inline-block" x-text="f[0]"></span> <span class="font-bold text-slate-700" x-text="selectedPerson?.[f[1]] || '...'"></span></p>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-10">
+                    <section>
+                        <h3 class="text-[11px] font-black text-red-600 uppercase tracking-[0.3em] border-b-2 border-red-50 pb-2 mb-4">Chức vụ</h3>
+                        <ul class="modal-list text-sm font-bold text-slate-700" x-html="formatList(selectedPerson?.roles)"></ul>
+                    </section>
+                    <section>
+                        <h3 class="text-[11px] font-black text-red-600 uppercase tracking-[0.3em] border-b-2 border-red-50 pb-2 mb-4">Tiểu sử</h3>
+                        <ul class="modal-list text-sm text-slate-600 leading-relaxed font-medium" x-html="formatList(selectedPerson?.bio)"></ul>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="isAdmin" x-cloak class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex justify-end">
+        <div class="w-full max-w-5xl bg-white h-full p-10 overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-center mb-8 border-b pb-6">
+                <h2 class="text-2xl font-black text-brand uppercase italic tracking-tighter">Bàn làm việc Quản trị v11.1</h2>
+                <button @click="isAdmin = false" class="text-4xl font-light hover:rotate-90 transition">×</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div class="space-y-6">
+                    <div class="bg-slate-50 p-8 rounded-[2.5rem] border-2 border-brand/20 shadow-inner space-y-4">
+                        <h3 class="text-lg font-black text-slate-800 uppercase border-l-8 border-brand pl-4 mb-4">Nhân sự mới</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" x-model="form.name" placeholder="Họ tên (Vd: Ông Tô Lâm)" class="input-v10">
+                            <input type="text" x-model="form.mainRole" placeholder="Chức danh (Vd: Tổng Bí thư)" class="input-v10">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" x-model="form.dob" placeholder="Ngày sinh (Vd: 10/7/1957)" class="input-v10">
+                            <input type="text" x-model="form.hometown" placeholder="Quê quán (Vd: Hưng Yên)" class="input-v10">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" x-model="form.ethnic" placeholder="Dân tộc (Vd: Kinh)" class="input-v10">
+                            <input type="text" x-model="form.education" placeholder="Trình độ học vấn" class="input-v10">
+                        </div>
+                        <div class="grid grid-cols-3 gap-4">
+                            <select x-model="form.category" class="input-v10 bg-white shadow-sm"><template x-for="c in categories" :key="c"><option :value="c" x-text="c"></option></template></select>
+                            <select x-model="form.block" class="input-v10 bg-white shadow-sm"><template x-for="b in (blocks[form.category] || [])" :key="b"><option :value="b" x-text="b"></option></template></select>
+                            <select x-model="form.type" class="input-v10 bg-white shadow-sm"><template x-for="t in types" :key="t"><option :value="t" x-text="t"></option></template></select>
+                        </div>
+                        <div class="relative group">
+                            <input type="text" x-model="form.img" placeholder="ID Ảnh Google Drive hoặc URL ảnh" class="w-full input-v10 pr-20">
+                            <button @click="alert('Google Picker Setup')" class="absolute right-2 top-2 bg-blue-600 text-white text-[10px] px-3 py-1.5 rounded-lg font-black uppercase">Drive Up</button>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black uppercase text-slate-400 ml-2 italic">Danh sách chức vụ (Mỗi dòng một mục):</label>
+                            <textarea x-model="form.roles" class="w-full input-v10 h-24 text-sm mt-1" placeholder="Vd: Tổng Bí thư
+Ủy viên Bộ chính trị..."></textarea>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black uppercase text-slate-400 ml-2 italic">Tiểu sử công tác (Mỗi dòng một mốc):</label>
+                            <textarea x-model="form.bio" class="w-full input-v10 h-28 text-sm mt-1" placeholder="Vd: 10/1974 - 10/1979: Học viên Đại học..."></textarea>
+                        </div>
+                        <button @click="savePersonnel()" class="w-full bg-brand text-white py-4 rounded-2xl font-black text-xl shadow-lg hover:brightness-110 active:scale-95 transition">LƯU HỒ SƠ CHI TIẾT</button>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-[2rem] border-2 border-dashed border-slate-200">
+                        <div class="space-y-4">
+                            <div class="flex gap-2">
+                                <input type="text" x-model="tempCat" placeholder="Thêm Vị trí (Tab) mới..." class="flex-1 p-2 border-2 rounded-xl outline-none focus:border-brand text-sm">
+                                <button @click="addCategory()" class="bg-brand text-white px-5 rounded-xl font-bold">+</button>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl border">
+                                <select x-model="manageCat" class="w-full p-1 mb-2 font-black border-b bg-transparent outline-none text-xs">
+                                    <template x-for="cat in categories" :key="cat"><option :value="cat" x-text="cat"></option></template>
+                                </select>
+                                <div class="flex gap-2">
+                                    <input type="text" x-model="tempBlock" @keyup.enter="addBlock()" placeholder="Thêm khối cho vị trí trên..." class="flex-1 p-2 text-xs border rounded-lg">
+                                    <button @click="addBlock()" class="bg-highlight text-white px-4 rounded-lg font-bold">ADD</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-8 rounded-[2.5rem] border-2 border-brand/10">
+                    <h3 class="text-lg font-black text-slate-800 uppercase border-l-8 border-highlight pl-4 mb-4">Thứ tự hiển thị Khối</h3>
+                    
+                    <div class="mb-6 bg-white p-4 rounded-2xl border">
+                        <label class="text-[10px] font-black uppercase text-slate-400 ml-2 block mb-1">Cấu hình thứ tự cho Vị trí:</label>
+                        <select x-model="sortCat" class="w-full input-v10 bg-slate-50">
+                            <template x-for="cat in categories" :key="cat"><option :value="cat" x-text="cat"></option></template>
+                        </select>
+                    </div>
+
+                    <div id="sortable-blocks-v11" class="space-y-2">
+                        <template x-for="blockName in (blocks[sortCat] || [])" :key="blockName">
+                            <div :data-id="blockName" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between cursor-move group">
+                                <span class="text-xs font-black text-brand uppercase tracking-wider" x-text="blockName"></span>
+                                <span class="text-slate-300 group-hover:text-brand transition">☰</span>
+                            </div>
+                        </template>
+                    </div>
+                    
+                    <button @click="saveBlockOrder()" class="w-full mt-8 bg-highlight text-white py-4 rounded-2xl font-black shadow-md hover:scale-[1.02] transition uppercase text-xs tracking-widest">
+                        Cập nhật thứ tự cho <span x-text="sortCat"></span>
+                    </button>
+                    
+                    <div class="mt-10 pt-6 border-t border-slate-200">
+                        <h4 class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest italic text-center">Danh sách nhân sự (Tra cứu nhanh)</h4>
+                        <div class="space-y-1 max-h-64 overflow-y-auto no-scrollbar">
+                            <template x-for="p in data" :key="p.id">
+                                <div class="flex justify-between items-center p-2 bg-white rounded-lg border text-[10px]">
+                                    <span class="font-bold" x-text="p.name"></span>
+                                    <button @click="deletePersonnel(p.id)" class="text-red-400 hover:text-red-600">Xóa</button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tránh lỗi callback
+        function gapiLoaded() {}
+        function gisLoaded() {}
+
+        function app() {
+            return {
+                isAdmin: false, search: '', filterCategory: 'Tất cả', filterType: '', selectedPerson: null,
+                categories: ['Bộ Chính trị', 'Ban Bí thư', 'Ủy viên Trung ương', 'VIAGS'],
+                blocks: {
+                    'Bộ Chính trị': ['Địa phương', 'Chính phủ', 'Đảng - MTTQ', 'Lực lượng vũ trang'],
+                    'Ban Bí thư': ['Địa phương', 'Đảng - MTTQ'],
+                    'Ủy viên Trung ương': ['Địa phương', 'Chính phủ', 'Quốc hội', 'Lực lượng vũ trang', 'Tư pháp', 'Chủ tịch nước'],
+                    'VIAGS': ['Ban giám đốc', 'Kế hoạch hành chính', 'Nhân viên']
+                },
+                blocksOrder: {}, 
+                sortCat: 'Bộ Chính trị',
+                types: ['Tái cử', 'Giữ nguyên', 'Lần đầu'],
+                manageCat: 'Bộ Chính trị', tempCat: '', tempBlock: '', data: [], 
+                form: { name: '', mainRole: '', order: 999, category: 'Bộ Chính trị', block: '', type: 'Tái cử', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' },
+                
+                init() {
+                    const cfg = { apiKey: "AIzaSyAhbVR_ywdzMNnwaeKMp5rWNsT4otCF4xM", projectId: "pvhk-d32da", appId: "1:974778325507:web:eda0b36711f492cb764c36" };
+                    if (!firebase.apps.length) firebase.initializeApp(cfg); 
+                    this.db = firebase.firestore();
+                    
+                    this.db.collection("personnel_v8").orderBy("order", "asc").onSnapshot(s => {
+                        this.data = s.docs.map(d => ({id: d.id, ...d.data()}));
+                    });
+
+                    this.db.collection("config").doc("blocks_order_v11").onSnapshot(doc => {
+                        if (doc.exists()) this.blocksOrder = doc.data().orders;
+                    });
+
+                    this.$nextTick(() => {
+                        const el = document.getElementById('sortable-blocks-v11');
+                        if(el) Sortable.create(el, { animation: 200 });
+                    });
+                    
+                    this.form.block = this.blocks[this.form.category][0];
+                },
+
+                async saveBlockOrder() {
+                    const el = document.getElementById('sortable-blocks-v11');
+                    const newOrder = Array.from(el.children).map(it => it.dataset.id);
+                    let currentOrders = { ...this.blocksOrder };
+                    currentOrders[this.sortCat] = newOrder;
+                    await this.db.collection("config").doc("blocks_order_v11").set({ orders: currentOrders });
+                    alert(`Đã cập nhật thứ tự khối cho ${this.sortCat}!`);
+                },
+
+                getActiveBlocks() {
+                    const currentPeople = this.dataFilteredAll();
+                    return [...new Set(currentPeople.map(it => it.block))].sort();
+                },
+
+                blocksOrderFiltered() {
+                    const active = this.getActiveBlocks();
+                    const definedOrder = this.blocksOrder[this.filterCategory] || [];
+                    if (this.filterCategory === 'Tất cả') return active; 
+                    return definedOrder.filter(b => active.includes(b)).concat(active.filter(b => !definedOrder.includes(b)));
+                },
+
+                getPeopleByBlock(blockName) {
+                    return this.dataFilteredAll().filter(p => p.block === blockName);
+                },
+
+                dataFilteredAll() {
+                    return (this.filterCategory === 'Tất cả' ? this.data : this.data.filter(p => p.category === this.filterCategory))
+                           .filter(p => {
+                               const s = this.search.toLowerCase();
+                               return p.name.toLowerCase().includes(s) || p.mainRole.toLowerCase().includes(s) || (p.hometown && p.hometown.toLowerCase().includes(s)) || p.block.toLowerCase().includes(s);
+                           })
+                           .filter(p => this.filterType === '' || p.type === this.filterType);
+                },
+
+                async savePersonnel() {
+                    if(!this.form.name) return alert("Nhập tên nhân sự!");
+                    this.form.order = this.data.length; 
+                    await this.db.collection("personnel_v8").add(this.form);
+                    alert("Hệ thống đã lưu hồ sơ thành công!"); 
+                    this.form = { ...this.form, name: '', mainRole: '', img: '', roles: '', bio: '', dob: '', hometown: '', education: '' };
+                },
+
+                deletePersonnel(id) { if(confirm("Xác nhận xóa hồ sơ?")) this.db.collection("personnel_v8").doc(id).delete(); },
+                countStats(k, v) { return this.dataFilteredAll().filter(p => p[k] === v).length; },
+                calculatePercent(b) { 
+                    const base = this.dataFilteredAll();
+                    return base.length ? Math.round((base.filter(p => p.block === b).length / base.length) * 100) : 0; 
+                },
+                getImgUrl(url) { 
+                    const d = url ? url.match(/[-\w]{25,}/) : null;
+                    return d ? `https://lh3.googleusercontent.com/d/${d[0]}` : (url || 'https://via.placeholder.com/400');
+                },
+                formatList(t) { return t ? t.split('\n').filter(l => l.trim() !== '').map(l => `<li>${l}</li>`).join('') : ''; },
+                addCategory() { if(this.tempCat) { this.categories.push(this.tempCat); this.blocks[this.tempCat] = []; this.tempCat = ''; } },
+                addBlock() { if(this.tempBlock) { if(!this.blocks[this.manageCat]) this.blocks[this.manageCat] = []; this.blocks[this.manageCat].push(this.tempBlock); this.tempBlock = ''; } },
+                loginAdmin() { if(this.isAdmin) return this.isAdmin = false; if(prompt("Mã PIN Bảo mật:") === "1234") this.isAdmin = true; }
+            }
+        }
+    </script>
 </body>
 </html>
