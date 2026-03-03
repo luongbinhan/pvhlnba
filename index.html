@@ -161,7 +161,7 @@ section h3 {
 
     <div x-show="isAdmin" x-cloak class="fixed inset-0 z-[100] flex bg-white overflow-hidden">
         <aside class="admin-sidebar shadow-2xl flex flex-col overflow-y-auto no-scrollbar">
-            <div class="mb-8 text-center"><img src="viags.png" alt="Logo" class="h-12 mx-auto mb-3 bg-white rounded p-1"><h2 class="font-black text-xl text-brand uppercase italic">System Master</h2></div>
+            <div class="mb-8 text-center"><img src="viags.png" alt="Logo" class="h-12 mx-auto mb-3 bg-white rounded p-1"><h2 class="font-black text-xl text-brand uppercase italic">HỆ THỐNG QUẢN LÝ</h2></div>
             <div class="space-y-6">
                 <div class="admin-box bg-slate-800">
                     <label class="text-[10px] font-black text-cyan-400 uppercase mb-4 block">1. Vị trí (Tabs)</label>
@@ -234,12 +234,11 @@ section h3 {
                     </div>
                     <button @click="savePersonnel()" 
     class="w-full mt-10 bg-[#0E3F60] text-white py-5 rounded-2xl font-black shadow-2xl uppercase tracking-widest hover:bg-[#0A2E45] transition-all duration-300">
-    LƯU HỒ SƠ MASTER
-</button>
+    LƯU HỒ SƠ</button>
                 </div>
 
                 <div class="bg-white p-8 rounded-3xl border shadow-xl overflow-y-auto max-h-[90vh] no-scrollbar text-black">
-                    <h3 class="font-black text-xl uppercase border-l-8 border-highlight pl-5 mb-10">Database Management</h3>
+                    <h3 class="font-black text-xl uppercase border-l-8 border-highlight pl-5 mb-10">SẮP XẾP DANH SÁCH</h3>
                     <div class="space-y-12">
                         <template x-for="cat in categories" :key="cat">
                             <div class="p-6 rounded-[2.5rem] bg-slate-50 border-2 border-white shadow-inner mb-6">
