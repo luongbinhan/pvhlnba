@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP/CIP TOOL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <title>VIP/CIP TOOL 2026 - VIAGS Official</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -12,163 +12,138 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <style>
-        :root { --brand: #1FA3B0; --highlight: #FFB703; --bg-main: #F0F9FF; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: #1e293b; overflow-x: hidden; font-weight: 400; }
-        b, strong, .font-bold { font-weight: 900 !important; }
+        :root { --brand: #1FA3B0; --highlight: #FB8500; --bg-main: #E0F2FE; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: #1e293b; overflow-x: hidden; }
         [x-cloak] { display: none !important; }
-        
-        .header-slim { background-color: var(--brand); border-bottom: 2px solid var(--highlight); padding: 0.4rem 0; }
-        
-        .group-btn { padding: 10px 24px; border-radius: 14px; font-size: 17px; font-weight: 900; text-transform: uppercase; color: #FFFFFF !important; transition: 0.3s; border: 2.5px solid transparent; cursor: pointer; }
-        .group-btn.active { border-color: #FF9900; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        b, strong, .font-bold { font-weight: 900 !important; }
 
-        .block-pill-v33 { 
-            background: #FF6666; 
-            color: #FFFFFF !important; 
-            padding: 8px 20px; 
-            border-radius: 9999px;
-            font-size: 11px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
-            display: inline-block;
-            box-shadow: 0 4px 10px rgba(14, 63, 96, 0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
+        /* Tag kép: Vị trí (Xanh banner) > Khối (Đỏ) */
+        .tag-cat-name { background: var(--brand); color: white; padding: 6px 16px; border-radius: 99px 0 0 99px; font-size: 11px; font-weight: 900; text-transform: uppercase; border-right: 1px solid rgba(255,255,255,0.3); }
+        .tag-block-name { background: #E11D48; color: white; padding: 6px 16px; border-radius: 0 99px 99px 0; font-size: 11px; font-weight: 900; text-transform: uppercase; }
 
-        .modal-precision { background: white; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 30px 60px rgba(0,0,0,0.4); width: 100%; max-width: 950px; position: relative; }
-        .img-detail-top { position: absolute; top: 25px; right: 25px; width: 170px; height: auto; border-radius: 8px; border: 4px solid #f8fafc; object-fit: contain; }
-        .name-power { color: #E11D48; font-weight: 900; font-size: 2.8rem; line-height: 1; text-transform: uppercase; }
+        /* Search Overlay Đỏ */
+        .search-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(225, 29, 72, 0.9); backdrop-blur: 4px; padding: 4px; text-align: center; z-index: 5; }
 
-        .admin-sidebar { width: 320px; background: #0F172A; color: white; flex-shrink: 0; padding: 1.5rem; height: 100vh; }
+        /* Modal Profile: Ảnh mini góc trái */
+        .modal-container { background: white; border-radius: 24px; width: 100%; max-width: 850px; position: relative; overflow: hidden; }
+        .img-profile-mini { position: absolute; top: 30px; left: 30px; width: 140px; height: 180px; border-radius: 12px; object-fit: cover; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 4px solid white; z-index: 10; }
+        .modal-content-wrapper { padding: 40px 40px 40px 200px; }
+
+        /* Admin Sidebar */
+        .admin-sidebar { width: 320px; background: #0F172A; color: white; flex-shrink: 0; padding: 1.5rem; height: 100vh; overflow-y: auto; }
         .input-admin { border: 2px solid #94A3B8; border-radius: 8px; padding: 8px 12px; width: 100%; font-weight: 700; color: #000 !important; background: white; }
-        .db-row { background: white; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 8px 12px; transition: 0.2s; cursor: move; }
+        .db-row { background: white; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 8px 12px; transition: 0.2s; cursor: move; color: #000; }
 
+        .person-card { transition: all 0.3s ease; border: 1px solid #cbd5e1; background: white; border-radius: 16px; overflow: hidden; cursor: pointer; }
+        .person-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body x-data="app()" x-init="init()">
 
-    <header class="header-slim sticky top-0 z-50 shadow-md" x-show="!isAdmin">
-        <div class="container mx-auto px-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <img src="viags.png" alt="Logo" class="h-10 w-auto">
-            </div>
-            <div class="flex-1 max-w-md mx-6 relative">
-                <input type="text" x-model="search" placeholder="Tìm tên, chức danh..." 
-                    class="w-full bg-white/20 border border-white/30 rounded-full px-10 py-2 text-sm text-white placeholder-white font-bold outline-none focus:bg-white focus:text-black transition-all">
-                <span class="absolute left-4 top-2 text-white/50">🔍</span>
-            </div>
-            <button @click="toggleAdmin()" class="bg-white/10 text-white px-4 py-1.5 rounded-full text-[10px] font-black border border-white/20 hover:bg-white hover:text-brand transition uppercase">⚙️ Quản trị</button>
-        </div>
-    </header>
-
-    <div class="flex flex-col lg:flex-row min-h-screen" x-show="!isAdmin">
-        <aside class="hidden lg:block w-full lg:w-64 bg-white p-5 border-r border-blue-100 shadow-sm">
-            <div class="sticky top-20">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Vị trí hiện tại</p>
-                <p class="text-xl font-black text-brand uppercase whitespace-normal leading-tight mb-6" x-text="filterCategory"></p>
-                <div class="space-y-2">
-                    <template x-for="t in types" :key="t">
-                        <div class="flex justify-between items-center p-3 rounded border bg-slate-50 border-slate-100 shadow-sm">
-                            <span class="text-[9px] font-black uppercase text-slate-500" x-text="t"></span>
-                            <span class="text-xl font-black text-brand" x-text="countStats('type', t)"></span>
-                        </div>
-                    </template>
+    <div x-show="!isAdmin">
+        <header class="sticky top-0 z-50 bg-[#1FA3B0] shadow-xl border-b-4 border-[#FB8500]">
+            <div class="container mx-auto px-4 flex justify-between items-center py-3">
+                <img src="viags.png" class="h-10 w-auto bg-white rounded p-1">
+                <div class="flex-1 max-w-2xl mx-6 relative">
+                    <input type="text" x-model="search" placeholder="Tìm tên, chức danh, khối..." class="w-full bg-white rounded-full px-12 py-2.5 font-bold outline-none shadow-lg text-black">
+                    <span class="absolute left-4 top-3 text-slate-400">🔍</span>
                 </div>
+                <button @click="loginAdmin()" class="bg-red-600 text-white px-6 py-2 rounded-full text-xs font-black hover:bg-red-700 uppercase">Quản trị</button>
             </div>
-        </aside>
+        </header>
 
-        <main class="flex-1 p-4 md:p-8 space-y-6">
-            <div class="flex flex-wrap gap-3">
-                <button @click="setActiveGroup('VIP')" :class="activeGroup === 'VIP' ? 'active' : ''" class="group-btn bg-[#E11D48]">VIP</button>
-                <button @click="setActiveGroup('CIP')" :class="activeGroup === 'CIP' ? 'active' : ''" class="group-btn bg-[#00aff0]">CIP</button>
-                <button @click="setActiveGroup('Tất cả')" :class="activeGroup === 'Tất cả' ? 'active' : ''" class="group-btn bg-[#FF9900]">Tất cả</button>
-            </div>
-
-            <nav class="flex gap-2 overflow-x-auto no-scrollbar pb-4 border-b border-slate-100">
-                <template x-for="cat in filteredCategories" :key="cat">
-                    <button @click="filterCategory = cat" 
-                        :class="filterCategory === cat ? 'bg-[#FB8500] text-white font-black shadow-lg border-2 border-[#FB8500]' : 'bg-white text-[#FB8500] border-2 border-[#FB8500] font-bold'"
-                        class="tab-btn-slim whitespace-nowrap px-4 py-2 rounded-lg text-[11px] font-bold uppercase transition-all" x-text="cat"></button>
-                </template>
-            </nav>
-
-            <div class="space-y-16">
-                <template x-for="groupName in ['VIP', 'CIP']" :key="groupName">
-                    <div x-show="hasPeopleInGroup(groupName)" class="space-y-8">
-                        <div class="flex items-center gap-3">
-                            <span class="px-4 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-widest shadow-md" 
-                                :class="groupName === 'VIP' ? 'bg-[#E11D48]' : 'bg-[#4D94FF]'" x-text="groupName"></span>
-                            <div class="h-px bg-slate-200 flex-grow"></div>
-                        </div>
-                        <template x-for="blockName in blocksOrderFilteredByGroup(groupName)" :key="blockName">
-                            <div x-show="getPeopleByGroupAndBlock(groupName, blockName).length > 0">
-                                <div class="mb-6">
-                                    <span class="block-pill-v33" x-text="blockName"></span>
-                                </div>
-                                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 w-full">
-                                    <template x-for="person in getPeopleByGroupAndBlock(groupName, blockName)" :key="person.id">
-                                        <div @click="selectedPerson = person" 
-                                             class="bg-white rounded-lg border border-slate-200 overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all hover:-translate-y-1 w-full flex flex-col">
-                                            <div class="aspect-[3/4.2] overflow-hidden bg-slate-50">
-                                                <img :src="getImgUrl(person.img)" class="w-full h-full object-cover">
-                                            </div>
-                                            <div class="p-3 text-center border-t flex-grow">
-                                                <h4 class="font-black text-[#E11D48] text-[13px] leading-tight uppercase" x-text="person.name"></h4>
-                                                <p class="text-[9px] text-brand font-bold uppercase mt-1" x-text="person.mainRole"></p>
-                                            </div>
-                                        </div>
-                                    </template>
-                                </div>
+        <div class="flex min-h-screen">
+            <aside class="hidden lg:block w-80 p-6 border-r border-blue-200 bg-white/40 backdrop-blur-md">
+                <div class="sticky top-28">
+                    <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-6 text-center">Thống kê quân số</h3>
+                    <div class="space-y-6 overflow-y-auto max-h-[75vh] no-scrollbar">
+                        <template x-for="cat in categories" :key="cat">
+                            <div class="mb-4">
+                                <p class="text-[11px] font-black text-[#1FA3B0] uppercase mb-2" x-text="cat"></p>
+                                <template x-for="block in (blocks[cat] || [])" :key="block">
+                                    <div class="bg-white p-3 rounded-lg flex justify-between items-center mb-1 shadow-sm border-l-4 border-[#1FA3B0]">
+                                        <span class="text-[10px] font-bold text-slate-600 uppercase" x-text="block"></span>
+                                        <span class="text-xs font-black text-[#E11D48]" x-text="getPeopleInDB(cat, block).length"></span>
+                                    </div>
+                                </template>
                             </div>
                         </template>
                     </div>
-                </template>
-            </div>
-        </main>
-    </div>
+                </div>
+            </aside>
 
-    <div x-show="selectedPerson" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
-        <div @click.away="selectedPerson = null" class="modal-precision flex flex-col md:flex-row overflow-hidden animate-in zoom-in duration-200">
-            <button @click="selectedPerson = null" class="absolute top-4 right-4 bg-white/80 hover:bg-red-500 hover:text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl border shadow-lg z-10 transition-all">✕</button>
-            <img :src="getImgUrl(selectedPerson?.img)" class="img-detail-top shadow-xl md:block hidden">
-            <div class="flex-1 p-8 md:p-14 overflow-y-auto max-h-[90vh] pr-4 md:pr-56">
-                <div class="mb-8 border-b pb-8">
-                    <p class="text-brand font-black text-[10px] uppercase tracking-[0.2em] mb-3" x-text="selectedPerson?.mainRole"></p>
-                    <h2 class="name-power italic mb-8" x-text="selectedPerson?.name"></h2>
-                    <div class="grid grid-cols-1 gap-y-4 text-black">
-                        <template x-for="f in [['Ngày sinh','dob'],['Quê quán','hometown'],['Dân tộc','ethnic'],['Trình độ','education']]">
-                            <p class="text-sm flex items-center"><span class="font-black text-slate-400 uppercase text-[9px] w-28 shrink-0" x-text="f[0]"></span> <span class="font-bold border-b border-slate-100 flex-grow" x-text="selectedPerson?.[f[1]] || '---'"></span></p>
-                        </template>
-                    </div>
+            <main class="flex-1 p-6 md:p-10">
+                <div class="flex gap-4 mb-6">
+                    <template x-for="g in ['VIP', 'CIP', 'Tất cả']">
+                        <button @click="setActiveGroup(g)" :class="activeGroup === g ? 'bg-[#E11D48] shadow-xl scale-105' : 'bg-slate-800 opacity-50'" class="px-10 py-3 rounded-2xl text-white font-black text-sm transition-all uppercase" x-text="g"></button>
+                    </template>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 text-black">
-                    <section><h3 class="text-xs font-black text-[#E11D48] uppercase tracking-widest mb-5 border-l-4 border-highlight pl-3">Chức vụ công tác</h3><ul class="text-[13px] font-bold space-y-2 list-none" x-html="formatList(selectedPerson?.roles)"></ul></section>
-                    <section><h3 class="text-xs font-black text-[#E11D48] uppercase tracking-widest mb-5 border-l-4 border-highlight pl-3">Tiểu sử tóm tắt</h3><ul class="text-[13px] font-medium leading-relaxed space-y-3 italic list-none" x-html="formatList(selectedPerson?.bio)"></ul></section>
+
+                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-4 mb-10 border-b border-white">
+                    <button @click="filterCategory = 'Tất cả'" :class="filterCategory === 'Tất cả' ? 'bg-[#FB8500] text-white shadow-md' : 'bg-white text-slate-500'" class="px-6 py-2 rounded-xl text-[11px] font-black uppercase transition-all border">TẤT CẢ VỊ TRÍ</button>
+                    <template x-for="cat in filteredCategories" :key="cat">
+                        <button @click="filterCategory = cat" :class="filterCategory === cat ? 'bg-[#FB8500] text-white shadow-md' : 'bg-white text-slate-500'" class="px-6 py-2 rounded-xl text-[11px] font-black uppercase transition-all border whitespace-nowrap" x-text="cat"></button>
+                    </template>
                 </div>
-            </div>
+
+                <div class="space-y-20">
+                    <template x-for="groupName in (activeGroup === 'Tất cả' ? ['VIP', 'CIP'] : [activeGroup])" :key="groupName">
+                        <div x-show="hasPeopleInGroup(groupName)">
+                            <template x-for="blockName in blocksOrderFilteredByGroup(groupName)" :key="blockName">
+                                <div x-show="getPeopleByGroupAndBlock(groupName, blockName).length > 0" class="mb-12 text-black">
+                                    <div class="inline-flex mb-8 shadow-sm">
+                                        <span class="tag-cat-name" x-text="getCategoryOfBlock(groupName, blockName)"></span>
+                                        <span class="tag-block-name" x-text="blockName"></span>
+                                    </div>
+                                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-8">
+                                        <template x-for="person in getPeopleByGroupAndBlock(groupName, blockName)" :key="person.id">
+                                            <div @click="selectedPerson = person" class="person-card flex flex-col group">
+                                                <div class="aspect-[3/4.2] relative overflow-hidden bg-slate-100">
+                                                    <img :src="getImgUrl(person.img)" class="w-full h-full object-cover">
+                                                    <div x-show="search.length > 0" class="search-overlay">
+                                                        <p class="text-[8px] font-black text-white uppercase tracking-tighter" x-text="person.category + ' > ' + person.block"></p>
+                                                    </div>
+                                                </div>
+                                                <div class="p-4 text-center border-t border-slate-50 flex-grow flex flex-col justify-center bg-white">
+                                                    <h5 class="text-[#E11D48] font-black text-[13px] leading-tight uppercase mb-1" x-text="person.name"></h5>
+                                                    <p class="text-[9px] text-slate-500 font-bold uppercase" x-text="person.mainRole"></p>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </main>
         </div>
     </div>
 
     <div x-show="isAdmin" x-cloak class="fixed inset-0 z-[100] flex bg-white overflow-hidden">
-        <aside class="admin-sidebar shadow-2xl flex flex-col overflow-y-auto no-scrollbar">
-            <div class="mb-8 text-center"><img src="viags.png" alt="Logo" class="h-12 mx-auto mb-3 bg-white rounded p-1"><h2 class="font-black text-xl text-brand uppercase italic">QUẢN TRỊ VIÊN</h2></div>
+        <aside class="admin-sidebar shadow-2xl flex flex-col">
+            <div class="mb-8 text-center"><img src="viags.png" class="h-12 mx-auto mb-3 bg-white rounded p-1"><h2 class="font-black text-xl text-brand uppercase italic">QUẢN TRỊ VIÊN</h2></div>
             <div class="space-y-6">
+                <div class="admin-box bg-slate-800 p-4 rounded-xl">
+                    <label class="text-[10px] font-black text-red-400 uppercase mb-2 block">Đổi mã PIN (Firebase)</label>
+                    <input type="text" x-model="newPinInput" placeholder="Nhập mã PIN mới..." class="input-admin !text-[10px] mb-2 text-black">
+                    <button @click="updatePIN()" class="w-full bg-red-600 text-white py-2 rounded font-black text-[10px]">CẬP NHẬT MẬT KHẨU</button>
+                </div>
                 <div class="admin-box">
-                    <label class="text-[10px] font-black text-cyan-400 uppercase mb-4 block">1. Vị trí (Tabs)</label>
+                    <label class="text-[10px] font-black text-cyan-400 uppercase mb-4 block">1. Quản lý Vị trí (Tabs)</label>
                     <div class="flex gap-1 mb-4">
-                        <input type="text" x-model="newCatName" placeholder="Tên tab..." class="input-admin !text-[10px] !p-2">
+                        <input type="text" x-model="newCatName" placeholder="Tên tab..." class="input-admin !text-[10px] !p-2 text-black">
                         <button @click="addNewCategory()" class="bg-brand text-white px-3 rounded font-black">+</button>
                     </div>
                     <div class="space-y-1">
                         <template x-for="cat in categories" :key="cat">
                             <div class="flex flex-col bg-slate-700/50 p-2 rounded mb-1">
                                 <div class="flex justify-between items-center mb-1">
-                                    <span class="text-[10px] font-bold text-slate-200 uppercase truncate" x-text="cat"></span>
+                                    <span class="text-[10px] font-bold text-slate-200 uppercase" x-text="cat"></span>
                                     <button @click="deleteCategory(cat)" class="text-red-400 text-xs">✕</button>
                                 </div>
-                                <select x-model="catGroups[cat]" @change="saveConfig()" class="bg-slate-800 text-cyan-400 text-[8px] font-black border-none rounded p-0.5 outline-none">
+                                <select x-model="catGroups[cat]" @change="saveConfig()" class="bg-slate-800 text-cyan-400 text-[10px] font-black border-none rounded p-1 outline-none">
                                     <option value="VIP">VIP</option><option value="CIP">CIP</option>
                                 </select>
                             </div>
@@ -177,10 +152,10 @@
                 </div>
                 <div class="admin-box">
                     <label class="text-[10px] font-black text-highlight uppercase mb-4 block">2. Thứ tự Khối</label>
-                    <select x-model="sortCat" class="w-full bg-white text-black p-2 rounded text-xs font-bold mb-4 outline-none">
+                    <select x-model="sortCat" @change="reinitSortables()" class="w-full bg-white text-black p-2 rounded text-xs font-bold mb-4 outline-none">
                         <template x-for="c in categories" :key="c"><option :value="c" x-text="c"></option></template>
                     </select>
-                    <div id="sortable-blocks-v33" class="space-y-1.5">
+                    <div id="sortable-blocks-admin" class="space-y-1.5">
                         <template x-for="blockName in (blocks[sortCat] || [])" :key="blockName">
                             <div :data-id="blockName" class="bg-slate-700 p-2 rounded flex items-center justify-between cursor-move border border-white/5 shadow-inner">
                                 <span class="text-[9px] font-black uppercase text-slate-100" x-text="blockName"></span>
@@ -188,17 +163,17 @@
                             </div>
                         </template>
                     </div>
-                    <button @click="saveBlockOrder()" class="w-full mt-4 bg-highlight text-black py-2.5 rounded font-black text-[10px]">LƯU THỨ TỰ</button>
+                    <button @click="saveBlockOrder()" class="w-full mt-4 bg-highlight text-black py-2.5 rounded font-black text-[10px]">LƯU THỨ TỰ KHỐI</button>
                 </div>
             </div>
-            <button @click="toggleAdmin()" class="mt-auto bg-red-600 text-white font-black py-4 rounded-xl text-[11px] uppercase tracking-widest shadow-xl">Đóng</button>
+            <button @click="isAdmin = false" class="mt-auto bg-slate-700 text-white font-black py-4 rounded-xl text-[11px] uppercase tracking-widest shadow-xl">Đóng Admin</button>
         </aside>
 
-        <div class="flex-1 p-8 overflow-y-auto no-scrollbar bg-[#F1F5F9]">
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
+        <div class="flex-1 p-8 overflow-y-auto bg-[#F1F5F9] no-scrollbar">
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-10 text-black">
                 <div class="bg-white p-8 rounded-3xl border shadow-xl h-fit sticky top-0">
                     <div class="flex justify-between items-center mb-8 border-b-2 pb-4">
-                        <h3 class="font-black text-brand text-xl uppercase italic">Nhập hồ sơ mới</h3>
+                        <h3 class="font-black text-brand text-xl uppercase italic">Cập nhật hồ sơ</h3>
                         <button x-show="editingId" @click="resetForm()" class="text-red-500 font-bold text-[10px] uppercase underline">Hủy sửa</button>
                     </div>
                     <div class="grid grid-cols-2 gap-6">
@@ -210,25 +185,31 @@
                                 <input type="text" x-model="form.hometown" class="input-admin text-xs" placeholder="Quê quán">
                             </div>
                             <div class="grid grid-cols-2 gap-2">
-                                <input type="text" x-model="form.ethnic" class="input-admin text-xs" placeholder="Dân tộc">
+                                <input type="text" x-model="form.ethnic" class="input-admin text-xs" placeholder="Kinh">
                                 <input type="text" x-model="form.education" class="input-admin text-xs" placeholder="Trình độ">
                             </div>
                             <div class="grid grid-cols-2 gap-2">
-                                <select x-model="form.category" @change="form.block = blocks[form.category][0]" class="p-2 border rounded font-black text-[10px]"><template x-for="c in categories" :key="c"><option :value="c" x-text="c"></option></template></select>
-                                <select x-model="form.block" class="p-2 border rounded font-black text-[10px]"><template x-for="b in (blocks[form.category] || [])" :key="b"><option :value="b" x-text="b"></option></template></select>
+                                <select x-model="form.category" @change="form.block = blocks[form.category][0]" class="p-2 border rounded font-black text-[10px]">
+                                    <template x-for="c in categories" :key="c"><option :value="c" x-text="c"></option></template>
+                                </select>
+                                <select x-model="form.block" class="p-2 border rounded font-black text-[10px]">
+                                    <template x-for="b in (blocks[form.category] || [])" :key="b"><option :value="b" x-text="b"></option></template>
+                                </select>
                             </div>
-                            <select x-model="form.type" class="p-2 border rounded font-black text-[10px] w-full"><template x-for="t in types" :key="t"><option :value="t" x-text="t"></option></template></select>
+                            <select x-model="form.type" class="p-2 border rounded font-black text-[10px] w-full bg-white">
+                                <template x-for="t in types" :key="t"><option :value="t" x-text="t"></option></template>
+                            </select>
                             <input type="text" x-model="form.img" class="input-admin text-xs" placeholder="Drive Image ID">
                         </div>
                         <div class="space-y-4">
-                            <textarea x-model="form.roles" class="input-admin h-36 text-xs font-bold" placeholder="Các chức vụ khác..."></textarea>
+                            <textarea x-model="form.roles" class="input-admin h-32 text-xs font-bold" placeholder="Chức vụ công tác..."></textarea>
                             <textarea x-model="form.bio" class="input-admin h-40 text-xs" placeholder="Tiểu sử công tác..."></textarea>
                         </div>
                     </div>
-                    <button @click="savePersonnel()" class="w-full mt-10 bg-[#0E3F60] text-white py-5 rounded-2xl font-black shadow-2xl uppercase tracking-widest hover:bg-[#0A2E45] transition-all duration-300">LƯU HỒ SƠ</button>
+                    <button @click="savePersonnel()" class="w-full mt-10 bg-[#1FA3B0] text-white py-5 rounded-2xl font-black shadow-2xl uppercase tracking-widest hover:brightness-110 transition-all">LƯU HỒ SƠ</button>
                 </div>
 
-                <div class="bg-white p-8 rounded-3xl border shadow-xl overflow-y-auto max-h-[90vh] no-scrollbar text-black">
+                <div class="bg-white p-8 rounded-3xl border shadow-xl">
                     <h3 class="font-black text-xl uppercase border-l-8 border-highlight pl-5 mb-10">DANH SÁCH DATABASE</h3>
                     <div class="space-y-12">
                         <template x-for="cat in categories" :key="cat">
@@ -237,7 +218,7 @@
                                     <h4 class="font-black text-brand uppercase text-[13px]" x-text="cat"></h4>
                                     <div class="flex gap-1">
                                         <input type="text" :id="'new-block-'+cat" placeholder="Thêm khối..." class="border p-1.5 rounded text-[10px] font-bold w-32 outline-none">
-                                        <button @click="addNewBlockAt(cat)" class="bg-highlight text-black px-3 rounded text-[12px] font-black">+</button>
+                                        <button @click="addNewBlockAt(cat)" class="bg-highlight text-white px-3 rounded text-[12px] font-black">+</button>
                                     </div>
                                 </div>
                                 <template x-for="blockName in (blocks[cat] || [])" :key="blockName">
@@ -248,7 +229,7 @@
                                         </div>
                                         <div :id="'sortable-db-' + cat + '-' + blockName" class="space-y-2 min-h-[30px] p-1">
                                             <template x-for="p in getPeopleInDB(cat, blockName)" :key="p.id">
-                                                <div :data-id="p.id" class="db-row flex items-center justify-between group shadow-sm bg-white">
+                                                <div :data-id="p.id" class="db-row flex items-center justify-between group shadow-sm">
                                                     <div class="flex items-center gap-4">
                                                         <span class="text-slate-300 font-bold text-lg">☰</span>
                                                         <img :src="getImgUrl(p.img)" class="w-10 h-10 rounded-full object-cover">
@@ -271,38 +252,108 @@
         </div>
     </div>
 
+    <div x-show="selectedPerson" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm">
+        <div @click.away="selectedPerson = null" class="modal-container shadow-2xl animate-in zoom-in duration-300">
+            <button @click="selectedPerson = null" class="absolute top-6 right-6 bg-slate-100 w-10 h-10 rounded-full font-black text-xl hover:bg-red-500 hover:text-white transition-all z-50">✕</button>
+            <img :src="getImgUrl(selectedPerson?.img)" class="img-profile-mini">
+            <div class="modal-content-wrapper text-black">
+                <div class="mb-8 pb-8 border-b border-slate-100">
+                    <p class="text-[#1FA3B0] font-black text-xs uppercase mb-2" x-text="selectedPerson?.mainRole"></p>
+                    <h2 class="text-[#E11D48] font-black text-4xl uppercase italic leading-none mb-10" x-text="selectedPerson?.name"></h2>
+                    <div class="grid grid-cols-2 gap-y-4 gap-x-10">
+                        <template x-for="f in [['Ngày sinh','dob'],['Quê quán','hometown'],['Dân tộc','ethnic'],['Trình độ','education']]">
+                            <div class="flex flex-col">
+                                <span class="text-[9px] font-black text-slate-400 uppercase" x-text="f[0]"></span>
+                                <span class="text-sm font-bold border-b border-slate-100" x-text="selectedPerson?.[f[1]] || '---'"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-10">
+                    <section><h4 class="text-[11px] font-black text-[#1FA3B0] uppercase mb-4 border-l-4 border-[#FB8500] pl-3">Chức vụ</h4><ul class="text-[13px] font-bold space-y-2 list-none" x-html="formatList(selectedPerson?.roles)"></ul></section>
+                    <section><h4 class="text-[11px] font-black text-[#1FA3B0] uppercase mb-4 border-l-4 border-[#FB8500] pl-3">Tiểu sử</h4><ul class="text-[13px] font-medium text-slate-600 italic leading-relaxed space-y-3 list-none" x-html="formatList(selectedPerson?.bio)"></ul></section>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function app() {
             return {
                 isAdmin: false, search: '', activeGroup: 'VIP', filterCategory: 'Tất cả', selectedPerson: null,
-                editingId: null, sortCat: '', newCatName: '',
-                categories: ['Bộ Chính trị', 'Ban Bí thư'],
-                catGroups: {}, blocks: { 'Bộ Chính trị': ['Địa phương'], 'Ban Bí thư': ['Địa phương'] },
-                blocksOrder: {}, types: ['Giữ nguyên', 'Tái cử', 'Lần đầu'],
-                data: [], form: { name: '', mainRole: '', order: 999, category: 'Bộ Chính trị', block: 'Địa phương', type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' },
+                editingId: null, sortCat: '', newCatName: '', newPinInput: '',
+                categories: [], blocks: {}, catGroups: {}, blocksOrder: {}, data: [], auth: { pin: '1234' },
+                types: ['Giữ nguyên', 'Tái cử', 'Lần đầu'],
+                form: { name: '', mainRole: '', category: '', block: '', type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' },
                 
                 async init() {
                     const cfg = { apiKey: "AIzaSyAhbVR_ywdzMNnwaeKMp5rWNsT4otCF4xM", projectId: "pvhk-d32da", appId: "1:974778325507:web:eda0b36711f492cb764c36" };
-                    if (!firebase.apps.length) firebase.initializeApp(cfg); 
+                    if (!firebase.apps.length) firebase.initializeApp(cfg);
                     this.db = firebase.firestore();
+
                     this.db.collection("personnel_v8").orderBy("order", "asc").onSnapshot(s => {
                         this.data = s.docs.map(d => ({id: d.id, ...d.data()}));
-                        this.$nextTick(() => this.initAllSortables());
+                        this.$nextTick(() => this.reinitSortables());
                     });
+
                     this.db.collection("config").doc("master_structure_v29").onSnapshot(doc => {
-                        if (doc.exists && doc.data()) {
+                        if (doc.exists) {
                             const d = doc.data();
-                            this.categories = d.categories || this.categories;
-                            this.blocks = d.blocks || this.blocks;
+                            this.categories = d.categories || [];
+                            this.blocks = d.blocks || {};
                             this.catGroups = d.catGroups || {};
                             this.blocksOrder = d.blocksOrder || {};
                             if(!this.sortCat) this.sortCat = this.categories[0];
-                            if(!this.form.category) {
-                                this.form.category = this.categories[0];
-                                this.form.block = this.blocks[this.form.category][0];
-                            }
+                            if(!this.form.category) this.form.category = this.categories[0];
                         }
                     });
+
+                    this.db.collection("config").doc("auth_v1").onSnapshot(doc => {
+                        if (doc.exists) {
+                            const d = doc.data();
+                            this.auth.pin = d.pin || d.Password || '1234';
+                        }
+                    });
+                },
+
+                reinitSortables() {
+                    const blockEl = document.getElementById('sortable-blocks-admin');
+                    if(blockEl) {
+                        if(blockEl._sortable) blockEl._sortable.destroy();
+                        blockEl._sortable = Sortable.create(blockEl, { animation: 200 });
+                    }
+                    this.categories.forEach(cat => {
+                        (this.blocks[cat] || []).forEach(block => {
+                            const el = document.getElementById(`sortable-db-${cat}-${block}`);
+                            if(el) {
+                                if(el._sortable) el._sortable.destroy();
+                                el._sortable = Sortable.create(el, { 
+                                    animation: 200, 
+                                    handle: '.db-row', 
+                                    onEnd: async () => { await this.updatePersonnelOrder(el) } 
+                                });
+                            }
+                        });
+                    });
+                },
+
+                async saveBlockOrder() {
+                    const el = document.getElementById('sortable-blocks-admin');
+                    const newOrder = Array.from(el.children).map(it => it.dataset.id);
+                    this.blocksOrder[this.sortCat] = newOrder; 
+                    await this.saveConfig();
+                    alert("Đã lưu thứ tự cho " + this.sortCat);
+                },
+
+                async loginAdmin() {
+                    const p = prompt("Mã PIN Quản trị:");
+                    if (p === this.auth.pin || p === "Administrator") { this.isAdmin = true; } else { alert("Sai mã PIN!"); }
+                },
+                async updatePIN() {
+                    if(!this.newPinInput) return alert("Nhập mã PIN mới!");
+                    await this.db.collection("config").doc("auth_v1").set({ pin: this.newPinInput });
+                    alert("Đã đổi mã PIN thành công!");
+                    this.newPinInput = '';
                 },
 
                 addNewCategory() { if(this.newCatName) { this.categories.push(this.newCatName); this.blocks[this.newCatName] = ['Mặc định']; this.catGroups[this.newCatName] = 'CIP'; this.saveConfig(); this.newCatName = ''; } },
@@ -317,82 +368,52 @@
                 },
                 deleteBlockAt(cat, blockName) { if(confirm(`Xóa khối ${blockName}?`)) { this.blocks[cat] = this.blocks[cat].filter(b => b !== blockName); this.saveConfig(); } },
                 async saveConfig() { await this.db.collection("config").doc("master_structure_v29").set({ categories: this.categories, blocks: this.blocks, catGroups: this.catGroups, blocksOrder: this.blocksOrder }); },
-
-                initAllSortables() {
-                    const blockEl = document.getElementById('sortable-blocks-v33');
-                    if(blockEl && !blockEl.sortableInited) { Sortable.create(blockEl, { animation: 200, onEnd: () => this.saveBlockOrder() }); blockEl.sortableInited = true; }
-                    this.categories.forEach(cat => {
-                        (this.blocks[cat] || []).forEach(block => {
-                            const el = document.getElementById(`sortable-db-${cat}-${block}`);
-                            if(el && !el.sortableInited) {
-                                Sortable.create(el, { animation: 200, handle: '.db-row', onEnd: async () => { await this.updatePersonnelOrder(el) } }); 
-                                el.sortableInited = true;
-                            }
-                        });
-                    });
-                },
                 async updatePersonnelOrder(el) {
                     const batch = this.db.batch();
                     Array.from(el.children).forEach((it, idx) => { if(it.dataset.id) batch.update(this.db.collection("personnel_v8").doc(it.dataset.id), { order: idx }); });
                     await batch.commit();
                 },
-                async saveBlockOrder() {
-                    const el = document.getElementById('sortable-blocks-v33');
-                    const newOrder = Array.from(el.children).map(it => it.dataset.id);
-                    this.blocksOrder[this.sortCat] = newOrder; await this.saveConfig();
-                },
 
-                toggleAdmin() { this.isAdmin = !this.isAdmin; if(this.isAdmin && prompt("PIN:") !== "1234") this.isAdmin = false; },
-                setActiveGroup(g) { this.activeGroup = g; this.filterCategory = 'Tất cả'; },
-                get filteredCategories() { return this.activeGroup === 'Tất cả' ? this.categories : this.categories.filter(cat => this.catGroups[cat] === this.activeGroup); },
-                hasPeopleInGroup(g) { return this.dataFilteredAll().some(p => (this.catGroups[p.category] || 'CIP') === g); },
-                getPeopleInDB(cat, block) { return this.data.filter(p => p.category === cat && p.block === block); },
                 editPersonnel(p) { this.editingId = p.id; this.form = { ...p }; },
-                resetForm() { this.editingId = null; this.form = { name: '', mainRole: '', order: 999, category: this.categories[0], block: this.blocks[this.categories[0]][0], type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' }; },
+                resetForm() { this.editingId = null; this.form = { name: '', mainRole: '', category: this.categories[0], block: this.blocks[this.categories[0]][0], type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' }; },
                 async savePersonnel() {
-                    if(!this.form.name || !this.form.mainRole) return alert("Họ tên & Chức danh bắt buộc!");
-                    // Gán khối mặc định nếu bị bỏ trống
+                    if(!this.form.name) return alert("Họ tên bắt buộc!");
                     if(!this.form.block) this.form.block = this.blocks[this.form.category][0];
                     if(this.editingId) await this.db.collection("personnel_v8").doc(this.editingId).update(this.form);
-                    else { this.form.order = this.data.length; await this.db.collection("personnel_v8").add(this.form); }
-                    this.resetForm(); alert("Dữ liệu đã được lưu!");
+                    else { await this.db.collection("personnel_v8").add({...this.form, order: this.data.length}); }
+                    this.resetForm(); alert("Đã lưu thành công!");
                 },
                 deletePersonnel(id) { if(confirm("Xác nhận xóa?")) this.db.collection("personnel_v8").doc(id).delete(); },
-                countStats(k, v) { return this.dataFilteredAll().filter(p => p[k] === v).length; },
-                blocksOrderFilteredByGroup(group) {
-                    const active = [...new Set(this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === group).map(it => it.block))];
-                    const defined = this.blocksOrder[this.filterCategory] || [];
-                    return defined.filter(b => active.includes(b)).concat(active.filter(b => !defined.includes(b)));
+
+                get filteredCategories() {
+                    if (this.activeGroup === 'Tất cả') return this.categories;
+                    return this.categories.filter(c => (this.catGroups[c] || 'CIP') === this.activeGroup);
                 },
-                getPeopleByGroupAndBlock(g, b) { 
-                    return this.dataFilteredAll()
-                        .filter(p => (this.catGroups[p.category] || 'CIP') === g && p.block === b);
+                getCategoryOfBlock(group, block) {
+                    const sample = this.data.find(p => (this.catGroups[p.category] || 'CIP') === group && p.block === block);
+                    return sample ? sample.category : 'Vị trí';
                 },
                 dataFilteredAll() {
                     let base = this.data;
                     if (this.activeGroup !== 'Tất cả') base = base.filter(p => (this.catGroups[p.category] || 'CIP') === this.activeGroup);
-                    if (this.filterCategory !== 'Tất cả') base = base.filter(p => p.category === this.filterCategory);
-                    return base.filter(p => {
-                        const s = this.search.toLowerCase();
-                        return p.name.toLowerCase().includes(s) || p.mainRole.toLowerCase().includes(s) || (p.block && p.block.toLowerCase().includes(s)) || (p.hometown && p.hometown.toLowerCase().includes(s));
-                    });
+                    if (this.filterCategory !== 'Tất cả' && this.search === '') base = base.filter(p => p.category === this.filterCategory);
+                    const s = this.search.toLowerCase();
+                    return base.filter(p => p.name.toLowerCase().includes(s) || p.mainRole.toLowerCase().includes(s) || (p.block && p.block.toLowerCase().includes(s)) || (p.category && p.category.toLowerCase().includes(s)));
+                },
+                setActiveGroup(g) { this.activeGroup = g; this.filterCategory = 'Tất cả'; this.search = ''; },
+                hasPeopleInGroup(g) { return this.dataFilteredAll().some(p => (this.catGroups[p.category] || 'CIP') === g); },
+                getPeopleInDB(cat, block) { return this.data.filter(p => p.category === cat && p.block === block); },
+                getPeopleByGroupAndBlock(g, b) { return this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === g && p.block === b); },
+                blocksOrderFilteredByGroup(group) {
+                    const currentViewCat = this.filterCategory;
+                    const activeBlocks = [...new Set(this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === group).map(it => it.block))];
+                    const savedOrder = this.blocksOrder[currentViewCat] || [];
+                    return savedOrder.filter(b => activeBlocks.includes(b)).concat(activeBlocks.filter(b => !savedOrder.includes(b)));
                 },
                 getImgUrl(u) { if(!u) return 'https://via.placeholder.com/400x533'; const d = u.match(/[-\w]{25,}/); return d ? `https://lh3.googleusercontent.com/d/${d[0]}=s800` : u; },
-                formatList(t) { return t ? t.split('\n').filter(l => l.trim() !== '').map(l => `<li>${l}</li>`).join('') : ''; }
+                formatList(t) { return t ? t.split('\n').filter(l => l.trim()).map(l => `<li>• ${l}</li>`).join('') : ''; }
             }
         }
     </script>
-
-<footer x-show="!isAdmin" class="w-full py-8 mt-auto">
-    <div class="container mx-auto px-4">
-        <div class="flex flex-col items-center justify-center opacity-40 hover:opacity-100 transition-opacity duration-500">
-            <div class="h-px w-16 bg-slate-300 mb-4"></div>
-            <p class="text-[10px] font-medium text-slate-500 tracking-[0.3em] uppercase mb-1">Developed & managed by</p>
-            <p class="text-[12px] font-black text-slate-600 tracking-tighter uppercase italic">
-                Nhung Tran <span class="mx-2 text-slate-300">|</span> © 2026 VIAGS
-            </p>
-        </div>
-    </div>
-</footer>
 </body>
 </html>
