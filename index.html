@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP/CIP TOOL 2026 - VIAGS Official</title>
+    <title>VIP/CIP TOOL</title>
+
+<link rel="icon" href="pvhl-tool.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -25,7 +27,24 @@
         .search-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(225, 29, 72, 0.9); backdrop-blur: 4px; padding: 4px; text-align: center; z-index: 5; }
 
         /* Modal Profile: Ảnh mini góc trái */
-        .modal-container { background: white; border-radius: 24px; width: 95%; max-width: 850px; position: relative; overflow: hidden; }
+        /* MODAL CỐ ĐỊNH KÍCH THƯỚC */
+.modal-container { 
+    background: white; 
+    border-radius: 24px; 
+    width: 95%; 
+    max-width: 900px; 
+    max-height: 85vh; /* Cố định chiều cao tối đa bằng 85% chiều cao màn hình */
+    position: relative; 
+    overflow: hidden; 
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-body-scroll { 
+    overflow-y: auto; /* Kích hoạt thanh cuộn dọc khi nội dung vượt quá chiều cao */
+    flex: 1; 
+    padding-bottom: 40px;
+}
         .img-profile-mini { position: absolute; top: 20px; left: 20px; width: 100px; height: 130px; border-radius: 8px; object-fit: cover; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 3px solid white; z-index: 10; }
         
         @media (min-width: 768px) {
@@ -214,27 +233,39 @@
         </div>
     </div>
 
-    <div x-show="selectedPerson" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-sm text-black">
-        <div @click.away="selectedPerson = null" class="modal-container shadow-2xl animate-in zoom-in duration-200">
-            <button @click="selectedPerson = null" class="absolute top-4 right-4 bg-slate-100 w-10 h-10 rounded-full font-black text-xl hover:bg-red-500 hover:text-white transition-all z-50">✕</button>
+    <div x-show="selectedPerson" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm text-black">
+    <div @click.away="selectedPerson = null" class="modal-container shadow-2xl animate-in zoom-in duration-200">
+        <button @click="selectedPerson = null" class="absolute top-4 right-4 bg-slate-100 w-10 h-10 rounded-full font-black text-xl hover:bg-red-500 hover:text-white transition-all z-[60]">✕</button>
+        
+        <div class="modal-body-scroll no-scrollbar">
             <img :src="getImgUrl(selectedPerson?.img)" class="img-profile-mini">
             <div class="modal-content-wrapper">
                 <div class="mb-6 pb-6 border-b border-slate-100">
                     <p class="text-[#1FA3B0] font-black text-[10px] md:text-xs uppercase mb-1 md:mb-2" x-text="selectedPerson?.mainRole"></p>
                     <h2 class="text-[#E11D48] font-black text-xl md:text-5xl uppercase italic leading-tight mb-6 md:mb-10" x-text="selectedPerson?.name"></h2>
-                    <div class="grid grid-cols-2 gap-y-3 gap-x-6">
+                    <div class="grid grid-cols-2 gap-y-3 gap-x-6 md:gap-x-10">
                         <template x-for="f in [['Ngày sinh','dob'],['Quê quán','hometown'],['Dân tộc','ethnic'],['Trình độ','education']]">
-                            <div class="flex flex-col"><span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase" x-text="f[0]"></span><span class="text-xs md:text-sm font-bold border-b border-slate-50" x-text="selectedPerson?.[f[1]] || '---'"></span></div>
+                            <div class="flex flex-col">
+                                <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase" x-text="f[0]"></span>
+                                <span class="text-xs md:text-sm font-bold border-b border-slate-50" x-text="selectedPerson?.[f[1]] || '---'"></span>
+                            </div>
                         </template>
                     </div>
                 </div>
                 <div class="grid md:grid-cols-2 gap-6 md:gap-10">
-                    <section><h4 class="text-[10px] md:text-[11px] font-black text-[#1FA3B0] uppercase mb-3 border-l-4 border-[#FB8500] pl-3">Chức vụ</h4><ul class="text-[12px] md:text-[13px] font-bold text-slate-700 space-y-1 md:space-y-2 list-none" x-html="formatList(selectedPerson?.roles)"></ul></section>
-                    <section><h4 class="text-[10px] md:text-[11px] font-black text-[#1FA3B0] uppercase mb-3 border-l-4 border-[#FB8500] pl-3">Tiểu sử</h4><ul class="text-[12px] md:text-[13px] font-medium text-slate-600 italic leading-relaxed space-y-2 md:space-y-3 list-none" x-html="formatList(selectedPerson?.bio)"></ul></section>
+                    <section>
+                        <h4 class="text-[10px] md:text-[11px] font-black text-[#1FA3B0] uppercase mb-3 border-l-4 border-[#FB8500] pl-3">Chức vụ</h4>
+                        <ul class="text-[12px] md:text-[13px] font-bold text-slate-700 space-y-2 list-none" x-html="formatList(selectedPerson?.roles)"></ul>
+                    </section>
+                    <section>
+                        <h4 class="text-[10px] md:text-[11px] font-black text-[#1FA3B0] uppercase mb-3 border-l-4 border-[#FB8500] pl-3">Tiểu sử</h4>
+                        <ul class="text-[12px] md:text-[13px] font-medium text-slate-600 italic leading-relaxed space-y-3 list-none" x-html="formatList(selectedPerson?.bio)"></ul>
+                    </section>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
     <script>
         function app() {
