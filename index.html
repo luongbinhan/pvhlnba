@@ -28,12 +28,13 @@
 
         /* Modal Profile: Ảnh mini góc trái */
         /* MODAL CỐ ĐỊNH KÍCH THƯỚC */
+/* MODAL CONTAINER: Cố định chiều cao và cho phép cuộn nội dung */
 .modal-container { 
     background: white; 
     border-radius: 24px; 
     width: 95%; 
     max-width: 900px; 
-    max-height: 85vh; /* Cố định chiều cao tối đa bằng 85% chiều cao màn hình */
+    max-height: 85vh; /* Không tràn màn hình trên cả PC & Mobile */
     position: relative; 
     overflow: hidden; 
     display: flex;
@@ -41,19 +42,48 @@
 }
 
 .modal-body-scroll { 
-    overflow-y: auto; /* Kích hoạt thanh cuộn dọc khi nội dung vượt quá chiều cao */
+    overflow-y: auto; 
     flex: 1; 
     padding-bottom: 40px;
 }
-        .img-profile-mini { position: absolute; top: 20px; left: 20px; width: 100px; height: 130px; border-radius: 8px; object-fit: cover; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 3px solid white; z-index: 10; }
-        
-        @media (min-width: 768px) {
-            .img-profile-mini { top: 30px; left: 30px; width: 140px; height: 180px; }
-            .modal-content-wrapper { padding: 40px 40px 40px 200px; }
-        }
-        @media (max-width: 767px) {
-            .modal-content-wrapper { padding: 160px 20px 30px 20px; }
-        }
+
+/* ẢNH CHI TIẾT: Tối ưu hiển thị theo thiết bị */
+.img-profile-mini { 
+    display: block;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border: 4px solid white;
+    z-index: 10;
+}
+
+/* Cấu hình riêng cho Mobile (Dưới 768px) */
+@media (max-width: 767px) {
+    .img-profile-mini { 
+        position: relative; /* Nằm trong luồng văn bản */
+        margin: 20px auto 10px auto; /* Căn giữa và đẩy lên trên cùng */
+        width: 120px; 
+        height: 160px; 
+    }
+    .modal-content-wrapper { 
+        padding: 20px !important; /* Nội dung sát dưới ảnh */
+    }
+}
+
+/* Cấu hình riêng cho PC (Từ 768px trở lên) - GIỮ NGUYÊN NHƯ CŨ */
+@media (min-width: 768px) {
+    .img-profile-mini { 
+        position: absolute; 
+        top: 30px; 
+        left: 30px; 
+        width: 140px; 
+        height: 180px; 
+        margin: 0;
+    }
+    .modal-content-wrapper { 
+        padding: 40px 40px 40px 200px; /* Chừa khoảng trống bên trái cho ảnh */
+    }
+}
 
         .admin-sidebar { width: 300px; background: #0F172A; color: white; flex-shrink: 0; padding: 1.5rem; height: 100vh; overflow-y: auto; }
         .input-admin { border: 2px solid #94A3B8; border-radius: 8px; padding: 8px 12px; width: 100%; font-weight: 700; color: #000 !important; background: white; }
@@ -235,14 +265,16 @@
 
     <div x-show="selectedPerson" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm text-black">
     <div @click.away="selectedPerson = null" class="modal-container shadow-2xl animate-in zoom-in duration-200">
-        <button @click="selectedPerson = null" class="absolute top-4 right-4 bg-slate-100 w-10 h-10 rounded-full font-black text-xl hover:bg-red-500 hover:text-white transition-all z-[60]">✕</button>
+        <button @click="selectedPerson = null" class="absolute top-4 right-4 bg-slate-100 w-10 h-10 rounded-full font-black text-xl hover:bg-red-500 hover:text-white transition-all z-[70]">✕</button>
         
         <div class="modal-body-scroll no-scrollbar">
             <img :src="getImgUrl(selectedPerson?.img)" class="img-profile-mini">
+            
             <div class="modal-content-wrapper">
                 <div class="mb-6 pb-6 border-b border-slate-100">
-                    <p class="text-[#1FA3B0] font-black text-[10px] md:text-xs uppercase mb-1 md:mb-2" x-text="selectedPerson?.mainRole"></p>
-                    <h2 class="text-[#E11D48] font-black text-xl md:text-5xl uppercase italic leading-tight mb-6 md:mb-10" x-text="selectedPerson?.name"></h2>
+                    <p class="text-[#1FA3B0] font-black text-[10px] md:text-xs uppercase mb-2" x-text="selectedPerson?.mainRole"></p>
+                    <h2 class="text-[#E11D48] font-black text-2xl md:text-5xl uppercase italic leading-tight mb-8" x-text="selectedPerson?.name"></h2>
+                    
                     <div class="grid grid-cols-2 gap-y-3 gap-x-6 md:gap-x-10">
                         <template x-for="f in [['Ngày sinh','dob'],['Quê quán','hometown'],['Dân tộc','ethnic'],['Trình độ','education']]">
                             <div class="flex flex-col">
@@ -252,13 +284,14 @@
                         </template>
                     </div>
                 </div>
+
                 <div class="grid md:grid-cols-2 gap-6 md:gap-10">
                     <section>
-                        <h4 class="text-[10px] md:text-[11px] font-black text-[#1FA3B0] uppercase mb-3 border-l-4 border-[#FB8500] pl-3">Chức vụ</h4>
+                        <h4 class="text-[10px] md:text-[11px] font-black text-[#1FA3B0] uppercase mb-3 border-l-4 border-[#FB8500] pl-3">Chức vụ công tác</h4>
                         <ul class="text-[12px] md:text-[13px] font-bold text-slate-700 space-y-2 list-none" x-html="formatList(selectedPerson?.roles)"></ul>
                     </section>
                     <section>
-                        <h4 class="text-[10px] md:text-[11px] font-black text-[#1FA3B0] uppercase mb-3 border-l-4 border-[#FB8500] pl-3">Tiểu sử</h4>
+                        <h4 class="text-[10px] md:text-[11px] font-black text-[#1FA3B0] uppercase mb-3 border-l-4 border-[#FB8500] pl-3">Tiểu sử tóm tắt</h4>
                         <ul class="text-[12px] md:text-[13px] font-medium text-slate-600 italic leading-relaxed space-y-3 list-none" x-html="formatList(selectedPerson?.bio)"></ul>
                     </section>
                 </div>
