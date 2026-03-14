@@ -99,36 +99,6 @@
     margin-bottom: 1px;
 }
 
-/* 1. Thiết lập độ mượt cho card */
-.person-card {
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    z-index: 1; /* Ở trạng thái bình thường z-index thấp */
-}
-
-.person-card:hover {
-    /* Quan trọng: z-index phải cao hơn giá trị z-50 của header */
-    z-index: 100 !important; 
-    transform: translateY(-15px) scale(1.05); /* Nhấc cao hơn để thấy rõ hiệu ứng */
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
-}
-
-/* Đảm bảo khối cha chứa các card không kìm hãm z-index */
-main, .grid {
-    isolation: isolate; 
-}
-
-/* 3. Hiệu ứng cho ảnh bên trong (Phóng to ảnh) */
-.person-card:hover img {
-    transform: scale(1.1); /* Ảnh phóng to 10% */
-    transition: transform 0.6s ease;
-}
-
-/* 4. Thêm hiệu ứng mượt mà cho ảnh khi không hover */
-.person-card img {
-    transition: transform 0.6s ease;
-}
-
 /* Cấu hình riêng cho Mobile (Dưới 768px) */
 @media (max-width: 767px) {
     .img-profile-mini { 
@@ -175,7 +145,7 @@ main, .grid {
             <div class="container mx-auto px-4 flex justify-between items-center py-2 md:py-3">
                 <img src="viags.png" class="h-8 md:h-10 w-auto"> 
                 <div class="flex-1 max-w-xl mx-2 md:mx-6 relative text-black">
-                    <input type="text" x-model="search" placeholder="Tìm tên, quê quán, khối..." class="w-full bg-white rounded-full px-10 py-2 md:py-2.5 font-bold outline-none text-sm shadow-inner">
+                    <input type="text" x-model="search" placeholder="Tìm tên, khối..." class="w-full bg-white rounded-full px-10 py-2 md:py-2.5 font-bold outline-none text-sm shadow-inner">
                     <span class="absolute left-3 top-2 md:top-3">🔍</span>
                 </div>
                 <button @click="loginAdmin()" class="bg-red-600 text-white px-3 md:px-5 py-1.5 md:py-2 rounded-full text-[10px] md:text-xs font-black hover:bg-red-700 uppercase">Admin</button>
@@ -226,27 +196,26 @@ main, .grid {
                                     </div>
                                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-8">
                                         <template x-for="person in getPeopleByGroupAndBlock(groupName, blockName)" :key="person.id">
-    <div @click="selectedPerson = person" 
-     class="person-card group flex flex-col relative overflow-hidden bg-white border border-slate-100 rounded-xl transition-all duration-300">
-    
-    <div class="aspect-[3/4.2] relative overflow-hidden bg-slate-100">
-        <img :src="getImgUrl(person.img)" 
-             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+    <div @click="selectedPerson = person" class="person-card flex flex-col group relative overflow-hidden">
         
-        <div x-show="search.length > 0" class="search-overlay">
-            <p class="text-[8px] font-black text-white uppercase" x-text="person.category"></p>
+        <div class="aspect-[3/4.2] relative overflow-hidden bg-slate-100">
+            <img :src="getImgUrl(person.img)" class="w-full h-full object-cover">
+            
+            <div x-show="search.length > 0" class="search-overlay">
+                <p class="text-[8px] font-black text-white uppercase" x-text="person.category"></p>
+            </div>
         </div>
-    </div>
 
-    <div class="p-2 md:p-3 text-center border-t border-slate-50 bg-white flex-grow flex flex-col justify-center text-black relative z-10">
-        <h5 class="text-[#E11D48] font-black text-[11px] md:text-[13px] leading-tight uppercase mb-1" x-text="person.name"></h5>
-        <p class="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase" x-text="person.mainRole"></p>
-    </div>
+        <div class="p-2 md:p-3 text-center border-t border-slate-50 bg-white flex-grow flex flex-col justify-center text-black relative">
+            <h5 class="text-[#E11D48] font-black text-[11px] md:text-[13px] leading-tight uppercase mb-1" x-text="person.name"></h5>
+            <p class="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase" x-text="person.mainRole"></p>
+        </div>
 
-    <template x-if="person.type === 'Tái cử'">
-        <div class="badge-taicu"></div>
-    </template>
-</div>
+        <template x-if="person.type === 'Tái cử'">
+            <div class="badge-taicu"></div>
+        </template>
+        
+    </div>
 
                                                 <div class="p-2 md:p-3 text-center border-t border-slate-50 bg-white flex-grow flex flex-col justify-center text-black">
                                                     <h5 class="text-[#E11D48] font-black text-[11px] md:text-[13px] leading-tight uppercase mb-1" x-text="person.name"></h5>
@@ -531,26 +500,11 @@ main, .grid {
             getCategoryOfBlock(group, block) { const sample = this.data.find(p => (this.catGroups[p.category] || 'CIP') === group && p.block === block); return sample ? sample.category : 'Vị trí'; },
             
             dataFilteredAll() {
-    // 1. Lọc theo nhóm (VIP/CIP)
-    let base = this.data.filter(p => (this.catGroups[p.category] || 'CIP') === this.activeGroup);
-    
-    // 2. Lọc theo Tab (Category) nếu không tìm kiếm
-    if (this.filterCategory !== 'Tất cả' && this.search === '') {
-        base = base.filter(p => p.category === this.filterCategory);
-    }
-    
-    const s = this.search.toLowerCase();
-    if (!s) return base;
-
-    // 3. Logic tìm kiếm thông minh: Tên, Chức danh, Khối và QUÊ QUÁN
-    return base.filter(p => 
-        (p.name && p.name.toLowerCase().includes(s)) || 
-        (p.mainRole && p.mainRole.toLowerCase().includes(s)) || 
-        (p.hometown && p.hometown.toLowerCase().includes(s)) || // Thêm dòng này
-        (p.block && p.block.toLowerCase().includes(s)) || 
-        (p.category && p.category.toLowerCase().includes(s))
-    );
-},
+                let base = this.data.filter(p => (this.catGroups[p.category] || 'CIP') === this.activeGroup);
+                if (this.filterCategory !== 'Tất cả' && this.search === '') base = base.filter(p => p.category === this.filterCategory);
+                const s = this.search.toLowerCase();
+                return base.filter(p => p.name.toLowerCase().includes(s) || p.mainRole.toLowerCase().includes(s) || (p.block && p.block.toLowerCase().includes(s)) || (p.category && p.category.toLowerCase().includes(s)));
+            },
 
             setActiveGroup(g) { this.activeGroup = g; this.filterCategory = 'Tất cả'; this.search = ''; },
             hasPeopleInGroup(g) { return this.dataFilteredAll().some(p => (this.catGroups[p.category] || 'CIP') === g); },
