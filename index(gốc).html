@@ -74,31 +74,6 @@
     border-radius: 10px;
 }
 
-
-/* Huy hiệu góc card với nền bo khuyết 45 độ */
-.badge-taicu {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 25px;
-    height: 25px;
-    background: #FFD700; /* Nền vàng (có thể chỉnh sang màu nhạt hơn như #FFEDD5 nếu muốn giống hệt mẫu) */
-    /* Bo góc khuyết: Chỉ bo góc trên-trái để tạo đường cong ngược */
-    border-radius: 100% 0 0 0; 
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
-    z-index: 20;
-}
-
-.badge-taicu::after {
-    content: '★';
-    color: #E11D48; /* Sao đỏ */
-    font-size: 16px;
-    margin-right: 2px;
-    margin-bottom: 1px;
-}
-
 /* Cấu hình riêng cho Mobile (Dưới 768px) */
 @media (max-width: 767px) {
     .img-profile-mini { 
@@ -196,27 +171,13 @@
                                     </div>
                                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-8">
                                         <template x-for="person in getPeopleByGroupAndBlock(groupName, blockName)" :key="person.id">
-    <div @click="selectedPerson = person" class="person-card flex flex-col group relative overflow-hidden">
-        
-        <div class="aspect-[3/4.2] relative overflow-hidden bg-slate-100">
-            <img :src="getImgUrl(person.img)" class="w-full h-full object-cover">
-            
-            <div x-show="search.length > 0" class="search-overlay">
-                <p class="text-[8px] font-black text-white uppercase" x-text="person.category"></p>
-            </div>
-        </div>
-
-        <div class="p-2 md:p-3 text-center border-t border-slate-50 bg-white flex-grow flex flex-col justify-center text-black relative">
-            <h5 class="text-[#E11D48] font-black text-[11px] md:text-[13px] leading-tight uppercase mb-1" x-text="person.name"></h5>
-            <p class="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase" x-text="person.mainRole"></p>
-        </div>
-
-        <template x-if="person.type === 'Tái cử'">
-            <div class="badge-taicu"></div>
-        </template>
-        
-    </div>
-
+                                            <div @click="selectedPerson = person" class="person-card flex flex-col group">
+                                                <div class="aspect-[3/4.2] relative overflow-hidden bg-slate-100">
+                                                    <img :src="getImgUrl(person.img)" class="w-full h-full object-cover">
+                                                    <div x-show="search.length > 0" class="search-overlay">
+                                                        <p class="text-[8px] font-black text-white uppercase" x-text="person.category"></p>
+                                                    </div>
+                                                </div>
                                                 <div class="p-2 md:p-3 text-center border-t border-slate-50 bg-white flex-grow flex flex-col justify-center text-black">
                                                     <h5 class="text-[#E11D48] font-black text-[11px] md:text-[13px] leading-tight uppercase mb-1" x-text="person.name"></h5>
                                                     <p class="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase" x-text="person.mainRole"></p>
@@ -308,14 +269,10 @@
                             </div>
                         </template>
                     </div>
-                    <button @click="saveBlockOrder()" class="w-full mt-3 bg-[#1FA3B0] text-white py-2.5 rounded font-black text-[10px] uppercase hover:brightness-110 transition-all">
-    Lưu thứ tự
-</button>
+                    <button @click="saveBlockOrder()" class="w-full mt-3 bg-highlight text-black py-2.5 rounded font-black text-[9px] uppercase">Lưu thứ tự</button>
                 </div>
             </div>
-            <button @click="isAdmin = false" class="w-full mt-auto bg-red-600 text-white py-2.5 rounded font-black text-[10px] uppercase hover:bg-red-700 transition-all">
-    Đóng Admin
-</button>
+            <button @click="isAdmin = false" class="mt-auto bg-slate-700 text-white font-black py-4 rounded-xl text-[10px] uppercase">Đóng Admin</button>
         </aside>
 
         <div class="flex-1 p-5 md:p-8 overflow-y-auto bg-[#F1F5F9] no-scrollbar text-black">
@@ -382,151 +339,66 @@
     </div>
 
     <script>
-    function app() {
-        return {
-            isAdmin: false, search: '', activeGroup: 'VIP', filterCategory: 'Tất cả', selectedPerson: null,
-            editingId: null, sortCat: '', newCatName: '', newPinInput: '', openTabs: {},
-            categories: [], blocks: {}, catGroups: {}, blocksOrder: {}, data: [], 
-            // Không để mật khẩu mặc định ở đây để tránh lộ thông tin
-            auth: { pin: '', masterPin: '' }, 
-            types: ['Giữ nguyên', 'Tái cử', 'Lần đầu'],
-            form: { name: '', mainRole: '', category: '', block: '', type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' },
-
-            async init() {
-                // Config Firebase giữ nguyên theo dự án của bạn
-                const cfg = { apiKey: "AIzaSyAhbVR_ywdzMNnwaeKMp5rWNsT4otCF4xM", projectId: "pvhk-d32da", appId: "1:974778325507:web:eda0b36711f492cb764c36" };
-                if (!firebase.apps.length) firebase.initializeApp(cfg);
-                this.db = firebase.firestore();
-
-                // Lắng nghe dữ liệu nhân sự
-                this.db.collection("personnel_v8").orderBy("order", "asc").onSnapshot(s => { 
-                    this.data = s.docs.map(d => ({id: d.id, ...d.data()})); 
-                    this.$nextTick(() => this.reinitSortables()); 
-                });
-
-                // Lắng nghe cấu trúc danh mục
-                this.db.collection("config").doc("master_structure_v29").onSnapshot(doc => { 
-                    if (doc.exists) { 
-                        const d = doc.data(); 
-                        this.categories = d.categories || []; 
-                        this.blocks = d.blocks || {}; 
-                        this.catGroups = d.catGroups || {}; 
-                        this.blocksOrder = d.blocksOrder || {}; 
-                        if(!this.sortCat) this.sortCat = this.categories[0]; 
-                    } 
-                });
-
-                // Lấy mã PIN bảo mật từ Firebase (auth_v1)
-                this.db.collection("config").doc("auth_v1").onSnapshot(doc => { 
-                    if (doc.exists) { 
-                        const d = doc.data(); 
-                        // Lấy cả pin thường và masterPin từ DB
-                        this.auth.pin = d.pin || d.Password || ''; 
-                        this.auth.masterPin = d.masterPin || ''; 
-                    } 
-                });
-            },
-
-            reinitSortables() {
-                const blockEl = document.getElementById('sortable-blocks-admin');
-                if(blockEl) { if(blockEl._sortable) blockEl._sortable.destroy(); blockEl._sortable = Sortable.create(blockEl, { animation: 200 }); }
-                this.categories.forEach(cat => { (this.blocks[cat] || []).forEach(block => {
-                    const el = document.getElementById(`sortable-db-${cat}-${block}`);
-                    if(el) { if(el._sortable) el._sortable.destroy(); el._sortable = Sortable.create(el, { animation: 200, handle: '.db-row', onEnd: async () => { await this.updatePersonnelOrder(el) } }); }
-                }); });
-            },
-
-            async saveBlockOrder() {
-                const el = document.getElementById('sortable-blocks-admin');
-                if (!el) return alert("Không tìm thấy danh sách!");
-                const newOrder = Array.from(el.children).map(it => it.dataset.id);
-                if (this.sortCat) {
-                    this.blocksOrder[this.sortCat] = newOrder;
-                    await this.saveConfig();
-                    alert("Đã lưu thứ tự cho " + this.sortCat);
-                }
-            },
-
-            async loginAdmin() {
-                const p = prompt("PIN Quản trị:");
-                if (!p) return;
-                // Kiểm tra so khớp với dữ liệu bảo mật từ Firebase
-                if (p === this.auth.pin || (this.auth.masterPin && p === this.auth.masterPin)) {
-                    this.isAdmin = true;
-                    localStorage.setItem('adminAuthenticated', 'true');
-                } else {
-                    alert("Sai mã PIN!");
-                }
-            },
-
-            async updatePIN() { 
-                if(!this.newPinInput) return alert("Nhập PIN!"); 
-                await this.db.collection("config").doc("auth_v1").update({ pin: this.newPinInput }); 
-                alert("Thành công!"); 
-                this.newPinInput = ''; 
-            },
-
-            addNewCategory() { if(this.newCatName) { this.categories.push(this.newCatName); this.blocks[this.newCatName] = ['Mặc định']; this.catGroups[this.newCatName] = 'CIP'; this.saveConfig(); this.newCatName = ''; } },
-            deleteCategory(name) { if(confirm(`Xóa ${name}?`)) { this.categories = this.categories.filter(c => c !== name); this.saveConfig(); } },
-            addNewBlockAt(cat) { const el = document.getElementById('new-block-'+cat); const val = el.value.trim(); if(!val) return; if(!this.blocks[cat]) this.blocks[cat] = []; this.blocks[cat].push(val); this.saveConfig(); el.value = ''; },
-            deleteBlockAt(cat, blockName) { if(confirm(`Xóa ${blockName}?`)) { this.blocks[cat] = this.blocks[cat].filter(b => b !== blockName); this.saveConfig(); } },
-            
-            async saveConfig() { 
-                // Sử dụng update để tránh ghi đè toàn bộ hoặc set với giá trị mặc định để tránh lỗi undefined
-                await this.db.collection("config").doc("master_structure_v29").set({ 
-                    categories: this.categories || [], 
-                    blocks: this.blocks || {}, 
-                    catGroups: this.catGroups || {}, 
-                    blocksOrder: this.blocksOrder || {} 
-                }); 
-            },
-
-            async updatePersonnelOrder(el) { const batch = this.db.batch(); Array.from(el.children).forEach((it, idx) => { if(it.dataset.id) batch.update(this.db.collection("personnel_v8").doc(it.dataset.id), { order: idx }); }); await batch.commit(); },
-            editPersonnel(p) { this.editingId = p.id; this.form = { ...p }; },
-            resetForm() { this.editingId = null; this.form = { name: '', mainRole: '', category: this.categories[0], block: this.blocks[this.categories[0]][0], type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' }; },
-            
-            async savePersonnel() { 
-                if(!this.form.name) return alert("Họ tên bắt buộc!"); 
-                if(!this.form.block) this.form.block = this.blocks[this.form.category][0];
-                if(this.editingId) await this.db.collection("personnel_v8").doc(this.editingId).update(this.form); 
-                else { await this.db.collection("personnel_v8").add({...this.form, order: this.data.length}); } 
-                this.resetForm(); 
-                alert("Đã lưu!"); 
-            },
-
-            deletePersonnel(id) { if(confirm("Xác nhận xóa?")) this.db.collection("personnel_v8").doc(id).delete(); },
-            toggleTab(cat) { this.openTabs[cat] = !this.openTabs[cat]; },
-            get filteredCategories() { return this.categories.filter(c => (this.catGroups[c] || 'CIP') === this.activeGroup); },
-            getCategoryOfBlock(group, block) { const sample = this.data.find(p => (this.catGroups[p.category] || 'CIP') === group && p.block === block); return sample ? sample.category : 'Vị trí'; },
-            
-            dataFilteredAll() {
-                let base = this.data.filter(p => (this.catGroups[p.category] || 'CIP') === this.activeGroup);
-                if (this.filterCategory !== 'Tất cả' && this.search === '') base = base.filter(p => p.category === this.filterCategory);
-                const s = this.search.toLowerCase();
-                return base.filter(p => p.name.toLowerCase().includes(s) || p.mainRole.toLowerCase().includes(s) || (p.block && p.block.toLowerCase().includes(s)) || (p.category && p.category.toLowerCase().includes(s)));
-            },
-
-            setActiveGroup(g) { this.activeGroup = g; this.filterCategory = 'Tất cả'; this.search = ''; },
-            hasPeopleInGroup(g) { return this.dataFilteredAll().some(p => (this.catGroups[p.category] || 'CIP') === g); },
-            getPeopleInDB(cat, block) { return this.data.filter(p => p.category === cat && p.block === block); },
-            getPeopleByGroupAndBlock(g, b) { return this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === g && p.block === b); },
-            
-            blocksOrderFilteredByGroup(group) {
-                const activeBlocks = [...new Set(this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === group).map(it => it.block))];
-                const savedOrder = this.blocksOrder[this.filterCategory] || [];
-                return savedOrder.filter(b => activeBlocks.includes(b)).concat(activeBlocks.filter(b => !savedOrder.includes(b)));
-            },
-
-            getImgUrl(u) { 
-                if(!u) return 'https://via.placeholder.com/400x533'; 
-                const d = u.match(/[-\w]{25,}/); 
-                return d ? `https://lh3.googleusercontent.com/d/${d[0]}=s800` : u; 
-            },
-
-            formatList(t) { return t ? t.split('\n').filter(l => l.trim()).map(l => `<li>• ${l}</li>`).join('') : ''; }
+        function app() {
+            return {
+                isAdmin: false, search: '', activeGroup: 'VIP', filterCategory: 'Tất cả', selectedPerson: null,
+                editingId: null, sortCat: '', newCatName: '', newPinInput: '', openTabs: {},
+                categories: [], blocks: {}, catGroups: {}, blocksOrder: {}, data: [], auth: { pin: '1234' },
+                types: ['Giữ nguyên', 'Tái cử', 'Lần đầu'],
+                form: { name: '', mainRole: '', category: '', block: '', type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' },
+                
+                async init() {
+                    const cfg = { apiKey: "AIzaSyAhbVR_ywdzMNnwaeKMp5rWNsT4otCF4xM", projectId: "pvhk-d32da", appId: "1:974778325507:web:eda0b36711f492cb764c36" };
+                    if (!firebase.apps.length) firebase.initializeApp(cfg);
+                    this.db = firebase.firestore();
+                    this.db.collection("personnel_v8").orderBy("order", "asc").onSnapshot(s => { this.data = s.docs.map(d => ({id: d.id, ...d.data()})); this.$nextTick(() => this.reinitSortables()); });
+                    this.db.collection("config").doc("master_structure_v29").onSnapshot(doc => { if (doc.exists) { const d = doc.data(); this.categories = d.categories || []; this.blocks = d.blocks || {}; this.catGroups = d.catGroups || {}; this.blocksOrder = d.blocksOrder || {}; if(!this.sortCat) this.sortCat = this.categories[0]; } });
+                    this.db.collection("config").doc("auth_v1").onSnapshot(doc => { if (doc.exists) { const d = doc.data(); this.auth.pin = d.pin || d.Password || '1234'; } });
+                },
+                reinitSortables() {
+                    const blockEl = document.getElementById('sortable-blocks-admin');
+                    if(blockEl) { if(blockEl._sortable) blockEl._sortable.destroy(); blockEl._sortable = Sortable.create(blockEl, { animation: 200 }); }
+                    this.categories.forEach(cat => { (this.blocks[cat] || []).forEach(block => {
+                        const el = document.getElementById(`sortable-db-${cat}-${block}`);
+                        if(el) { if(el._sortable) el._sortable.destroy(); el._sortable = Sortable.create(el, { animation: 200, handle: '.db-row', onEnd: async () => { await this.updatePersonnelOrder(el) } }); }
+                    }); });
+                },
+                async saveBlockOrder() { const el = document.getElementById('sortable-blocks-admin'); const newOrder = Array.from(el.children).map(it => it.dataset.id); this.blocksOrder[this.sortCat] = newOrder; await this.saveConfig(); alert("Đã lưu!"); },
+                async loginAdmin() { const p = prompt("PIN Quản trị:"); if (p === this.auth.pin || p === "Administrator") { this.isAdmin = true; } else { alert("Sai mã PIN!"); } },
+                async updatePIN() { if(!this.newPinInput) return alert("Nhập PIN!"); await this.db.collection("config").doc("auth_v1").set({ pin: this.newPinInput }); alert("Thành công!"); this.newPinInput = ''; },
+                addNewCategory() { if(this.newCatName) { this.categories.push(this.newCatName); this.blocks[this.newCatName] = ['Mặc định']; this.catGroups[this.newCatName] = 'CIP'; this.saveConfig(); this.newCatName = ''; } },
+                deleteCategory(name) { if(confirm(`Xóa ${name}?`)) { this.categories = this.categories.filter(c => c !== name); this.saveConfig(); } },
+                addNewBlockAt(cat) { const el = document.getElementById('new-block-'+cat); const val = el.value.trim(); if(!val) return; if(!this.blocks[cat]) this.blocks[cat] = []; this.blocks[cat].push(val); this.saveConfig(); el.value = ''; },
+                deleteBlockAt(cat, blockName) { if(confirm(`Xóa ${blockName}?`)) { this.blocks[cat] = this.blocks[cat].filter(b => b !== blockName); this.saveConfig(); } },
+                async saveConfig() { await this.db.collection("config").doc("master_structure_v29").set({ categories: this.categories || [], blocks: this.blocks || {}, catGroups: this.catGroups || {}, blocksOrder: this.blocksOrder || {} }); },
+                async updatePersonnelOrder(el) { const batch = this.db.batch(); Array.from(el.children).forEach((it, idx) => { if(it.dataset.id) batch.update(this.db.collection("personnel_v8").doc(it.dataset.id), { order: idx }); }); await batch.commit(); },
+                editPersonnel(p) { this.editingId = p.id; this.form = { ...p }; },
+                resetForm() { this.editingId = null; this.form = { name: '', mainRole: '', category: this.categories[0], block: this.blocks[this.categories[0]][0], type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' }; },
+                async savePersonnel() { if(!this.form.name) return alert("Họ tên bắt buộc!"); if(this.editingId) await this.db.collection("personnel_v8").doc(this.editingId).update(this.form); else { await this.db.collection("personnel_v8").add({...this.form, order: this.data.length}); } this.resetForm(); alert("Đã lưu!"); },
+                deletePersonnel(id) { if(confirm("Xác nhận xóa?")) this.db.collection("personnel_v8").doc(id).delete(); },
+                toggleTab(cat) { this.openTabs[cat] = !this.openTabs[cat]; },
+                get filteredCategories() { return this.categories.filter(c => (this.catGroups[c] || 'CIP') === this.activeGroup); },
+                getCategoryOfBlock(group, block) { const sample = this.data.find(p => (this.catGroups[p.category] || 'CIP') === group && p.block === block); return sample ? sample.category : 'Vị trí'; },
+                dataFilteredAll() {
+                    let base = this.data.filter(p => (this.catGroups[p.category] || 'CIP') === this.activeGroup);
+                    if (this.filterCategory !== 'Tất cả' && this.search === '') base = base.filter(p => p.category === this.filterCategory);
+                    const s = this.search.toLowerCase();
+                    return base.filter(p => p.name.toLowerCase().includes(s) || p.mainRole.toLowerCase().includes(s) || (p.block && p.block.toLowerCase().includes(s)) || (p.category && p.category.toLowerCase().includes(s)));
+                },
+                setActiveGroup(g) { this.activeGroup = g; this.filterCategory = 'Tất cả'; this.search = ''; },
+                hasPeopleInGroup(g) { return this.dataFilteredAll().some(p => (this.catGroups[p.category] || 'CIP') === g); },
+                getPeopleInDB(cat, block) { return this.data.filter(p => p.category === cat && p.block === block); },
+                getPeopleByGroupAndBlock(g, b) { return this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === g && p.block === b); },
+                blocksOrderFilteredByGroup(group) {
+                    const activeBlocks = [...new Set(this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === group).map(it => it.block))];
+                    const savedOrder = this.blocksOrder[this.filterCategory] || [];
+                    return savedOrder.filter(b => activeBlocks.includes(b)).concat(activeBlocks.filter(b => !savedOrder.includes(b)));
+                },
+                getImgUrl(u) { if(!u) return 'https://via.placeholder.com/400x533'; const d = u.match(/[-\w]{25,}/); return d ? `https://lh3.googleusercontent.com/d/${d[0]}=s800` : u; },
+                formatList(t) { return t ? t.split('\n').filter(l => l.trim()).map(l => `<li>• ${l}</li>`).join('') : ''; }
+            }
         }
-    }
-</script>
+    </script>
 
     <footer x-show="!isAdmin" class="w-full py-8 mt-auto">
         <div class="container mx-auto px-4">
