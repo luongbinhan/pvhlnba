@@ -164,11 +164,7 @@ main, .grid {
         .db-row { background: white; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 8px 12px; transition: 0.2s; cursor: move; color: #000; }
 
         .person-card { transition: all 0.3s ease; border: 1px solid #cbd5e1; background: white; border-radius: 12px; overflow: hidden; cursor: pointer; }
-        .person-card:hover { 
-    z-index: 100 !important; 
-    transform: translateY(-15px) scale(1.05); 
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important; 
-}
+        .person-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -243,17 +239,19 @@ main, .grid {
     </div>
 
     <div class="p-2 md:p-3 text-center border-t border-slate-50 bg-white flex-grow flex flex-col justify-center text-black relative z-10">
-    <h5 class="text-[#E11D48] font-black text-[11px] md:text-[13px] leading-tight uppercase mb-1" x-text="person.name"></h5>
-    <p class="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase" x-text="person.mainRole"></p>
-    
-    <template x-if="person.partyRole">
-        <p class="text-[9px] md:text-[9px] !text-[#FB8500] font-black uppercase mt-0.5" x-text="person.partyRole"></p>
+        <h5 class="text-[#E11D48] font-black text-[11px] md:text-[13px] leading-tight uppercase mb-1" x-text="person.name"></h5>
+        <p class="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase" x-text="person.mainRole"></p>
+    </div>
+
+    <template x-if="person.type === 'Tái cử'">
+        <div class="badge-taicu"></div>
     </template>
 </div>
 
-<template x-if="person.type === 'Tái cử'">
-    <div class="badge-taicu"></div>
-</template>
+                                                <div class="p-2 md:p-3 text-center border-t border-slate-50 bg-white flex-grow flex flex-col justify-center text-black">
+                                                    <h5 class="text-[#E11D48] font-black text-[11px] md:text-[13px] leading-tight uppercase mb-1" x-text="person.name"></h5>
+                                                    <p class="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase" x-text="person.mainRole"></p>
+                                                </div>
                                             </div>
                                         </template>
                                     </div>
@@ -272,15 +270,9 @@ main, .grid {
                     <img :src="getImgUrl(selectedPerson?.img)" class="img-profile-mini">
                     <div class="modal-content-wrapper">
                         <div class="mb-6 pb-6 border-b border-slate-100">
-    <p class="text-[#1FA3B0] font-black text-[10px] md:text-xs uppercase mb-2" x-text="selectedPerson?.mainRole"></p>
-
-    <h2 class="text-[#E11D48] font-black text-2xl md:text-3xl uppercase italic leading-tight" x-text="selectedPerson?.name"></h2>
-
-    <template x-if="selectedPerson?.partyRole">
-        <p class="!text-[#FB8500] font-black text-xs md:text-sm uppercase mt-1 mb-6" x-text="selectedPerson?.partyRole"></p>
-    </template>
-
-    <div class="grid grid-cols-2 gap-y-3 gap-x-6 md:gap-x-10">
+                            <p class="text-[#1FA3B0] font-black text-[10px] md:text-xs uppercase mb-2" x-text="selectedPerson?.mainRole"></p>
+                            <h2 class="text-[#E11D48] font-black text-2xl md:text-5xl uppercase italic leading-tight mb-8" x-text="selectedPerson?.name"></h2>
+                            <div class="grid grid-cols-2 gap-y-3 gap-x-6 md:gap-x-10">
                                 <template x-for="f in [['Ngày sinh','dob'],['Quê quán','hometown'],['Dân tộc','ethnic'],['Trình độ','education']]">
                                     <div class="flex flex-col">
                                         <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase" x-text="f[0]"></span>
@@ -368,10 +360,6 @@ main, .grid {
                         <div class="space-y-3">
                             <input type="text" x-model="form.name" class="input-admin text-xs" placeholder="Họ tên *">
                             <input type="text" x-model="form.mainRole" class="input-admin text-xs" placeholder="Chức danh *">
-<div class="mt-2">
-    <label class="text-[10px] font-black text-slate-400 uppercase ml-2 mb-1 block">Chức danh Đảng</label>
-    <input type="text" x-model="form.partyRole" class="input-admin text-xs font-bold" placeholder="VD: Bí thư Đảng ủy TCT...">
-</div>
                             <div class="grid grid-cols-2 gap-2"><input type="text" x-model="form.dob" class="input-admin text-xs" placeholder="Ngày sinh"><input type="text" x-model="form.hometown" class="input-admin text-xs" placeholder="Quê quán"></div>
                             <div class="grid grid-cols-2 gap-2"><input type="text" x-model="form.ethnic" class="input-admin text-xs" placeholder="Dân tộc"><input type="text" x-model="form.education" class="input-admin text-xs" placeholder="Trình độ"></div>
                             <div class="grid grid-cols-2 gap-2 text-black"><select x-model="form.category" @change="form.block = blocks[form.category][0]" class="p-2 border rounded font-black text-[9px]"><template x-for="c in categories" :key="c"><option :value="c" x-text="c"></option></template></select><select x-model="form.block" class="p-2 border rounded font-black text-[9px]"><template x-for="b in (blocks[form.category] || [])" :key="b"><option :value="b" x-text="b"></option></template></select></div>
@@ -526,7 +514,7 @@ main, .grid {
 
             async updatePersonnelOrder(el) { const batch = this.db.batch(); Array.from(el.children).forEach((it, idx) => { if(it.dataset.id) batch.update(this.db.collection("personnel_v8").doc(it.dataset.id), { order: idx }); }); await batch.commit(); },
             editPersonnel(p) { this.editingId = p.id; this.form = { ...p }; },
-            resetForm() { this.editingId = null; this.form = { name: '', mainRole: '', partyRole: '', category: this.categories[0], block: this.blocks[this.categories[0]][0], type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' }; },
+            resetForm() { this.editingId = null; this.form = { name: '', mainRole: '', category: this.categories[0], block: this.blocks[this.categories[0]][0], type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' }; },
             
             async savePersonnel() { 
                 if(!this.form.name) return alert("Họ tên bắt buộc!"); 
@@ -556,12 +544,12 @@ main, .grid {
 
     // 3. Logic tìm kiếm thông minh: Tên, Chức danh, Khối và QUÊ QUÁN
     return base.filter(p => 
-    (p.name && p.name.toLowerCase().includes(s)) || 
-    (p.mainRole && p.mainRole.toLowerCase().includes(s)) || 
-    (p.hometown && p.hometown.toLowerCase().includes(s)) || // Tìm theo quê quán
-    (p.partyRole && p.partyRole.toLowerCase().includes(s)) || // Tìm theo chức danh Đảng
-    (p.block && p.block.toLowerCase().includes(s))
-);
+        (p.name && p.name.toLowerCase().includes(s)) || 
+        (p.mainRole && p.mainRole.toLowerCase().includes(s)) || 
+        (p.hometown && p.hometown.toLowerCase().includes(s)) || // Thêm dòng này
+        (p.block && p.block.toLowerCase().includes(s)) || 
+        (p.category && p.category.toLowerCase().includes(s))
+    );
 },
 
             setActiveGroup(g) { this.activeGroup = g; this.filterCategory = 'Tất cả'; this.search = ''; },
