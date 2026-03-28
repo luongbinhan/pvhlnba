@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIP/CIP TOOL</title>
-    <link rel="icon" href="pvhl-tool.ico" type="image/x-icon">
+
+<link rel="icon" href="pvhl-tool.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -17,27 +18,157 @@
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: #1e293b; overflow-x: hidden; }
         [x-cloak] { display: none !important; }
         b, strong, .font-bold { font-weight: 900 !important; }
+
+        /* Tag kép: Vị trí (Xanh banner) > Khối (Đỏ) */
         .tag-cat-name { background: var(--brand); color: white; padding: 4px 12px; border-radius: 99px 0 0 99px; font-size: 10px; font-weight: 900; text-transform: uppercase; border-right: 1px solid rgba(255,255,255,0.3); }
         .tag-block-name { background: #E11D48; color: white; padding: 4px 12px; border-radius: 0 99px 99px 0; font-size: 10px; font-weight: 900; text-transform: uppercase; }
+
+        /* Search Overlay Đỏ */
         .search-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(225, 29, 72, 0.9); backdrop-blur: 4px; padding: 4px; text-align: center; z-index: 5; }
-        .modal-container { background: white; border-radius: 24px; width: 95%; max-width: 900px; max-height: 85vh; position: relative; overflow: hidden; display: flex; flex-direction: column; }
-        .modal-body-scroll { overflow-y: auto; flex: 1; padding-bottom: 40px; }
-        .img-profile-mini { display: block; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 4px solid white; z-index: 10; }
-        .scroll-admin-db { max-height: calc(100vh - 150px); overflow-y: auto; padding-right: 10px; }
-        .scroll-admin-db::-webkit-scrollbar { width: 6px; }
-        .scroll-admin-db::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-        .badge-taicu { position: absolute; bottom: 0; right: 0; width: 25px; height: 25px; background: #FFD700; border-radius: 100% 0 0 0; display: flex; align-items: flex-end; justify-content: flex-end; z-index: 20; }
-        .badge-taicu::after { content: '★'; color: #E11D48; font-size: 16px; margin-right: 2px; margin-bottom: 1px; }
-        .person-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; z-index: 1; border: 1px solid #cbd5e1; background: white; border-radius: 12px; overflow: hidden; cursor: pointer; }
-        .person-card:hover { z-index: 100 !important; transform: translateY(-15px) scale(1.05); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important; }
-        main, .grid { isolation: isolate; }
-        .person-card:hover img { transform: scale(1.1); transition: transform 0.6s ease; }
-        .person-card img { transition: transform 0.6s ease; }
-        @media (max-width: 767px) { .img-profile-mini { position: relative; margin: 20px auto 10px auto; width: 120px; height: 160px; } .modal-content-wrapper { padding: 20px !important; } }
-        @media (min-width: 768px) { .img-profile-mini { position: absolute; top: 30px; left: 30px; width: 140px; height: 180px; margin: 0; } .modal-content-wrapper { padding: 40px 40px 40px 200px; } }
+
+        /* Modal Profile: Ảnh mini góc trái */
+        /* MODAL CỐ ĐỊNH KÍCH THƯỚC */
+/* MODAL CONTAINER: Cố định chiều cao và cho phép cuộn nội dung */
+.modal-container { 
+    background: white; 
+    border-radius: 24px; 
+    width: 95%; 
+    max-width: 900px; 
+    max-height: 85vh; /* Không tràn màn hình trên cả PC & Mobile */
+    position: relative; 
+    overflow: hidden; 
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-body-scroll { 
+    overflow-y: auto; 
+    flex: 1; 
+    padding-bottom: 40px;
+}
+
+/* ẢNH CHI TIẾT: Tối ưu hiển thị theo thiết bị */
+.img-profile-mini { 
+    display: block;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border: 4px solid white;
+    z-index: 10;
+}
+
+
+/* Cố định chiều cao vùng Database để cuộn riêng */
+.scroll-admin-db {
+    max-height: calc(100vh - 150px); /* Tự động tính toán chiều cao theo màn hình */
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Tùy chỉnh thanh cuộn cho đẹp */
+.scroll-admin-db::-webkit-scrollbar {
+    width: 6px;
+}
+.scroll-admin-db::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 10px;
+}
+
+
+/* Huy hiệu góc card với nền bo khuyết 45 độ */
+.badge-taicu {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 25px;
+    height: 25px;
+    background: #FFD700; /* Nền vàng (có thể chỉnh sang màu nhạt hơn như #FFEDD5 nếu muốn giống hệt mẫu) */
+    /* Bo góc khuyết: Chỉ bo góc trên-trái để tạo đường cong ngược */
+    border-radius: 100% 0 0 0; 
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    z-index: 20;
+}
+
+.badge-taicu::after {
+    content: '★';
+    color: #E11D48; /* Sao đỏ */
+    font-size: 16px;
+    margin-right: 2px;
+    margin-bottom: 1px;
+}
+
+/* 1. Thiết lập độ mượt cho card */
+.person-card {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1; /* Ở trạng thái bình thường z-index thấp */
+}
+
+.person-card:hover {
+    /* Quan trọng: z-index phải cao hơn giá trị z-50 của header */
+    z-index: 100 !important; 
+    transform: translateY(-15px) scale(1.05); /* Nhấc cao hơn để thấy rõ hiệu ứng */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Đảm bảo khối cha chứa các card không kìm hãm z-index */
+main, .grid {
+    isolation: isolate; 
+}
+
+/* 3. Hiệu ứng cho ảnh bên trong (Phóng to ảnh) */
+.person-card:hover img {
+    transform: scale(1.1); /* Ảnh phóng to 10% */
+    transition: transform 0.6s ease;
+}
+
+/* 4. Thêm hiệu ứng mượt mà cho ảnh khi không hover */
+.person-card img {
+    transition: transform 0.6s ease;
+}
+
+/* Cấu hình riêng cho Mobile (Dưới 768px) */
+@media (max-width: 767px) {
+    .img-profile-mini { 
+        position: relative; /* Nằm trong luồng văn bản */
+        margin: 20px auto 10px auto; /* Căn giữa và đẩy lên trên cùng */
+        width: 120px; 
+        height: 160px; 
+    }
+    .modal-content-wrapper { 
+        padding: 20px !important; /* Nội dung sát dưới ảnh */
+    }
+}
+
+/* Cấu hình riêng cho PC (Từ 768px trở lên) - GIỮ NGUYÊN NHƯ CŨ */
+@media (min-width: 768px) {
+    .img-profile-mini { 
+        position: absolute; 
+        top: 30px; 
+        left: 30px; 
+        width: 140px; 
+        height: 180px; 
+        margin: 0;
+    }
+    .modal-content-wrapper { 
+        padding: 40px 40px 40px 200px; /* Chừa khoảng trống bên trái cho ảnh */
+    }
+}
+
+
+
         .admin-sidebar { width: 300px; background: #0F172A; color: white; flex-shrink: 0; padding: 1.5rem; height: 100vh; overflow-y: auto; }
         .input-admin { border: 2px solid #94A3B8; border-radius: 8px; padding: 8px 12px; width: 100%; font-weight: 700; color: #000 !important; background: white; }
         .db-row { background: white; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 8px 12px; transition: 0.2s; cursor: move; color: #000; }
+
+        .person-card { transition: all 0.3s ease; border: 1px solid #cbd5e1; background: white; border-radius: 12px; overflow: hidden; cursor: pointer; }
+        .person-card:hover { 
+    z-index: 100 !important; 
+    transform: translateY(-15px) scale(1.05); 
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important; 
+}
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -91,34 +222,41 @@
                 <div class="space-y-12">
                     <template x-for="groupName in [activeGroup]" :key="groupName">
                         <div x-show="hasPeopleInGroup(groupName)">
-                            <template x-for="catName in (filterCategory === 'Tất cả' ? filteredCategories : [filterCategory])" :key="catName">
-                                <div>
-                                    <template x-for="blockName in getBlocksInOrder(catName, groupName)" :key="blockName">
-                                        <div x-show="getPeopleByGroupAndBlock(groupName, blockName, catName).length > 0" class="mb-10 text-black">
-                                            <div class="inline-flex mb-6 shadow-sm">
-                                                <span class="tag-cat-name" x-text="catName"></span>
-                                                <span class="tag-block-name" x-text="blockName"></span>
+                            <template x-for="blockName in blocksOrderFilteredByGroup(groupName)" :key="blockName">
+                                <div x-show="getPeopleByGroupAndBlock(groupName, blockName).length > 0" class="mb-10 text-black">
+                                    <div class="inline-flex mb-6 shadow-sm">
+                                        <span class="tag-cat-name" x-text="getCategoryOfBlock(groupName, blockName)"></span>
+                                        <span class="tag-block-name" x-text="blockName"></span>
+                                    </div>
+                                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-8">
+                                        <template x-for="person in getPeopleByGroupAndBlock(groupName, blockName)" :key="person.id">
+    <div @click="selectedPerson = person" 
+     class="person-card group flex flex-col relative overflow-hidden bg-white border border-slate-100 rounded-xl transition-all duration-300">
+    
+    <div class="aspect-[3/4.2] relative overflow-hidden bg-slate-100">
+        <img :src="getImgUrl(person.img)" 
+             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+        
+        <div x-show="search.length > 0" class="search-overlay">
+            <p class="text-[8px] font-black text-white uppercase" x-text="person.category"></p>
+        </div>
+    </div>
+
+    <div class="p-2 md:p-3 text-center border-t border-slate-50 bg-white flex-grow flex flex-col justify-center text-black relative z-10">
+    <h5 class="text-[#E11D48] font-black text-[11px] md:text-[13px] leading-tight uppercase mb-1" x-text="person.name"></h5>
+    <p class="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase" x-text="person.mainRole"></p>
+    
+    <template x-if="person.partyRole">
+        <p class="text-[9px] md:text-[9px] !text-[#FB8500] font-black uppercase mt-0.5" x-text="person.partyRole"></p>
+    </template>
+</div>
+
+<template x-if="person.type === 'Tái cử'">
+    <div class="badge-taicu"></div>
+</template>
                                             </div>
-                                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-8">
-                                                <template x-for="person in getPeopleByGroupAndBlock(groupName, blockName, catName)" :key="person.id">
-                                                    <div @click="selectedPerson = person" class="person-card group flex flex-col relative overflow-hidden bg-white">
-                                                        <div class="aspect-[3/4.2] relative overflow-hidden bg-slate-100">
-                                                            <img :src="getImgUrl(person.img)" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-                                                            <div x-show="search.length > 0" class="search-overlay">
-                                                                <p class="text-[8px] font-black text-white uppercase" x-text="person.category"></p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="p-2 md:p-3 text-center border-t border-slate-50 bg-white flex-grow flex flex-col justify-center text-black relative z-10">
-                                                            <h5 class="text-[#E11D48] font-black text-[11px] md:text-[13px] leading-tight uppercase mb-1" x-text="person.name"></h5>
-                                                            <p class="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase" x-text="person.mainRole"></p>
-                                                            <template x-if="person.partyRole"><p class="text-[9px] !text-[#FB8500] font-black uppercase mt-0.5" x-text="person.partyRole"></p></template>
-                                                        </div>
-                                                        <template x-if="person.type === 'Tái cử'"><div class="badge-taicu"></div></template>
-                                                    </div>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </template>
+                                        </template>
+                                    </div>
                                 </div>
                             </template>
                         </div>
@@ -134,10 +272,15 @@
                     <img :src="getImgUrl(selectedPerson?.img)" class="img-profile-mini">
                     <div class="modal-content-wrapper">
                         <div class="mb-6 pb-6 border-b border-slate-100">
-                            <p class="text-[#1FA3B0] font-black text-[10px] md:text-xs uppercase mb-2" x-text="selectedPerson?.mainRole"></p>
-                            <h2 class="text-[#E11D48] font-black text-2xl md:text-3xl uppercase italic leading-tight" x-text="selectedPerson?.name"></h2>
-                            <template x-if="selectedPerson?.partyRole"><p class="!text-[#FB8500] font-black text-xs md:text-sm uppercase mt-1 mb-6" x-text="selectedPerson?.partyRole"></p></template>
-                            <div class="grid grid-cols-2 gap-y-3 gap-x-6 md:gap-x-10">
+    <p class="text-[#1FA3B0] font-black text-[10px] md:text-xs uppercase mb-2" x-text="selectedPerson?.mainRole"></p>
+
+    <h2 class="text-[#E11D48] font-black text-2xl md:text-3xl uppercase italic leading-tight" x-text="selectedPerson?.name"></h2>
+
+    <template x-if="selectedPerson?.partyRole">
+        <p class="!text-[#FB8500] font-black text-xs md:text-sm uppercase mt-1 mb-6" x-text="selectedPerson?.partyRole"></p>
+    </template>
+
+    <div class="grid grid-cols-2 gap-y-3 gap-x-6 md:gap-x-10">
                                 <template x-for="f in [['Ngày sinh','dob'],['Quê quán','hometown'],['Dân tộc','ethnic'],['Trình độ','education']]">
                                     <div class="flex flex-col">
                                         <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase" x-text="f[0]"></span>
@@ -162,59 +305,24 @@
         </div>
     </div>
 
-<div x-show="showLoginModal" x-cloak class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
-    <div @click.away="showLoginModal = false" class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-xs border-4 border-[#1FA3B0] animate-in zoom-in duration-200">
-        <h2 class="font-black text-[#1FA3B0] uppercase mb-6 text-center italic tracking-tight">Xác thực Quản trị</h2>
-        
-        <div class="relative mb-6" x-data="{ show: false }">
-            <input :type="show ? 'text' : 'password'" 
-                   x-model="loginInput" 
-                   @keydown.enter="confirmLogin()"
-                   placeholder="Nhập mã PIN..." 
-                   class="w-full border-2 border-slate-200 rounded-xl px-4 py-3 text-center font-bold outline-none focus:border-[#1FA3B0] transition-all text-black">
-            
-            <button @click="show = !show" type="button" class="absolute right-3 top-3.5 text-slate-400 hover:text-[#1FA3B0]">
-                <span x-text="show ? '🔒' : '👁️'"></span>
-            </button>
-        </div>
-
-        <div class="flex gap-2">
-            <button @click="showLoginModal = false; loginInput = ''" class="flex-1 py-3 rounded-xl font-bold bg-slate-100 text-slate-500 uppercase text-[10px]">Hủy</button>
-            <button @click="confirmLogin()" class="flex-1 py-3 rounded-xl font-black bg-[#1FA3B0] text-white shadow-lg uppercase text-[10px]">Xác nhận</button>
-        </div>
-    </div>
-</div>
-
     <div x-show="isAdmin" x-cloak class="fixed inset-0 z-[100] flex bg-white overflow-hidden text-black">
         <aside class="admin-sidebar shadow-2xl flex flex-col">
             <div class="mb-8 text-center"><img src="viags.png" class="h-10 mx-auto mb-3"><h2 class="font-black text-lg text-brand uppercase italic">QUẢN TRỊ VIÊN</h2></div>
             <div class="space-y-5">
-                <div class="bg-slate-800 p-4 rounded-xl text-white" x-data="{ showPin: false }">
-    <label class="text-[9px] font-black text-red-400 uppercase mb-2 block tracking-widest">Đổi PIN (Firebase)</label>
-    <div class="relative mb-2">
-        <input :type="showPin ? 'text' : 'password'" 
-               x-model="newPinInput" 
-               placeholder="Nhập PIN mới..." 
-               class="input-admin !text-[10px] pr-10 text-black">
-        <button @click="showPin = !showPin" 
-                type="button"
-                class="absolute right-2 top-1.5 text-slate-400 hover:text-brand transition-colors">
-            <span x-show="!showPin">👁️</span>
-            <span x-show="showPin">🔒</span>
-        </button>
-    </div>
-    <button @click="updatePIN()" class="w-full bg-red-600 text-white py-2 rounded font-black text-[10px] uppercase">Cập nhật</button>
-</div>
-
+                <div class="bg-slate-800 p-4 rounded-xl text-white">
+                    <label class="text-[9px] font-black text-red-400 uppercase mb-2 block tracking-widest">Đổi PIN (Firebase)</label>
+                    <input type="text" x-model="newPinInput" placeholder="Nhập PIN mới..." class="input-admin !text-[10px] mb-2 text-black">
+                    <button @click="updatePIN()" class="w-full bg-red-600 text-white py-2 rounded font-black text-[10px] uppercase">Cập nhật</button>
+                </div>
                 <div class="admin-box text-white">
-                    <label class="text-[9px] font-black text-cyan-400 uppercase mb-3 block">1. Tabs & Thứ tự Vị trí</label>
+                    <label class="text-[9px] font-black text-cyan-400 uppercase mb-3 block">1. Danh mục (Tabs)</label>
                     <div class="flex gap-1 mb-3">
                         <input type="text" x-model="newCatName" placeholder="Tên tab..." class="input-admin !text-[10px] !p-2 text-black">
                         <button @click="addNewCategory()" class="bg-brand text-white px-3 rounded font-black">+</button>
                     </div>
-                    <div id="sortable-tabs-admin" class="space-y-1 mb-3">
+                    <div class="space-y-1">
                         <template x-for="cat in categories" :key="cat">
-                            <div :data-id="cat" class="flex flex-col bg-slate-700/50 p-2 rounded mb-1 cursor-move">
+                            <div class="flex flex-col bg-slate-700/50 p-2 rounded mb-1">
                                 <div class="flex justify-between items-center mb-1">
                                     <span class="text-[9px] font-bold text-slate-200 uppercase" x-text="cat"></span>
                                     <button @click="deleteCategory(cat)" class="text-red-400 text-xs">✕</button>
@@ -225,9 +333,7 @@
                             </div>
                         </template>
                     </div>
-                    <button @click="saveTabsOrder()" class="w-full bg-green-600 text-white py-2 rounded font-black text-[10px] uppercase">Lưu thứ tự Tabs</button>
                 </div>
-
                 <div class="admin-box text-white">
                     <label class="text-[9px] font-black text-highlight uppercase mb-3 block">2. Thứ tự Khối</label>
                     <select x-model="sortCat" @change="reinitSortables()" class="w-full bg-white text-black p-2 rounded text-[10px] font-bold mb-3">
@@ -241,27 +347,34 @@
                             </div>
                         </template>
                     </div>
-                    <button @click="saveBlockOrder()" class="w-full mt-3 bg-[#1FA3B0] text-white py-2.5 rounded font-black text-[10px] uppercase hover:brightness-110 transition-all">Lưu thứ tự Khối</button>
+                    <button @click="saveBlockOrder()" class="w-full mt-3 bg-[#1FA3B0] text-white py-2.5 rounded font-black text-[10px] uppercase hover:brightness-110 transition-all">
+    Lưu thứ tự
+</button>
                 </div>
             </div>
-            <button @click="isAdmin = false" class="w-full mt-auto bg-red-600 text-white py-2.5 rounded font-black text-[10px] uppercase hover:bg-red-700 transition-all">Đóng Admin</button>
+            <button @click="isAdmin = false" class="w-full mt-auto bg-red-600 text-white py-2.5 rounded font-black text-[10px] uppercase hover:bg-red-700 transition-all">
+    Đóng Admin
+</button>
         </aside>
 
         <div class="flex-1 p-5 md:p-8 overflow-y-auto bg-[#F1F5F9] no-scrollbar text-black">
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
                 <div class="bg-white p-6 rounded-2xl border shadow-lg h-fit sticky top-0">
-                    <h3 class="font-black text-brand text-lg uppercase mb-6 border-b pb-3">Hồ sơ Nhân sự</h3>
+                    <div class="flex justify-between items-center mb-6 border-b pb-3 text-black">
+                        <h3 class="font-black text-brand text-lg uppercase italic">Hồ sơ Nhân sự</h3>
+                        <button x-show="editingId" @click="resetForm()" class="text-red-500 font-bold text-[9px] uppercase underline">Hủy sửa</button>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-3">
                             <input type="text" x-model="form.name" class="input-admin text-xs" placeholder="Họ tên *">
                             <input type="text" x-model="form.mainRole" class="input-admin text-xs" placeholder="Chức danh *">
-                            <input type="text" x-model="form.partyRole" class="input-admin text-xs font-bold" placeholder="Chức danh Đảng">
+<div class="mt-2">
+    <label class="text-[10px] font-black text-slate-400 uppercase ml-2 mb-1 block">Chức danh Đảng</label>
+    <input type="text" x-model="form.partyRole" class="input-admin text-xs font-bold" placeholder="VD: Bí thư Đảng ủy TCT...">
+</div>
                             <div class="grid grid-cols-2 gap-2"><input type="text" x-model="form.dob" class="input-admin text-xs" placeholder="Ngày sinh"><input type="text" x-model="form.hometown" class="input-admin text-xs" placeholder="Quê quán"></div>
                             <div class="grid grid-cols-2 gap-2"><input type="text" x-model="form.ethnic" class="input-admin text-xs" placeholder="Dân tộc"><input type="text" x-model="form.education" class="input-admin text-xs" placeholder="Trình độ"></div>
-                            <div class="grid grid-cols-2 gap-2 text-black">
-                                <select x-model="form.category" @change="form.block = blocks[form.category][0]" class="p-2 border rounded font-black text-[9px]"><template x-for="c in categories" :key="c"><option :value="c" x-text="c"></option></template></select>
-                                <select x-model="form.block" class="p-2 border rounded font-black text-[9px]"><template x-for="b in (blocks[form.category] || [])" :key="b"><option :value="b" x-text="b"></option></template></select>
-                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-black"><select x-model="form.category" @change="form.block = blocks[form.category][0]" class="p-2 border rounded font-black text-[9px]"><template x-for="c in categories" :key="c"><option :value="c" x-text="c"></option></template></select><select x-model="form.block" class="p-2 border rounded font-black text-[9px]"><template x-for="b in (blocks[form.category] || [])" :key="b"><option :value="b" x-text="b"></option></template></select></div>
                             <select x-model="form.type" class="p-2 border rounded font-black text-[9px] w-full bg-white text-black"><template x-for="t in types" :key="t"><option :value="t" x-text="t"></option></template></select>
                             <input type="text" x-model="form.img" class="input-admin text-xs" placeholder="Drive Image ID">
                         </div>
@@ -271,33 +384,38 @@
                 </div>
 
                 <div class="bg-white p-8 rounded-3xl border shadow-xl flex flex-col text-black h-full max-h-[85vh]">
-                    <h3 class="font-black text-xl uppercase border-l-8 border-highlight pl-5 mb-10 shrink-0">DATABASE</h3>
-                    <div class="space-y-12 scroll-admin-db no-scrollbar flex-1 overflow-y-auto">
+                    <h3 class="font-black text-xl uppercase border-l-8 border-highlight pl-5 mb-10 shrink-0">DANH SÁCH DATABASE</h3>
+                    <div class="space-y-12 scroll-admin-db no-scrollbar flex-1 overflow-y-auto pr-2">
                         <template x-for="cat in categories" :key="cat">
-                            <div class="p-6 rounded-[2.5rem] bg-slate-50 border-2 border-white mb-6"> 
+                            <div class="p-6 rounded-[2.5rem] bg-slate-50 border-2 border-white shadow-inner mb-6" x-init="openTabs[cat] = true"> 
                                 <div class="flex justify-between items-center mb-6 border-b pb-3">
-                                    <h4 class="font-black text-brand uppercase text-[13px]" x-text="cat"></h4>
-                                    <div class="flex gap-1">
+                                    <div class="flex items-center gap-3 cursor-pointer group" @click="toggleTab(cat)">
+                                        <svg class="w-5 h-5 transition-transform duration-300" :class="openTabs[cat] ? 'rotate-0' : '-rotate-90'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
+                                        <h4 class="font-black text-brand uppercase text-[13px] group-hover:text-highlight" x-text="cat"></h4>
+                                    </div>
+                                    <div class="flex gap-1 text-black">
                                         <input type="text" :id="'new-block-'+cat" placeholder="Khối..." class="border p-1.5 rounded text-[10px] font-bold w-32 outline-none">
-                                        <button @click="addNewBlockAt(cat)" class="bg-red-600 text-white px-3 rounded text-[12px] font-black">+</button>
+                                        <button @click="addNewBlockAt(cat)" class="bg-red-600 text-white px-3 rounded text-[12px] font-black hover:bg-red-700">+</button>
                                     </div>
                                 </div>
-                                <template x-for="blockName in (blocks[cat] || [])" :key="blockName">
-                                    <div class="mb-8">
-                                        <div class="flex justify-between items-center mb-3">
-                                            <p class="text-[11px] font-black text-slate-400 uppercase" x-text="blockName"></p>
-                                            <button @click="deleteBlockAt(cat, blockName)" class="text-red-500 text-[9px] font-bold uppercase">Xóa Khối</button>
+                                <div x-show="openTabs[cat]" x-collapse x-cloak>
+                                    <template x-for="blockName in (blocks[cat] || [])" :key="blockName">
+                                        <div class="mb-8 last:mb-0">
+                                            <div class="flex justify-between items-center mb-3">
+                                                <p class="text-[11px] font-black text-slate-400 uppercase flex items-center gap-3"><span x-text="blockName"></span><span class="h-[1.5px] w-24 bg-slate-200"></span></p>
+                                                <button @click="deleteBlockAt(cat, blockName)" class="text-red-500 text-[9px] font-bold uppercase">Xóa Khối</button>
+                                            </div>
+                                            <div :id="'sortable-db-' + cat + '-' + blockName" class="space-y-2 min-h-[30px] p-1">
+                                                <template x-for="p in getPeopleInDB(cat, blockName)" :key="p.id">
+                                                    <div :data-id="p.id" class="db-row flex items-center justify-between group shadow-sm bg-white p-2 rounded-lg">
+                                                        <div class="flex items-center gap-4 text-black"><span class="text-slate-300 font-bold">☰</span><img :src="getImgUrl(p.img)" class="w-10 h-10 rounded-full object-cover"><p class="text-[13px] font-black" x-text="p.name"></p></div>
+                                                        <div class="flex gap-3 opacity-0 group-hover:opacity-100 transition-all"><button @click="editPersonnel(p)" class="text-blue-500 font-black text-[10px] uppercase">Sửa</button><button @click="deletePersonnel(p.id)" class="text-red-500 font-black text-[10px] uppercase">Xóa</button></div>
+                                                    </div>
+                                                </template>
+                                            </div>
                                         </div>
-                                        <div :id="'sortable-db-' + cat + '-' + blockName" class="space-y-2 min-h-[30px] p-1">
-                                            <template x-for="p in getPeopleInDB(cat, blockName)" :key="p.id">
-                                                <div :data-id="p.id" class="db-row flex items-center justify-between group shadow-sm bg-white p-2 rounded-lg">
-                                                    <div class="flex items-center gap-4"><span class="text-slate-300 font-bold">☰</span><img :src="getImgUrl(p.img)" class="w-10 h-10 rounded-full object-cover"><p class="text-[13px] font-black" x-text="p.name"></p></div>
-                                                    <div class="flex gap-3 opacity-0 group-hover:opacity-100 transition-all"><button @click="editPersonnel(p)" class="text-blue-500 font-black text-[10px]">Sửa</button><button @click="deletePersonnel(p.id)" class="text-red-500 font-black text-[10px]">Xóa</button></div>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </div>
-                                </template>
+                                    </template>
+                                </div>
                             </div>
                         </template>
                     </div>
@@ -309,23 +427,27 @@
     <script>
     function app() {
         return {
-            isAdmin: false, showLoginModal: false, loginInput: '', search: '', activeGroup: 'VIP', filterCategory: 'Tất cả', selectedPerson: null,
+            isAdmin: false, search: '', activeGroup: 'VIP', filterCategory: 'Tất cả', selectedPerson: null,
             editingId: null, sortCat: '', newCatName: '', newPinInput: '', openTabs: {},
             categories: [], blocks: {}, catGroups: {}, blocksOrder: {}, data: [], 
+            // Không để mật khẩu mặc định ở đây để tránh lộ thông tin
             auth: { pin: '', masterPin: '' }, 
             types: ['Giữ nguyên', 'Tái cử', 'Lần đầu'],
-            form: { name: '', mainRole: '', partyRole: '', category: '', block: '', type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' },
+            form: { name: '', mainRole: '', category: '', block: '', type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' },
 
             async init() {
+                // Config Firebase giữ nguyên theo dự án của bạn
                 const cfg = { apiKey: "AIzaSyAhbVR_ywdzMNnwaeKMp5rWNsT4otCF4xM", projectId: "pvhk-d32da", appId: "1:974778325507:web:eda0b36711f492cb764c36" };
                 if (!firebase.apps.length) firebase.initializeApp(cfg);
                 this.db = firebase.firestore();
 
+                // Lắng nghe dữ liệu nhân sự
                 this.db.collection("personnel_v8").orderBy("order", "asc").onSnapshot(s => { 
                     this.data = s.docs.map(d => ({id: d.id, ...d.data()})); 
                     this.$nextTick(() => this.reinitSortables()); 
                 });
 
+                // Lắng nghe cấu trúc danh mục
                 this.db.collection("config").doc("master_structure_v29").onSnapshot(doc => { 
                     if (doc.exists) { 
                         const d = doc.data(); 
@@ -334,13 +456,14 @@
                         this.catGroups = d.catGroups || {}; 
                         this.blocksOrder = d.blocksOrder || {}; 
                         if(!this.sortCat) this.sortCat = this.categories[0]; 
-                        this.$nextTick(() => this.reinitSortables());
                     } 
                 });
 
+                // Lấy mã PIN bảo mật từ Firebase (auth_v1)
                 this.db.collection("config").doc("auth_v1").onSnapshot(doc => { 
                     if (doc.exists) { 
                         const d = doc.data(); 
+                        // Lấy cả pin thường và masterPin từ DB
                         this.auth.pin = d.pin || d.Password || ''; 
                         this.auth.masterPin = d.masterPin || ''; 
                     } 
@@ -350,107 +473,120 @@
             reinitSortables() {
                 const blockEl = document.getElementById('sortable-blocks-admin');
                 if(blockEl) { if(blockEl._sortable) blockEl._sortable.destroy(); blockEl._sortable = Sortable.create(blockEl, { animation: 200 }); }
-                
-                const tabsEl = document.getElementById('sortable-tabs-admin');
-                if(tabsEl) { if(tabsEl._sortable) tabsEl._sortable.destroy(); tabsEl._sortable = Sortable.create(tabsEl, { animation: 200 }); }
-
                 this.categories.forEach(cat => { (this.blocks[cat] || []).forEach(block => {
                     const el = document.getElementById(`sortable-db-${cat}-${block}`);
                     if(el) { if(el._sortable) el._sortable.destroy(); el._sortable = Sortable.create(el, { animation: 200, handle: '.db-row', onEnd: async () => { await this.updatePersonnelOrder(el) } }); }
                 }); });
             },
 
-            async saveTabsOrder() {
-                const el = document.getElementById('sortable-tabs-admin');
-                if (!el) return;
-                const newOrder = Array.from(el.children).map(it => it.dataset.id).filter(id => id);
-                this.categories = newOrder;
-                await this.saveConfig();
-                alert("Đã cập nhật thứ tự Vị trí!");
-            },
-
             async saveBlockOrder() {
                 const el = document.getElementById('sortable-blocks-admin');
                 if (!el) return alert("Không tìm thấy danh sách!");
-                const newOrder = Array.from(el.children).map(it => it.dataset.id).filter(id => id);
+                const newOrder = Array.from(el.children).map(it => it.dataset.id);
                 if (this.sortCat) {
                     this.blocksOrder[this.sortCat] = newOrder;
-                    this.blocks[this.sortCat] = newOrder; // Cập nhật cả mảng gốc để đồng bộ hiển thị
                     await this.saveConfig();
-                    alert("Đã lưu thứ tự Khối cho " + this.sortCat);
+                    alert("Đã lưu thứ tự cho " + this.sortCat);
                 }
             },
 
-            getBlocksInOrder(catName, groupName) {
-                const activeBlocks = [...new Set(this.dataFilteredAll().filter(p => p.category === catName).map(it => it.block))];
-                const savedOrder = this.blocksOrder[catName] || this.blocks[catName] || [];
-                return savedOrder.filter(b => activeBlocks.includes(b)).concat(activeBlocks.filter(b => !savedOrder.includes(b)));
+            async loginAdmin() {
+                const p = prompt("PIN Quản trị:");
+                if (!p) return;
+                // Kiểm tra so khớp với dữ liệu bảo mật từ Firebase
+                if (p === this.auth.pin || (this.auth.masterPin && p === this.auth.masterPin)) {
+                    this.isAdmin = true;
+                    localStorage.setItem('adminAuthenticated', 'true');
+                } else {
+                    alert("Sai mã PIN!");
+                }
             },
 
-            getPeopleByGroupAndBlock(g, b, cat) { 
-                return this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === g && p.block === b && p.category === cat); 
+            async updatePIN() { 
+                if(!this.newPinInput) return alert("Nhập PIN!"); 
+                await this.db.collection("config").doc("auth_v1").update({ pin: this.newPinInput }); 
+                alert("Thành công!"); 
+                this.newPinInput = ''; 
             },
 
-            loginAdmin() {
-    this.showLoginModal = true;
-    this.loginInput = ''; // Xóa trắng ô nhập mỗi khi mở
-},
-
-// Hàm này xử lý việc kiểm tra mật khẩu khi bấm "Xác nhận"
-confirmLogin() {
-    // So sánh mã PIN từ Firebase đã được load sẵn trong this.auth
-    if (this.loginInput === this.auth.pin || (this.auth.masterPin && this.loginInput === this.auth.masterPin)) {
-        this.isAdmin = true;
-        this.showLoginModal = false; // Đóng modal
-        this.loginInput = '';
-        localStorage.setItem('adminAuthenticated', 'true');
-    } else {
-        alert("Sai mã PIN!");
-        this.loginInput = ''; // Nhập sai thì xóa để nhập lại
-    }
-},
-
+            addNewCategory() { if(this.newCatName) { this.categories.push(this.newCatName); this.blocks[this.newCatName] = ['Mặc định']; this.catGroups[this.newCatName] = 'CIP'; this.saveConfig(); this.newCatName = ''; } },
+            deleteCategory(name) { if(confirm(`Xóa ${name}?`)) { this.categories = this.categories.filter(c => c !== name); this.saveConfig(); } },
+            addNewBlockAt(cat) { const el = document.getElementById('new-block-'+cat); const val = el.value.trim(); if(!val) return; if(!this.blocks[cat]) this.blocks[cat] = []; this.blocks[cat].push(val); this.saveConfig(); el.value = ''; },
+            deleteBlockAt(cat, blockName) { if(confirm(`Xóa ${blockName}?`)) { this.blocks[cat] = this.blocks[cat].filter(b => b !== blockName); this.saveConfig(); } },
+            
             async saveConfig() { 
+                // Sử dụng update để tránh ghi đè toàn bộ hoặc set với giá trị mặc định để tránh lỗi undefined
                 await this.db.collection("config").doc("master_structure_v29").set({ 
-                    categories: this.categories, blocks: this.blocks, catGroups: this.catGroups, blocksOrder: this.blocksOrder 
+                    categories: this.categories || [], 
+                    blocks: this.blocks || {}, 
+                    catGroups: this.catGroups || {}, 
+                    blocksOrder: this.blocksOrder || {} 
                 }); 
             },
 
+            async updatePersonnelOrder(el) { const batch = this.db.batch(); Array.from(el.children).forEach((it, idx) => { if(it.dataset.id) batch.update(this.db.collection("personnel_v8").doc(it.dataset.id), { order: idx }); }); await batch.commit(); },
+            editPersonnel(p) { this.editingId = p.id; this.form = { ...p }; },
+            resetForm() { this.editingId = null; this.form = { name: '', mainRole: '', partyRole: '', category: this.categories[0], block: this.blocks[this.categories[0]][0], type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' }; },
+            
             async savePersonnel() { 
                 if(!this.form.name) return alert("Họ tên bắt buộc!"); 
                 if(!this.form.block) this.form.block = this.blocks[this.form.category][0];
                 if(this.editingId) await this.db.collection("personnel_v8").doc(this.editingId).update(this.form); 
                 else { await this.db.collection("personnel_v8").add({...this.form, order: this.data.length}); } 
-                this.resetForm(); alert("Đã lưu!"); 
+                this.resetForm(); 
+                alert("Đã lưu!"); 
             },
 
-            editPersonnel(p) { this.editingId = p.id; this.form = { ...p }; },
-            resetForm() { this.editingId = null; this.form = { name: '', mainRole: '', partyRole: '', category: this.categories[0], block: this.blocks[this.categories[0]][0], type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' }; },
             deletePersonnel(id) { if(confirm("Xác nhận xóa?")) this.db.collection("personnel_v8").doc(id).delete(); },
-            addNewCategory() { if(this.newCatName) { this.categories.push(this.newCatName); this.blocks[this.newCatName] = ['Mặc định']; this.catGroups[this.newCatName] = 'CIP'; this.saveConfig(); this.newCatName = ''; } },
-            deleteCategory(name) { if(confirm(`Xóa ${name}?`)) { this.categories = this.categories.filter(c => c !== name); this.saveConfig(); } },
-            addNewBlockAt(cat) { const el = document.getElementById('new-block-'+cat); const val = el.value.trim(); if(!val) return; if(!this.blocks[cat]) this.blocks[cat] = []; this.blocks[cat].push(val); this.saveConfig(); el.value = ''; },
-            deleteBlockAt(cat, blockName) { if(confirm(`Xóa ${blockName}?`)) { this.blocks[cat] = this.blocks[cat].filter(b => b !== blockName); this.saveConfig(); } },
-            getImgUrl(u) { if(!u) return 'https://via.placeholder.com/400x533'; const d = u.match(/[-\w]{25,}/); return d ? `https://lh3.googleusercontent.com/d/${d[0]}` : u; },
-            formatList(t) { return t ? t.split('\n').filter(l => l.trim()).map(l => `<li>• ${l}</li>`).join('') : ''; },
+            toggleTab(cat) { this.openTabs[cat] = !this.openTabs[cat]; },
+            get filteredCategories() { return this.categories.filter(c => (this.catGroups[c] || 'CIP') === this.activeGroup); },
+            getCategoryOfBlock(group, block) { const sample = this.data.find(p => (this.catGroups[p.category] || 'CIP') === group && p.block === block); return sample ? sample.category : 'Vị trí'; },
+            
             dataFilteredAll() {
-                let base = this.data.filter(p => (this.catGroups[p.category] || 'CIP') === this.activeGroup);
-                if (this.filterCategory !== 'Tất cả' && this.search === '') base = base.filter(p => p.category === this.filterCategory);
-                const s = this.search.toLowerCase();
-                if (!s) return base;
-                return base.filter(p => (p.name?.toLowerCase().includes(s)) || (p.mainRole?.toLowerCase().includes(s)) || (p.hometown?.toLowerCase().includes(s)) || (p.partyRole?.toLowerCase().includes(s)) || (p.block?.toLowerCase().includes(s)));
-            },
+    // 1. Lọc theo nhóm (VIP/CIP)
+    let base = this.data.filter(p => (this.catGroups[p.category] || 'CIP') === this.activeGroup);
+    
+    // 2. Lọc theo Tab (Category) nếu không tìm kiếm
+    if (this.filterCategory !== 'Tất cả' && this.search === '') {
+        base = base.filter(p => p.category === this.filterCategory);
+    }
+    
+    const s = this.search.toLowerCase();
+    if (!s) return base;
+
+    // 3. Logic tìm kiếm thông minh: Tên, Chức danh, Khối và QUÊ QUÁN
+    return base.filter(p => 
+    (p.name && p.name.toLowerCase().includes(s)) || 
+    (p.mainRole && p.mainRole.toLowerCase().includes(s)) || 
+    (p.hometown && p.hometown.toLowerCase().includes(s)) || // Tìm theo quê quán
+    (p.partyRole && p.partyRole.toLowerCase().includes(s)) || // Tìm theo chức danh Đảng
+    (p.block && p.block.toLowerCase().includes(s))
+);
+},
+
             setActiveGroup(g) { this.activeGroup = g; this.filterCategory = 'Tất cả'; this.search = ''; },
             hasPeopleInGroup(g) { return this.dataFilteredAll().some(p => (this.catGroups[p.category] || 'CIP') === g); },
             getPeopleInDB(cat, block) { return this.data.filter(p => p.category === cat && p.block === block); },
-            async updatePIN() { if(!this.newPinInput) return alert("Nhập PIN!"); await this.db.collection("config").doc("auth_v1").update({ pin: this.newPinInput }); alert("Thành công!"); this.newPinInput = ''; },
-            async updatePersonnelOrder(el) { const batch = this.db.batch(); Array.from(el.children).forEach((it, idx) => { if(it.dataset.id) batch.update(this.db.collection("personnel_v8").doc(it.dataset.id), { order: idx }); }); await batch.commit(); },
-            get filteredCategories() { return this.categories.filter(c => (this.catGroups[c] || 'CIP') === this.activeGroup); }
+            getPeopleByGroupAndBlock(g, b) { return this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === g && p.block === b); },
+            
+            blocksOrderFilteredByGroup(group) {
+                const activeBlocks = [...new Set(this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === group).map(it => it.block))];
+                const savedOrder = this.blocksOrder[this.filterCategory] || [];
+                return savedOrder.filter(b => activeBlocks.includes(b)).concat(activeBlocks.filter(b => !savedOrder.includes(b)));
+            },
+
+            getImgUrl(u) { 
+                if(!u) return 'https://via.placeholder.com/400x533'; 
+                const d = u.match(/[-\w]{25,}/); 
+                return d ? `https://lh3.googleusercontent.com/d/${d[0]}=s800` : u; 
+            },
+
+            formatList(t) { return t ? t.split('\n').filter(l => l.trim()).map(l => `<li>• ${l}</li>`).join('') : ''; }
         }
     }
-    </script>
+</script>
 
-<footer x-show="!isAdmin" class="w-full py-8 mt-auto">
+    <footer x-show="!isAdmin" class="w-full py-8 mt-auto">
         <div class="container mx-auto px-4">
             <div class="flex flex-col items-center justify-center opacity-40 hover:opacity-100 transition-opacity duration-500">
                 <div class="h-px w-16 bg-slate-300 mb-4"></div>
