@@ -274,44 +274,32 @@
                     <h3 class="font-black text-xl uppercase border-l-8 border-highlight pl-5 mb-10 shrink-0">DATABASE</h3>
                     <div class="space-y-12 scroll-admin-db no-scrollbar flex-1 overflow-y-auto">
                         <template x-for="cat in categories" :key="cat">
-    <div class="p-6 rounded-[2.5rem] bg-slate-50 border-2 border-white mb-6" x-init="openTabs[cat] = true"> 
-        
-        <div class="flex justify-between items-center mb-6 border-b pb-3">
-            <div class="flex items-center gap-3 cursor-pointer group" @click="toggleTab(cat)">
-                <svg class="w-5 h-5 transition-transform duration-300" 
-                     :class="openTabs[cat] ? 'rotate-0' : '-rotate-90'" 
-                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path>
-                </svg>
-                <h4 class="font-black text-brand uppercase text-[13px] group-hover:text-highlight" x-text="cat"></h4>
-            </div>
-
-            <div class="flex gap-1">
-                <input type="text" :id="'new-block-'+cat" placeholder="Khối..." class="border p-1.5 rounded text-[10px] font-bold w-32 outline-none">
-                <button @click="addNewBlockAt(cat)" class="bg-red-600 text-white px-3 rounded text-[12px] font-black">+</button>
-            </div>
-        </div>
-
-        <div x-show="openTabs[cat]" x-collapse x-cloak>
-            <template x-for="blockName in (blocks[cat] || [])" :key="blockName">
-                <div class="mb-8">
-                    <div class="flex justify-between items-center mb-3">
-                        <p class="text-[11px] font-black text-slate-400 uppercase" x-text="blockName"></p>
-                        <button @click="deleteBlockAt(cat, blockName)" class="text-red-500 text-[9px] font-bold uppercase">Xóa Khối</button>
-                    </div>
-                    <div :id="'sortable-db-' + cat + '-' + blockName" class="space-y-2 min-h-[30px] p-1">
-                        <template x-for="p in getPeopleInDB(cat, blockName)" :key="p.id">
-                            <div :data-id="p.id" class="db-row flex items-center justify-between group shadow-sm bg-white p-2 rounded-lg">
-                                <div class="flex items-center gap-4"><span class="text-slate-300 font-bold">☰</span><img :src="getImgUrl(p.img)" class="w-10 h-10 rounded-full object-cover"><p class="text-[13px] font-black" x-text="p.name"></p></div>
-                                <div class="flex gap-3 opacity-0 group-hover:opacity-100 transition-all"><button @click="editPersonnel(p)" class="text-blue-500 font-black text-[10px]">Sửa</button><button @click="deletePersonnel(p.id)" class="text-red-500 font-black text-[10px]">Xóa</button></div>
+                            <div class="p-6 rounded-[2.5rem] bg-slate-50 border-2 border-white mb-6"> 
+                                <div class="flex justify-between items-center mb-6 border-b pb-3">
+                                    <h4 class="font-black text-brand uppercase text-[13px]" x-text="cat"></h4>
+                                    <div class="flex gap-1">
+                                        <input type="text" :id="'new-block-'+cat" placeholder="Khối..." class="border p-1.5 rounded text-[10px] font-bold w-32 outline-none">
+                                        <button @click="addNewBlockAt(cat)" class="bg-red-600 text-white px-3 rounded text-[12px] font-black">+</button>
+                                    </div>
+                                </div>
+                                <template x-for="blockName in (blocks[cat] || [])" :key="blockName">
+                                    <div class="mb-8">
+                                        <div class="flex justify-between items-center mb-3">
+                                            <p class="text-[11px] font-black text-slate-400 uppercase" x-text="blockName"></p>
+                                            <button @click="deleteBlockAt(cat, blockName)" class="text-red-500 text-[9px] font-bold uppercase">Xóa Khối</button>
+                                        </div>
+                                        <div :id="'sortable-db-' + cat + '-' + blockName" class="space-y-2 min-h-[30px] p-1">
+                                            <template x-for="p in getPeopleInDB(cat, blockName)" :key="p.id">
+                                                <div :data-id="p.id" class="db-row flex items-center justify-between group shadow-sm bg-white p-2 rounded-lg">
+                                                    <div class="flex items-center gap-4"><span class="text-slate-300 font-bold">☰</span><img :src="getImgUrl(p.img)" class="w-10 h-10 rounded-full object-cover"><p class="text-[13px] font-black" x-text="p.name"></p></div>
+                                                    <div class="flex gap-3 opacity-0 group-hover:opacity-100 transition-all"><button @click="editPersonnel(p)" class="text-blue-500 font-black text-[10px]">Sửa</button><button @click="deletePersonnel(p.id)" class="text-red-500 font-black text-[10px]">Xóa</button></div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
                         </template>
-                    </div>
-                </div>
-            </template>
-        </div>
-    </div>
-</template>
                     </div>
                 </div> 
             </div>
@@ -444,7 +432,6 @@ confirmLogin() {
             addNewBlockAt(cat) { const el = document.getElementById('new-block-'+cat); const val = el.value.trim(); if(!val) return; if(!this.blocks[cat]) this.blocks[cat] = []; this.blocks[cat].push(val); this.saveConfig(); el.value = ''; },
             deleteBlockAt(cat, blockName) { if(confirm(`Xóa ${blockName}?`)) { this.blocks[cat] = this.blocks[cat].filter(b => b !== blockName); this.saveConfig(); } },
             getImgUrl(u) { if(!u) return 'https://via.placeholder.com/400x533'; const d = u.match(/[-\w]{25,}/); return d ? `https://lh3.googleusercontent.com/d/${d[0]}` : u; },
-	    toggleTab(cat) { this.openTabs[cat] = !this.openTabs[cat]; },
             formatList(t) { return t ? t.split('\n').filter(l => l.trim()).map(l => `<li>• ${l}</li>`).join('') : ''; },
             dataFilteredAll() {
                 let base = this.data.filter(p => (this.catGroups[p.category] || 'CIP') === this.activeGroup);
