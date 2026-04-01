@@ -7,11 +7,16 @@
     <link rel="icon" href="pvhl-tool.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script defer src="https://unpkg.com/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+<script defer src="https://unpkg.com/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         :root { --brand: #1FA3B0; --highlight: #FB8500; --bg-main: #E0F2FE; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: #1e293b; overflow-x: hidden; }
@@ -244,7 +249,7 @@
                     <button @click="saveBlockOrder()" class="w-full mt-3 bg-[#1FA3B0] text-white py-2.5 rounded font-black text-[10px] uppercase hover:brightness-110 transition-all">Lưu thứ tự Khối</button>
                 </div>
             </div>
-            <button @click="isAdmin = false" class="w-full mt-auto bg-red-600 text-white py-2.5 rounded font-black text-[10px] uppercase hover:bg-red-700 transition-all">Đóng Admin</button>
+            <button @click="logoutAdmin()" class="w-full mt-auto bg-red-600 text-white py-2.5 rounded font-black text-[10px] uppercase hover:bg-red-700 transition-all">Đăng xuất Admin</button>
         </aside>
 
         <div class="flex-1 p-5 md:p-8 overflow-y-auto bg-[#F1F5F9] no-scrollbar text-black">
@@ -321,23 +326,57 @@
     <script>
     function app() {
         return {
-            isAdmin: false, showLoginModal: false, loginInput: '', search: '', activeGroup: 'VIP', filterCategory: 'Tất cả', selectedPerson: null,
-            editingId: null, sortCat: '', newCatName: '', newPinInput: '', openTabs: {},
-            categories: [], blocks: {}, catGroups: {}, blocksOrder: {}, data: [], 
-            auth: { pin: '', masterPin: '' }, 
+            // --- CẤU HÌNH BIẾN HỆ THỐNG ---
+            isAdmin: false, 
+            showLoginModal: false, 
+            loginInput: '', 
+            search: '', 
+            activeGroup: 'VIP', 
+            filterCategory: 'Tất cả', 
+            selectedPerson: null,
+            editingId: null, 
+            sortCat: '', 
+            newCatName: '', 
+            newPinInput: '', 
+            openTabs: {},
+            categories: [], 
+            blocks: {}, 
+            catGroups: {}, 
+            blocksOrder: {}, 
+            data: [], 
             types: ['Giữ nguyên', 'Tái cử', 'Lần đầu'],
             form: { name: '', mainRole: '', partyRole: '', category: '', block: '', type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' },
+            
+            // --- QUẢN LÝ ADMIN ---
+            adminEmails: ["luongbinhan@gmail.com", "pvhl.nba@gmail.com"],
 
             async init() {
-                const cfg = { apiKey: "AIzaSyAhbVR_ywdzMNnwaeKMp5rWNsT4otCF4xM", projectId: "pvhk-d32da", appId: "1:974778325507:web:eda0b36711f492cb764c36" };
+                // 1. Khởi tạo Firebase
+                const cfg = { 
+                    apiKey: "AIzaSyAhbVR_ywdzMNnwaeKMp5rWNsT4otCF4xM", 
+                    projectId: "pvhk-d32da", 
+                    appId: "1:974778325507:web:eda0b36711f492cb764c36" 
+                };
                 if (!firebase.apps.length) firebase.initializeApp(cfg);
                 this.db = firebase.firestore();
 
+                // 2. Theo dõi trạng thái đăng nhập Google
+                firebase.auth().onAuthStateChanged(user => {
+                    if (user && this.adminEmails.includes(user.email)) {
+                        this.isAdmin = true;
+                        console.log("Admin xác thực thành công:", user.email);
+                    } else {
+                        this.isAdmin = false;
+                    }
+                });
+
+                // 3. Lấy dữ liệu Nhân sự (Realtime)
                 this.db.collection("personnel_v8").orderBy("order", "asc").onSnapshot(s => { 
                     this.data = s.docs.map(d => ({id: d.id, ...d.data()})); 
                     this.$nextTick(() => this.reinitSortables()); 
                 });
 
+                // 4. Lấy dữ liệu Cấu hình (Realtime)
                 this.db.collection("config").doc("master_structure_v29").onSnapshot(doc => { 
                     if (doc.exists) { 
                         const d = doc.data(); 
@@ -349,16 +388,37 @@
                         this.$nextTick(() => this.reinitSortables());
                     } 
                 });
-
-                this.db.collection("config").doc("auth_v1").onSnapshot(doc => { 
-                    if (doc.exists) { 
-                        const d = doc.data(); 
-                        this.auth.pin = d.pin || d.Password || ''; 
-                        this.auth.masterPin = d.masterPin || ''; 
-                    } 
-                });
             },
 
+            // --- HÀM ĐĂNG NHẬP GOOGLE ---
+            loginAdmin() {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                firebase.auth().signInWithPopup(provider)
+                    .then((result) => {
+                        if (this.adminEmails.includes(result.user.email)) {
+                            this.isAdmin = true;
+                            alert("Chào Admin: " + result.user.displayName);
+                        } else {
+                            alert("Tài khoản " + result.user.email + " không có quyền Admin!");
+                            firebase.auth().signOut();
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Lỗi Auth:", error);
+                        alert("Đăng nhập thất bại hoặc bạn đã đóng cửa sổ.");
+                    });
+            },
+
+            logoutAdmin() {
+                if(confirm("Bạn muốn đăng xuất quyền Admin?")) {
+                    firebase.auth().signOut().then(() => {
+                        this.isAdmin = false;
+                        location.reload();
+                    });
+                }
+            },
+
+            // --- CÁC HÀM XỬ LÝ DỮ LIỆU (GIỮ NGUYÊN LOGIC CỦA BẠN) ---
             reinitSortables() {
                 const blockEl = document.getElementById('sortable-blocks-admin');
                 if(blockEl) { if(blockEl._sortable) blockEl._sortable.destroy(); blockEl._sortable = Sortable.create(blockEl, { animation: 200 }); }
@@ -387,7 +447,7 @@
                 const newOrder = Array.from(el.children).map(it => it.dataset.id).filter(id => id);
                 if (this.sortCat) {
                     this.blocksOrder[this.sortCat] = newOrder;
-                    this.blocks[this.sortCat] = newOrder; // Cập nhật cả mảng gốc để đồng bộ hiển thị
+                    this.blocks[this.sortCat] = newOrder;
                     await this.saveConfig();
                     alert("Đã lưu thứ tự Khối cho " + this.sortCat);
                 }
@@ -402,25 +462,6 @@
             getPeopleByGroupAndBlock(g, b, cat) { 
                 return this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === g && p.block === b && p.category === cat); 
             },
-
-            loginAdmin() {
-    this.showLoginModal = true;
-    this.loginInput = ''; // Xóa trắng ô nhập mỗi khi mở
-},
-
-// Hàm này xử lý việc kiểm tra mật khẩu khi bấm "Xác nhận"
-confirmLogin() {
-    // So sánh mã PIN từ Firebase đã được load sẵn trong this.auth
-    if (this.loginInput === this.auth.pin || (this.auth.masterPin && this.loginInput === this.auth.masterPin)) {
-        this.isAdmin = true;
-        this.showLoginModal = false; // Đóng modal
-        this.loginInput = '';
-        localStorage.setItem('adminAuthenticated', 'true');
-    } else {
-        alert("Sai mã PIN!");
-        this.loginInput = ''; // Nhập sai thì xóa để nhập lại
-    }
-},
 
             async saveConfig() { 
                 await this.db.collection("config").doc("master_structure_v29").set({ 
@@ -443,9 +484,16 @@ confirmLogin() {
             deleteCategory(name) { if(confirm(`Xóa ${name}?`)) { this.categories = this.categories.filter(c => c !== name); this.saveConfig(); } },
             addNewBlockAt(cat) { const el = document.getElementById('new-block-'+cat); const val = el.value.trim(); if(!val) return; if(!this.blocks[cat]) this.blocks[cat] = []; this.blocks[cat].push(val); this.saveConfig(); el.value = ''; },
             deleteBlockAt(cat, blockName) { if(confirm(`Xóa ${blockName}?`)) { this.blocks[cat] = this.blocks[cat].filter(b => b !== blockName); this.saveConfig(); } },
-            getImgUrl(u) { if(!u) return 'https://via.placeholder.com/400x533'; const d = u.match(/[-\w]{25,}/); return d ? `https://lh3.googleusercontent.com/d/${d[0]}` : u; },
-	    toggleTab(cat) { this.openTabs[cat] = !this.openTabs[cat]; },
+            
+            getImgUrl(u) { 
+                if(!u) return 'https://via.placeholder.com/400x533'; 
+                const d = u.match(/[-\w]{25,}/); 
+                return d ? `https://lh3.googleusercontent.com/d/${d[0]}` : u; 
+            },
+
+            toggleTab(cat) { this.openTabs[cat] = !this.openTabs[cat]; },
             formatList(t) { return t ? t.split('\n').filter(l => l.trim()).map(l => `<li>• ${l}</li>`).join('') : ''; },
+            
             dataFilteredAll() {
                 let base = this.data.filter(p => (this.catGroups[p.category] || 'CIP') === this.activeGroup);
                 if (this.filterCategory !== 'Tất cả' && this.search === '') base = base.filter(p => p.category === this.filterCategory);
@@ -453,10 +501,10 @@ confirmLogin() {
                 if (!s) return base;
                 return base.filter(p => (p.name?.toLowerCase().includes(s)) || (p.mainRole?.toLowerCase().includes(s)) || (p.hometown?.toLowerCase().includes(s)) || (p.partyRole?.toLowerCase().includes(s)) || (p.block?.toLowerCase().includes(s)));
             },
+
             setActiveGroup(g) { this.activeGroup = g; this.filterCategory = 'Tất cả'; this.search = ''; },
             hasPeopleInGroup(g) { return this.dataFilteredAll().some(p => (this.catGroups[p.category] || 'CIP') === g); },
             getPeopleInDB(cat, block) { return this.data.filter(p => p.category === cat && p.block === block); },
-            async updatePIN() { if(!this.newPinInput) return alert("Nhập PIN!"); await this.db.collection("config").doc("auth_v1").update({ pin: this.newPinInput }); alert("Thành công!"); this.newPinInput = ''; },
             async updatePersonnelOrder(el) { const batch = this.db.batch(); Array.from(el.children).forEach((it, idx) => { if(it.dataset.id) batch.update(this.db.collection("personnel_v8").doc(it.dataset.id), { order: idx }); }); await batch.commit(); },
             get filteredCategories() { return this.categories.filter(c => (this.catGroups[c] || 'CIP') === this.activeGroup); }
         }
