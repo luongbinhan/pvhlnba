@@ -195,21 +195,11 @@
         <aside class="admin-sidebar shadow-2xl flex flex-col">
             <div class="mb-8 text-center"><img src="viags.png" class="h-10 mx-auto mb-3"><h2 class="font-black text-lg text-brand uppercase italic">QUẢN TRỊ VIÊN</h2></div>
             <div class="space-y-5">
-                <div class="bg-slate-800 p-4 rounded-xl text-white" x-data="{ showPin: false }">
-    <label class="text-[9px] font-black text-red-400 uppercase mb-2 block tracking-widest">Đổi PIN (Firebase)</label>
-    <div class="relative mb-2">
-        <input :type="showPin ? 'text' : 'password'" 
-               x-model="newPinInput" 
-               placeholder="Nhập PIN mới..." 
-               class="input-admin !text-[10px] pr-10 text-black">
-        <button @click="showPin = !showPin" 
-                type="button"
-                class="absolute right-2 top-1.5 text-slate-400 hover:text-brand transition-colors">
-            <span x-show="!showPin">👁️</span>
-            <span x-show="showPin">🔒</span>
-        </button>
-    </div>
-    <button @click="updatePIN()" class="w-full bg-red-600 text-white py-2 rounded font-black text-[10px] uppercase">Cập nhật</button>
+                <div class="mb-5">
+    <button @click="isAdmin = false" 
+            class="w-full bg-[#FB8500] text-white py-3 rounded-xl font-black text-[11px] uppercase shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2">
+        <span>🏠</span> Quay về Trang chủ
+    </button>
 </div>
 
                 <div class="admin-box text-white">
