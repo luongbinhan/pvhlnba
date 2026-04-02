@@ -381,27 +381,41 @@
         },
 
         loginAdmin() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            provider.setCustomParameters({ prompt: 'select_account' });
+    // 1. Kiểm tra xem Firebase đã có user đang đăng nhập chưa
+    const currentUser = firebase.auth().currentUser;
 
-            firebase.auth().signInWithPopup(provider)
-                .then((result) => {
-                    if (this.adminEmails.includes(result.user.email)) {
-                        this.isAdmin = true;
-                        alert("Chào Admin: " + result.user.displayName);
-                    } else {
-                        alert("Tài khoản không có quyền Admin!");
-                        firebase.auth().signOut();
-                    }
-                })
-                .catch((error) => {
-                    if (error.code === 'auth/popup-blocked') {
-                        alert("Vui lòng cho phép Popup trên trình duyệt để đăng nhập.");
-                    } else {
-                        console.error(error);
-                    }
-                });
-        },
+    if (currentUser) {
+        // Nếu đã có user, kiểm tra email có trong danh sách Admin không
+        if (this.adminEmails.includes(currentUser.email)) {
+            this.isAdmin = true; // Cho vào thẳng giao diện Admin
+            return;
+        } else {
+            alert("Tài khoản này không có quyền Admin. Đang đăng xuất...");
+            firebase.auth().signOut();
+        }
+    }
+
+    // 2. Nếu chưa đăng nhập hoặc không phải Admin, mới hiện Popup
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    firebase.auth().signInWithPopup(provider)
+        .then((result) => {
+            if (this.adminEmails.includes(result.user.email)) {
+                this.isAdmin = true;
+                alert("Chào Admin: " + result.user.displayName);
+            } else {
+                alert("Tài khoản không có quyền Admin!");
+                firebase.auth().signOut();
+            }
+        })
+        .catch((error) => {
+            if (error.code !== 'auth/cancelled-popup-request') {
+                console.error(error);
+                alert("Lỗi đăng nhập: " + error.message);
+            }
+        });
+}
 
         logoutAdmin() {
             if(confirm("Xác nhận đăng xuất?")) {
