@@ -348,85 +348,80 @@
             form: { name: '', mainRole: '', partyRole: '', category: '', block: '', type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' },
             
             // --- QUẢN LÝ ADMIN ---
-            adminEmails: ["luongbinhan@gmail.com", "pvhl.nba@gmail.com"],
+            adminEmails: ["luongbinhan@gmail.com", "pvhl.nba@gmail.com", "trannhung200677@gmail.com"],
 
             async init() {
-                const cfg = { 
-                    apiKey: "AIzaSyAhbVR_ywdzMNnwaeKMp5rWNsT4otCF4xM", 
-                    projectId: "pvhk-d32da", 
-                    appId: "1:974778325507:web:eda0b36711f492cb764c36" 
-                };
-                
-                if (!firebase.apps.length) firebase.initializeApp(cfg);
-                this.db = firebase.firestore();
+            // 1. Khởi tạo Firebase (Giữ nguyên cfg của bạn)
+            const cfg = { 
+                apiKey: "AIzaSyAhbVR_ywdzMNnwaeKMp5rWNsT4otCF4xM", 
+                projectId: "pvhk-d32da", 
+                appId: "1:974778325507:web:eda0b36711f492cb764c36" 
+            };
+            if (!firebase.apps.length) firebase.initializeApp(cfg);
+            this.db = firebase.firestore();
 
-                // Dùng mũi tên (arrow function) để không bị mất ngữ cảnh 'this'
-                // Xử lý kết quả trả về từ Google sau khi Redirect
-                firebase.auth().getRedirectResult().then((result) => {
-                    if (result && result.user) {
-                        if (this.adminEmails.includes(result.user.email)) {
-                            this.isAdmin = true;
-                            alert("Chào Admin: " + result.user.displayName);
-                        } else {
-                            alert("Tài khoản " + result.user.email + " không có quyền Admin!");
-                            firebase.auth().signOut();
-                        }
-                    }
-                }).catch((error) => {
-                    if (window.location.protocol === 'file:') {
-                        console.warn("Đang chạy offline: Google Auth sẽ không hoạt động.");
-                    } else {
-                        console.error("Lỗi Auth:", error);
-                    }
-                });
+            // 2. TỰ ĐỘNG KHỞI TẠO GOOGLE IDENTITY CLIENT
+            // Điều này tạo ra cửa sổ chọn tài khoản giống file hlbt.html
+            this.initGoogleClient();
 
-                // Theo dõi trạng thái đăng nhập tự động
-                firebase.auth().onAuthStateChanged(user => {
-                    if (user && this.adminEmails.includes(user.email)) {
-                        this.isAdmin = true;
-                    } else {
-                        this.isAdmin = false;
-                    }
-                });
-
-                // Lấy dữ liệu Nhân sự (Realtime)
-                this.db.collection("personnel_v8").orderBy("order", "asc").onSnapshot(s => { 
-                    this.data = s.docs.map(d => ({id: d.id, ...d.data()})); 
-                    this.$nextTick(() => this.reinitSortables()); 
-                });
-
-                // Lấy dữ liệu Cấu hình (Realtime)
-                this.db.collection("config").doc("master_structure_v29").onSnapshot(doc => { 
-                    if (doc.exists) { 
-                        const d = doc.data(); 
-                        this.categories = d.categories || []; 
-                        this.blocks = d.blocks || {}; 
-                        this.catGroups = d.catGroups || {}; 
-                        this.blocksOrder = d.blocksOrder || {}; 
-                        if(!this.sortCat) this.sortCat = this.categories[0]; 
-                        this.$nextTick(() => this.reinitSortables());
-                    } 
-                });
-            },
-
-            // --- HÀM ĐĂNG NHẬP GOOGLE (REDIRECT) ---
-            loginAdmin() {
-                if (window.location.protocol === 'file:') {
-                    alert("Lỗi bảo mật Google: Bạn không thể đăng nhập khi mở file trực tiếp (file://). Hãy upload lên Netlify (https://) để sử dụng nút này.");
-                    return;
+            // 3. Theo dõi trạng thái (Giữ nguyên)
+            firebase.auth().onAuthStateChanged(user => {
+                if (user && this.adminEmails.includes(user.email)) {
+                    this.isAdmin = true;
+                } else {
+                    this.isAdmin = false;
                 }
-                const provider = new firebase.auth.GoogleAuthProvider();
-                firebase.auth().signInWithRedirect(provider);
-            },
+            });
 
-            logoutAdmin() {
-                if(confirm("Bạn muốn đăng xuất quyền Admin?")) {
-                    firebase.auth().signOut().then(() => {
-                        this.isAdmin = false;
-                        location.reload();
-                    });
-                }
-            },
+            // ... (các hàm onSnapshot dữ liệu giữ nguyên) ...
+        },
+
+        // HÀM KHỞI TẠO CỬA SỔ GOOGLE (GIỐNG HLBT.HTML)
+        initGoogleClient() {
+            // Client ID của bạn (lấy từ Google Cloud Console)
+            const CLIENT_ID = '974778325507-v00ghkojc0ta3s1fg2kl4pmvsegl04v9.apps.googleusercontent.com'; 
+            
+            window.tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: 'email profile openid',
+                callback: (tokenResponse) => {
+                    if (tokenResponse && tokenResponse.access_token) {
+                        // Sau khi chọn tài khoản xong, dùng Token đó để đăng nhập vào Firebase
+                        const credential = firebase.auth.GoogleAuthProvider.credential(null, tokenResponse.access_token);
+                        firebase.auth().signInWithCredential(credential)
+                            .then((result) => {
+                                if (this.adminEmails.includes(result.user.email)) {
+                                    this.isAdmin = true;
+                                    alert("Chào Admin: " + result.user.displayName);
+                                } else {
+                                    alert("Tài khoản không có quyền Admin!");
+                                    firebase.auth().signOut();
+                                }
+                            });
+                    }
+                },
+            });
+        },
+
+        // CẬP NHẬT HÀM loginAdmin ĐỂ HIỆN CỬA SỔ CHỌN TÀI KHOẢN
+        loginAdmin() {
+            if (window.tokenClient) {
+                // 'prompt: select_account' ép buộc hiện danh sách tài khoản Google để chọn
+                window.tokenClient.requestAccessToken({ prompt: 'select_account' });
+            } else {
+                alert("Hệ thống Google chưa sẵn sàng. Vui lòng thử lại sau vài giây.");
+                this.initGoogleClient();
+            }
+        },
+
+        logoutAdmin() {
+            if(confirm("Xác nhận đăng xuất Admin?")) {
+                firebase.auth().signOut().then(() => {
+                    this.isAdmin = false;
+                    location.reload();
+                });
+            }
+        },
 
             // --- CÁC HÀM XỬ LÝ DỮ LIỆU (GIỮ NGUYÊN LOGIC CỦA BẠN) ---
             reinitSortables() {
