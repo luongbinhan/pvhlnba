@@ -315,7 +315,7 @@
     </div>
 
     <script>
-    function app() {
+function app() {
     return {
         // --- CẤU HÌNH BIẾN HỆ THỐNG ---
         isAdmin: false, 
@@ -328,7 +328,6 @@
         editingId: null, 
         sortCat: '', 
         newCatName: '', 
-        newPinInput: '', 
         openTabs: {},
         categories: [], 
         blocks: {}, 
@@ -338,30 +337,25 @@
         types: ['Giữ nguyên', 'Tái cử', 'Lần đầu'],
         form: { name: '', mainRole: '', partyRole: '', category: '', block: '', type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' },
         
-        // --- QUẢN LÝ ADMIN ---
         adminEmails: ["luongbinhan@gmail.com", "pvhl.nba@gmail.com", "trannhung200677@gmail.com"],
 
         async init() {
-            // 1. Khởi tạo Firebase
             const cfg = { 
                 apiKey: "AIzaSyAhbVR_ywdzMNnwaeKMp5rWNsT4otCF4xM", 
-		authDomain: "pvhk-d32da.firebaseapp.com",
+                authDomain: "pvhk-d32da.firebaseapp.com",
                 projectId: "pvhk-d32da", 
                 appId: "1:974778325507:web:eda0b36711f492cb764c36" 
             };
             if (!firebase.apps.length) firebase.initializeApp(cfg);
             this.db = firebase.firestore();
 
-            // 2. Theo dõi trạng thái đăng nhập
+            // Tự động nhận diện Admin khi quay lại từ trang chủ hoặc F5
             firebase.auth().onAuthStateChanged(user => {
                 if (user && this.adminEmails.includes(user.email)) {
                     this.isAdmin = true;
-                } else {
-                    this.isAdmin = false;
                 }
             });
 
-            // 3. Lấy dữ liệu Realtime
             this.db.collection("personnel_v8").orderBy("order", "asc").onSnapshot(s => { 
                 this.data = s.docs.map(d => ({id: d.id, ...d.data()})); 
                 this.$nextTick(() => this.reinitSortables()); 
@@ -381,44 +375,35 @@
         },
 
         loginAdmin() {
-    // 1. Kiểm tra xem Firebase đã có user đang đăng nhập chưa
-    const currentUser = firebase.auth().currentUser;
-
-    if (currentUser) {
-        // Nếu đã có user, kiểm tra email có trong danh sách Admin không
-        if (this.adminEmails.includes(currentUser.email)) {
-            this.isAdmin = true; // Cho vào thẳng giao diện Admin
-            return;
-        } else {
-            alert("Tài khoản này không có quyền Admin. Đang đăng xuất...");
-            firebase.auth().signOut();
-        }
-    }
-
-    // 2. Nếu chưa đăng nhập hoặc không phải Admin, mới hiện Popup
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-
-    firebase.auth().signInWithPopup(provider)
-        .then((result) => {
-            if (this.adminEmails.includes(result.user.email)) {
+            const currentUser = firebase.auth().currentUser;
+            if (currentUser && this.adminEmails.includes(currentUser.email)) {
                 this.isAdmin = true;
-                alert("Chào Admin: " + result.user.displayName);
-            } else {
-                alert("Tài khoản không có quyền Admin!");
-                firebase.auth().signOut();
+                return;
             }
-        })
-        .catch((error) => {
-            if (error.code !== 'auth/cancelled-popup-request') {
-                console.error(error);
-                alert("Lỗi đăng nhập: " + error.message);
-            }
-        });
-}
+
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
+
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    if (this.adminEmails.includes(result.user.email)) {
+                        this.isAdmin = true;
+                        alert("Chào Admin: " + result.user.displayName);
+                    } else {
+                        alert("Tài khoản không có quyền Admin!");
+                        firebase.auth().signOut();
+                    }
+                })
+                .catch((error) => {
+                    if (error.code !== 'auth/cancelled-popup-request') {
+                        console.error(error);
+                        alert("Lỗi: " + error.message);
+                    }
+                });
+        },
 
         logoutAdmin() {
-            if(confirm("Xác nhận đăng xuất?")) {
+            if(confirm("Xác nhận đăng xuất Admin?")) {
                 firebase.auth().signOut().then(() => {
                     this.isAdmin = false;
                     location.reload();
@@ -467,7 +452,7 @@
 
         async savePersonnel() { 
             if(!this.form.name) return alert("Họ tên bắt buộc!"); 
-            if(!this.form.block) this.form.block = this.blocks[this.form.category][0];
+            if(!this.form.block) this.form.block = (this.blocks[this.form.category] || [])[0];
             if(this.editingId) await this.db.collection("personnel_v8").doc(this.editingId).update(this.form); 
             else { await this.db.collection("personnel_v8").add({...this.form, order: this.data.length}); } 
             this.resetForm(); alert("Đã lưu!"); 
@@ -475,7 +460,7 @@
 
         editPersonnel(p) { this.editingId = p.id; this.form = { ...p }; },
 
-        resetForm() { this.editingId = null; this.form = { name: '', mainRole: '', partyRole: '', category: this.categories[0], block: this.blocks[this.categories[0]][0], type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' }; },
+        resetForm() { this.editingId = null; this.form = { name: '', mainRole: '', partyRole: '', category: this.categories[0], block: (this.blocks[this.categories[0]] || [])[0], type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' }; },
 
         deletePersonnel(id) { if(confirm("Xác nhận xóa?")) this.db.collection("personnel_v8").doc(id).delete(); },
 
@@ -510,7 +495,7 @@
         get filteredCategories() { return this.categories.filter(c => (this.catGroups[c] || 'CIP') === this.activeGroup); }
     }
 }
-    </script>
+</script>
 
 <footer x-show="!isAdmin" class="w-full py-8 mt-auto">
         <div class="container mx-auto px-4">
