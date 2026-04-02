@@ -359,11 +359,14 @@
                 if (!firebase.apps.length) firebase.initializeApp(cfg);
                 this.db = firebase.firestore();
 
-                // --- PHẦN MỚI THÊM: Xử lý kết quả trả về từ Google sau khi Redirect ---
+                // Lưu lại ngữ cảnh 'this' để dùng bên trong các hàm callback
+                const self = this;
+
+                // --- Xử lý kết quả trả về từ Google sau khi Redirect ---
                 firebase.auth().getRedirectResult().then((result) => {
                     if (result && result.user) {
-                        if (this.adminEmails.includes(result.user.email)) {
-                            this.isAdmin = true;
+                        if (self.adminEmails.includes(result.user.email)) {
+                            self.isAdmin = true;
                             alert("Chào Admin: " + result.user.displayName);
                         } else {
                             alert("Tài khoản " + result.user.email + " không có quyền Admin!");
@@ -371,15 +374,16 @@
                         }
                     }
                 }).catch((error) => {
-                    console.error("Lỗi Redirect:", error);
+                    // Lỗi này thường xuất hiện khi chạy file Offline (file://)
+                    console.warn("Lưu ý: Đăng nhập Google yêu cầu chạy trên môi trường Web (http/https).");
                 });
 
-                // Theo dõi trạng thái đăng nhập tự động (Giữ nguyên đoạn này của bạn)
+                // Theo dõi trạng thái đăng nhập tự động
                 firebase.auth().onAuthStateChanged(user => {
-                    if (user && this.adminEmails.includes(user.email)) {
-                        this.isAdmin = true;
+                    if (user && self.adminEmails.includes(user.email)) {
+                        self.isAdmin = true;
                     } else {
-                        this.isAdmin = false;
+                        self.isAdmin = false;
                     }
                 });
 
@@ -403,10 +407,14 @@
                 });
             },
 
-// --- HÀM ĐĂNG NHẬP GOOGLE (ĐÃ ĐỔI SANG REDIRECT) ---
+            // --- HÀM ĐĂNG NHẬP GOOGLE (REDIRECT) ---
             loginAdmin() {
+                // Kiểm tra nếu đang chạy offline
+                if (window.location.protocol === 'file:') {
+                    alert("Lỗi: Bạn không thể đăng nhập Google khi mở file trực tiếp. Hãy upload lên Netlify hoặc dùng Live Server.");
+                    return;
+                }
                 const provider = new firebase.auth.GoogleAuthProvider();
-                // Thay thế signInWithPopup bằng signInWithRedirect để không bị trình duyệt chặn
                 firebase.auth().signInWithRedirect(provider);
             },
 
