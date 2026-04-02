@@ -378,24 +378,32 @@ function app() {
         },
 
         loginAdmin() {
-    const currentUser = firebase.auth().currentUser;
-    
-    // Nếu đã đăng nhập ngầm thành công và là Admin
-    if (currentUser && this.adminEmails.includes(currentUser.email)) {
-        this.isAdmin = true; // Chỉ khi chủ động bấm nút mới vào Admin
-        return;
-    }
-
-    // Nếu chưa có phiên đăng nhập nào thì mới hiện Popup
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    firebase.auth().signInWithPopup(provider)
-        .then((result) => {
-            if (this.adminEmails.includes(result.user.email)) {
+            const currentUser = firebase.auth().currentUser;
+            if (currentUser && this.adminEmails.includes(currentUser.email)) {
                 this.isAdmin = true;
+                return;
             }
-        }).catch(console.error);
-}
+
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
+
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    if (this.adminEmails.includes(result.user.email)) {
+                        this.isAdmin = true;
+                        alert("Chào Admin: " + result.user.displayName);
+                    } else {
+                        alert("Tài khoản không có quyền Admin!");
+                        firebase.auth().signOut();
+                    }
+                })
+                .catch((error) => {
+                    if (error.code !== 'auth/cancelled-popup-request') {
+                        console.error(error);
+                        alert("Lỗi: " + error.message);
+                    }
+                });
+        },
 
         logoutAdmin() {
             if(confirm("Xác nhận đăng xuất Admin?")) {
