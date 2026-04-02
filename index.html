@@ -351,7 +351,6 @@
             adminEmails: ["luongbinhan@gmail.com", "pvhl.nba@gmail.com"],
 
             async init() {
-                // 1. Khởi tạo Firebase
                 const cfg = { 
                     apiKey: "AIzaSyAhbVR_ywdzMNnwaeKMp5rWNsT4otCF4xM", 
                     projectId: "pvhk-d32da", 
@@ -360,11 +359,25 @@
                 if (!firebase.apps.length) firebase.initializeApp(cfg);
                 this.db = firebase.firestore();
 
-                // 2. Theo dõi trạng thái đăng nhập Google
+                // --- PHẦN MỚI THÊM: Xử lý kết quả trả về từ Google sau khi Redirect ---
+                firebase.auth().getRedirectResult().then((result) => {
+                    if (result && result.user) {
+                        if (this.adminEmails.includes(result.user.email)) {
+                            this.isAdmin = true;
+                            alert("Chào Admin: " + result.user.displayName);
+                        } else {
+                            alert("Tài khoản " + result.user.email + " không có quyền Admin!");
+                            firebase.auth().signOut();
+                        }
+                    }
+                }).catch((error) => {
+                    console.error("Lỗi Redirect:", error);
+                });
+
+                // Theo dõi trạng thái đăng nhập tự động (Giữ nguyên đoạn này của bạn)
                 firebase.auth().onAuthStateChanged(user => {
                     if (user && this.adminEmails.includes(user.email)) {
                         this.isAdmin = true;
-                        console.log("Admin xác thực thành công:", user.email);
                     } else {
                         this.isAdmin = false;
                     }
@@ -390,23 +403,11 @@
                 });
             },
 
-            // --- HÀM ĐĂNG NHẬP GOOGLE ---
+// --- HÀM ĐĂNG NHẬP GOOGLE (ĐÃ ĐỔI SANG REDIRECT) ---
             loginAdmin() {
                 const provider = new firebase.auth.GoogleAuthProvider();
-                firebase.auth().signInWithPopup(provider)
-                    .then((result) => {
-                        if (this.adminEmails.includes(result.user.email)) {
-                            this.isAdmin = true;
-                            alert("Chào Admin: " + result.user.displayName);
-                        } else {
-                            alert("Tài khoản " + result.user.email + " không có quyền Admin!");
-                            firebase.auth().signOut();
-                        }
-                    })
-                    .catch((error) => {
-                        console.error("Lỗi Auth:", error);
-                        alert("Đăng nhập thất bại hoặc bạn đã đóng cửa sổ.");
-                    });
+                // Thay thế signInWithPopup bằng signInWithRedirect để không bị trình duyệt chặn
+                firebase.auth().signInWithRedirect(provider);
             },
 
             logoutAdmin() {
