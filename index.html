@@ -356,17 +356,16 @@
                     projectId: "pvhk-d32da", 
                     appId: "1:974778325507:web:eda0b36711f492cb764c36" 
                 };
+                
                 if (!firebase.apps.length) firebase.initializeApp(cfg);
                 this.db = firebase.firestore();
 
-                // Lưu lại ngữ cảnh 'this' để dùng bên trong các hàm callback
-                const self = this;
-
-                // --- Xử lý kết quả trả về từ Google sau khi Redirect ---
+                // Dùng mũi tên (arrow function) để không bị mất ngữ cảnh 'this'
+                // Xử lý kết quả trả về từ Google sau khi Redirect
                 firebase.auth().getRedirectResult().then((result) => {
                     if (result && result.user) {
-                        if (self.adminEmails.includes(result.user.email)) {
-                            self.isAdmin = true;
+                        if (this.adminEmails.includes(result.user.email)) {
+                            this.isAdmin = true;
                             alert("Chào Admin: " + result.user.displayName);
                         } else {
                             alert("Tài khoản " + result.user.email + " không có quyền Admin!");
@@ -374,26 +373,29 @@
                         }
                     }
                 }).catch((error) => {
-                    // Lỗi này thường xuất hiện khi chạy file Offline (file://)
-                    console.warn("Lưu ý: Đăng nhập Google yêu cầu chạy trên môi trường Web (http/https).");
+                    if (window.location.protocol === 'file:') {
+                        console.warn("Đang chạy offline: Google Auth sẽ không hoạt động.");
+                    } else {
+                        console.error("Lỗi Auth:", error);
+                    }
                 });
 
                 // Theo dõi trạng thái đăng nhập tự động
                 firebase.auth().onAuthStateChanged(user => {
-                    if (user && self.adminEmails.includes(user.email)) {
-                        self.isAdmin = true;
+                    if (user && this.adminEmails.includes(user.email)) {
+                        this.isAdmin = true;
                     } else {
-                        self.isAdmin = false;
+                        this.isAdmin = false;
                     }
                 });
 
-                // 3. Lấy dữ liệu Nhân sự (Realtime)
+                // Lấy dữ liệu Nhân sự (Realtime)
                 this.db.collection("personnel_v8").orderBy("order", "asc").onSnapshot(s => { 
                     this.data = s.docs.map(d => ({id: d.id, ...d.data()})); 
                     this.$nextTick(() => this.reinitSortables()); 
                 });
 
-                // 4. Lấy dữ liệu Cấu hình (Realtime)
+                // Lấy dữ liệu Cấu hình (Realtime)
                 this.db.collection("config").doc("master_structure_v29").onSnapshot(doc => { 
                     if (doc.exists) { 
                         const d = doc.data(); 
@@ -409,9 +411,8 @@
 
             // --- HÀM ĐĂNG NHẬP GOOGLE (REDIRECT) ---
             loginAdmin() {
-                // Kiểm tra nếu đang chạy offline
                 if (window.location.protocol === 'file:') {
-                    alert("Lỗi: Bạn không thể đăng nhập Google khi mở file trực tiếp. Hãy upload lên Netlify hoặc dùng Live Server.");
+                    alert("Lỗi bảo mật Google: Bạn không thể đăng nhập khi mở file trực tiếp (file://). Hãy upload lên Netlify (https://) để sử dụng nút này.");
                     return;
                 }
                 const provider = new firebase.auth.GoogleAuthProvider();
