@@ -352,41 +352,53 @@
             adminEmails: ["luongbinhan@gmail.com", "pvhl.nba@gmail.com", "trannhung200677@gmail.com"],
 
             async init() {
-            // 1. Khởi tạo Firebase (Giữ nguyên cfg của bạn)
-            const cfg = { 
-                apiKey: "AIzaSyAhbVR_ywdzMNnwaeKMp5rWNsT4otCF4xM", 
-                projectId: "pvhk-d32da", 
-                appId: "1:974778325507:web:eda0b36711f492cb764c36" 
-            };
-            if (!firebase.apps.length) firebase.initializeApp(cfg);
-            this.db = firebase.firestore();
+                // 1. Khởi tạo Firebase
+                const cfg = { 
+                    apiKey: "AIzaSyAhbVR_ywdzMNnwaeKMp5rWNsT4otCF4xM", 
+                    projectId: "pvhk-d32da", 
+                    appId: "1:974778325507:web:eda0b36711f492cb764c36" 
+                };
+                if (!firebase.apps.length) firebase.initializeApp(cfg);
+                this.db = firebase.firestore();
 
-            // 2. TỰ ĐỘNG KHỞI TẠO GOOGLE IDENTITY CLIENT
-            // Điều này tạo ra cửa sổ chọn tài khoản giống file hlbt.html
-            this.initGoogleClient();
+                // 2. Khởi tạo trình chọn tài khoản Google
+                this.initGoogleClient();
 
-            // 3. Theo dõi trạng thái (Giữ nguyên)
-            firebase.auth().onAuthStateChanged(user => {
-                if (user && this.adminEmails.includes(user.email)) {
-                    this.isAdmin = true;
-                } else {
-                    this.isAdmin = false;
-                }
-            });
+                // 3. Theo dõi trạng thái đăng nhập
+                firebase.auth().onAuthStateChanged(user => {
+                    if (user && this.adminEmails.includes(user.email)) {
+                        this.isAdmin = true;
+                    } else {
+                        this.isAdmin = false;
+                    }
+                });
 
-            // ... (các hàm onSnapshot dữ liệu giữ nguyên) ...
-        },
+                // 4. Lấy dữ liệu Realtime
+                this.db.collection("personnel_v8").orderBy("order", "asc").onSnapshot(s => { 
+                    this.data = s.docs.map(d => ({id: d.id, ...d.data()})); 
+                    this.$nextTick(() => this.reinitSortables()); 
+                });
 
-        // HÀM KHỞI TẠO CỬA SỔ GOOGLE (GIỐNG HLBT.HTML)
-        initGoogleClient() {
-                // Kiểm tra nếu thư viện 'google' chưa được tải xong
+                this.db.collection("config").doc("master_structure_v29").onSnapshot(doc => { 
+                    if (doc.exists) { 
+                        const d = doc.data(); 
+                        this.categories = d.categories || []; 
+                        this.blocks = d.blocks || {}; 
+                        this.catGroups = d.catGroups || {}; 
+                        this.blocksOrder = d.blocksOrder || {}; 
+                        if(!this.sortCat) this.sortCat = this.categories[0]; 
+                        this.$nextTick(() => this.reinitSortables());
+                    } 
+                });
+            },
+
+            // --- HÀM KHỞI TẠO CỬA SỔ CHỌN TÀI KHOẢN (GIỐNG HLBT.HTML) ---
+            initGoogleClient() {
                 if (typeof google === 'undefined' || !google.accounts) {
-                    console.log("Đang đợi thư viện Google...");
                     setTimeout(() => this.initGoogleClient(), 500);
                     return;
                 }
 
-                // Khi đã có thư viện google, tiến hành khởi tạo
                 const CLIENT_ID = '974778325507-v00ghkojc0ta3s1fg2kl4pmvsegl04v9.apps.googleusercontent.com'; 
                 
                 window.tokenClient = google.accounts.oauth2.initTokenClient({
@@ -408,80 +420,62 @@
                         }
                     },
                 });
-                console.log("Google Client đã sẵn sàng!");
             },
 
-        // CẬP NHẬT HÀM loginAdmin ĐỂ HIỆN CỬA SỔ CHỌN TÀI KHOẢN
-        loginAdmin() {
-            if (window.tokenClient) {
-                // 'prompt: select_account' ép buộc hiện danh sách tài khoản Google để chọn
-                window.tokenClient.requestAccessToken({ prompt: 'select_account' });
-            } else {
-                alert("Hệ thống Google chưa sẵn sàng. Vui lòng thử lại sau vài giây.");
-                this.initGoogleClient();
-            }
-        },
+            loginAdmin() {
+                if (window.tokenClient) {
+                    window.tokenClient.requestAccessToken({ prompt: 'select_account' });
+                } else {
+                    alert("Đang tải thư viện Google...");
+                    this.initGoogleClient();
+                }
+            },
 
-        logoutAdmin() {
-            if(confirm("Xác nhận đăng xuất Admin?")) {
-                firebase.auth().signOut().then(() => {
-                    this.isAdmin = false;
-                    location.reload();
-                });
-            }
-        },
+            logoutAdmin() {
+                if(confirm("Xác nhận đăng xuất Admin?")) {
+                    firebase.auth().signOut().then(() => {
+                        this.isAdmin = false;
+                        location.reload();
+                    });
+                }
+            },
 
-            // --- CÁC HÀM XỬ LÝ DỮ LIỆU (GIỮ NGUYÊN LOGIC CỦA BẠN) ---
+            // --- HÀM XỬ LÝ ẢNH (ĐÃ SỬA LỖI ERR_CONNECTION_CLOSED) ---
+            getImgUrl(u) { 
+                // Thay thế via.placeholder bằng placehold.co ổn định hơn
+                if(!u) return 'https://placehold.co/400x533?text=No+Image'; 
+                const d = u.match(/[-\w]{25,}/); 
+                return d ? `https://lh3.googleusercontent.com/d/${d[0]}` : u; 
+            },
+
+            // --- CÁC HÀM LOGIC CÒN LẠI (GIỮ NGUYÊN) ---
             reinitSortables() {
                 const blockEl = document.getElementById('sortable-blocks-admin');
                 if(blockEl) { if(blockEl._sortable) blockEl._sortable.destroy(); blockEl._sortable = Sortable.create(blockEl, { animation: 200 }); }
-                
                 const tabsEl = document.getElementById('sortable-tabs-admin');
                 if(tabsEl) { if(tabsEl._sortable) tabsEl._sortable.destroy(); tabsEl._sortable = Sortable.create(tabsEl, { animation: 200 }); }
-
                 this.categories.forEach(cat => { (this.blocks[cat] || []).forEach(block => {
                     const el = document.getElementById(`sortable-db-${cat}-${block}`);
                     if(el) { if(el._sortable) el._sortable.destroy(); el._sortable = Sortable.create(el, { animation: 200, handle: '.db-row', onEnd: async () => { await this.updatePersonnelOrder(el) } }); }
                 }); });
             },
-
             async saveTabsOrder() {
-                const el = document.getElementById('sortable-tabs-admin');
-                if (!el) return;
+                const el = document.getElementById('sortable-tabs-admin'); if (!el) return;
                 const newOrder = Array.from(el.children).map(it => it.dataset.id).filter(id => id);
-                this.categories = newOrder;
-                await this.saveConfig();
-                alert("Đã cập nhật thứ tự Vị trí!");
+                this.categories = newOrder; await this.saveConfig(); alert("Đã cập nhật!");
             },
-
             async saveBlockOrder() {
-                const el = document.getElementById('sortable-blocks-admin');
-                if (!el) return alert("Không tìm thấy danh sách!");
+                const el = document.getElementById('sortable-blocks-admin'); if (!el) return;
                 const newOrder = Array.from(el.children).map(it => it.dataset.id).filter(id => id);
-                if (this.sortCat) {
-                    this.blocksOrder[this.sortCat] = newOrder;
-                    this.blocks[this.sortCat] = newOrder;
-                    await this.saveConfig();
-                    alert("Đã lưu thứ tự Khối cho " + this.sortCat);
-                }
+                if (this.sortCat) { this.blocksOrder[this.sortCat] = newOrder; this.blocks[this.sortCat] = newOrder; await this.saveConfig(); alert("Đã lưu!"); }
             },
-
             getBlocksInOrder(catName, groupName) {
                 const activeBlocks = [...new Set(this.dataFilteredAll().filter(p => p.category === catName).map(it => it.block))];
                 const savedOrder = this.blocksOrder[catName] || this.blocks[catName] || [];
                 return savedOrder.filter(b => activeBlocks.includes(b)).concat(activeBlocks.filter(b => !savedOrder.includes(b)));
             },
-
-            getPeopleByGroupAndBlock(g, b, cat) { 
-                return this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === g && p.block === b && p.category === cat); 
-            },
-
-            async saveConfig() { 
-                await this.db.collection("config").doc("master_structure_v29").set({ 
-                    categories: this.categories, blocks: this.blocks, catGroups: this.catGroups, blocksOrder: this.blocksOrder 
-                }); 
-            },
-
+            getPeopleByGroupAndBlock(g, b, cat) { return this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === g && p.block === b && p.category === cat); },
+            async saveConfig() { await this.db.collection("config").doc("master_structure_v29").set({ categories: this.categories, blocks: this.blocks, catGroups: this.catGroups, blocksOrder: this.blocksOrder }); },
             async savePersonnel() { 
                 if(!this.form.name) return alert("Họ tên bắt buộc!"); 
                 if(!this.form.block) this.form.block = this.blocks[this.form.category][0];
@@ -489,7 +483,6 @@
                 else { await this.db.collection("personnel_v8").add({...this.form, order: this.data.length}); } 
                 this.resetForm(); alert("Đã lưu!"); 
             },
-
             editPersonnel(p) { this.editingId = p.id; this.form = { ...p }; },
             resetForm() { this.editingId = null; this.form = { name: '', mainRole: '', partyRole: '', category: this.categories[0], block: this.blocks[this.categories[0]][0], type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' }; },
             deletePersonnel(id) { if(confirm("Xác nhận xóa?")) this.db.collection("personnel_v8").doc(id).delete(); },
@@ -497,16 +490,8 @@
             deleteCategory(name) { if(confirm(`Xóa ${name}?`)) { this.categories = this.categories.filter(c => c !== name); this.saveConfig(); } },
             addNewBlockAt(cat) { const el = document.getElementById('new-block-'+cat); const val = el.value.trim(); if(!val) return; if(!this.blocks[cat]) this.blocks[cat] = []; this.blocks[cat].push(val); this.saveConfig(); el.value = ''; },
             deleteBlockAt(cat, blockName) { if(confirm(`Xóa ${blockName}?`)) { this.blocks[cat] = this.blocks[cat].filter(b => b !== blockName); this.saveConfig(); } },
-            
-            getImgUrl(u) { 
-                if(!u) return 'https://via.placeholder.com/400x533'; 
-                const d = u.match(/[-\w]{25,}/); 
-                return d ? `https://lh3.googleusercontent.com/d/${d[0]}` : u; 
-            },
-
             toggleTab(cat) { this.openTabs[cat] = !this.openTabs[cat]; },
             formatList(t) { return t ? t.split('\n').filter(l => l.trim()).map(l => `<li>• ${l}</li>`).join('') : ''; },
-            
             dataFilteredAll() {
                 let base = this.data.filter(p => (this.catGroups[p.category] || 'CIP') === this.activeGroup);
                 if (this.filterCategory !== 'Tất cả' && this.search === '') base = base.filter(p => p.category === this.filterCategory);
@@ -514,7 +499,6 @@
                 if (!s) return base;
                 return base.filter(p => (p.name?.toLowerCase().includes(s)) || (p.mainRole?.toLowerCase().includes(s)) || (p.hometown?.toLowerCase().includes(s)) || (p.partyRole?.toLowerCase().includes(s)) || (p.block?.toLowerCase().includes(s)));
             },
-
             setActiveGroup(g) { this.activeGroup = g; this.filterCategory = 'Tất cả'; this.search = ''; },
             hasPeopleInGroup(g) { return this.dataFilteredAll().some(p => (this.catGroups[p.category] || 'CIP') === g); },
             getPeopleInDB(cat, block) { return this.data.filter(p => p.category === cat && p.block === block); },
