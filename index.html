@@ -392,44 +392,42 @@
                 });
             },
 
-            // --- HÀM KHỞI TẠO CỬA SỔ CHỌN TÀI KHOẢN (GIỐNG HLBT.HTML) ---
-            initGoogleClient() {
-                if (typeof google === 'undefined' || !google.accounts) {
-                    setTimeout(() => this.initGoogleClient(), 500);
-                    return;
-                }
-
-                const CLIENT_ID = '76457197918-dfcdcqfg74gufov9rqjlggpe8k5qof5j.apps.googleusercontent.com'; 
-                
-                window.tokenClient = google.accounts.oauth2.initTokenClient({
-                    client_id: CLIENT_ID,
-                    scope: 'email profile openid',
-                    callback: (tokenResponse) => {
-                        if (tokenResponse && tokenResponse.access_token) {
-                            const credential = firebase.auth.GoogleAuthProvider.credential(null, tokenResponse.access_token);
-                            firebase.auth().signInWithCredential(credential)
-                                .then((result) => {
-                                    if (this.adminEmails.includes(result.user.email)) {
-                                        this.isAdmin = true;
-                                        alert("Chào Admin: " + result.user.displayName);
-                                    } else {
-                                        alert("Tài khoản " + result.user.email + " không có quyền Admin!");
-                                        firebase.auth().signOut();
-                                    }
-                                });
-                        }
-                    },
-                });
-            },
+            
 
             loginAdmin() {
-                if (window.tokenClient) {
-                    window.tokenClient.requestAccessToken({ prompt: 'select_account' });
-                } else {
-                    alert("Đang tải thư viện Google...");
-                    this.initGoogleClient();
-                }
-            },
+    // 1. Khởi tạo Provider của Google
+    const provider = new firebase.auth.GoogleAuthProvider();
+    
+    // 2. Cấu hình để luôn hiện bảng chọn tài khoản hoặc nhập tài khoản mới
+    provider.setCustomParameters({
+        prompt: 'select_account'
+    });
+
+    // 3. Thực hiện đăng nhập bằng cửa sổ Popup
+    firebase.auth().signInWithPopup(provider)
+        .then((result) => {
+            const user = result.user;
+            // Kiểm tra xem email đăng nhập có nằm trong danh sách Admin không
+            if (this.adminEmails.includes(user.email)) {
+                this.isAdmin = true;
+                alert("Xác thực thành công! Chào Admin: " + user.displayName);
+            } else {
+                alert("Tài khoản " + user.email + " không có quyền truy cập vùng Quản trị!");
+                firebase.auth().signOut();
+            }
+        })
+        .catch((error) => {
+            console.error("Lỗi đăng nhập Firebase:", error);
+            // Xử lý các lỗi phổ biến
+            if (error.code === 'auth/popup-blocked') {
+                alert("Trình duyệt đã chặn cửa sổ Popup. Vui lòng cho phép hiện Popup (ở góc thanh địa chỉ) và thử lại.");
+            } else if (error.code === 'auth/cancelled-popup-request') {
+                // Người dùng đóng cửa sổ trước khi đăng nhập xong - không cần báo lỗi
+            } else {
+                alert("Lỗi đăng nhập: " + error.message);
+            }
+        });
+}
 
             logoutAdmin() {
                 if(confirm("Xác nhận đăng xuất Admin?")) {
