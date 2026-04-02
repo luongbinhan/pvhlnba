@@ -6,6 +6,7 @@
     <title>VIP/CIP TOOL</title>
     <link rel="icon" href="pvhl-tool.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+	<script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.tailwindcss.com"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -378,30 +379,37 @@
 
         // HÀM KHỞI TẠO CỬA SỔ GOOGLE (GIỐNG HLBT.HTML)
         initGoogleClient() {
-            // Client ID của bạn (lấy từ Google Cloud Console)
-            const CLIENT_ID = '974778325507-v00ghkojc0ta3s1fg2kl4pmvsegl04v9.apps.googleusercontent.com'; 
-            
-            window.tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: CLIENT_ID,
-                scope: 'email profile openid',
-                callback: (tokenResponse) => {
-                    if (tokenResponse && tokenResponse.access_token) {
-                        // Sau khi chọn tài khoản xong, dùng Token đó để đăng nhập vào Firebase
-                        const credential = firebase.auth.GoogleAuthProvider.credential(null, tokenResponse.access_token);
-                        firebase.auth().signInWithCredential(credential)
-                            .then((result) => {
-                                if (this.adminEmails.includes(result.user.email)) {
-                                    this.isAdmin = true;
-                                    alert("Chào Admin: " + result.user.displayName);
-                                } else {
-                                    alert("Tài khoản không có quyền Admin!");
-                                    firebase.auth().signOut();
-                                }
-                            });
-                    }
-                },
-            });
-        },
+                // Kiểm tra nếu thư viện 'google' chưa được tải xong
+                if (typeof google === 'undefined' || !google.accounts) {
+                    console.log("Đang đợi thư viện Google...");
+                    setTimeout(() => this.initGoogleClient(), 500);
+                    return;
+                }
+
+                // Khi đã có thư viện google, tiến hành khởi tạo
+                const CLIENT_ID = '974778325507-v00ghkojc0ta3s1fg2kl4pmvsegl04v9.apps.googleusercontent.com'; 
+                
+                window.tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: CLIENT_ID,
+                    scope: 'email profile openid',
+                    callback: (tokenResponse) => {
+                        if (tokenResponse && tokenResponse.access_token) {
+                            const credential = firebase.auth.GoogleAuthProvider.credential(null, tokenResponse.access_token);
+                            firebase.auth().signInWithCredential(credential)
+                                .then((result) => {
+                                    if (this.adminEmails.includes(result.user.email)) {
+                                        this.isAdmin = true;
+                                        alert("Chào Admin: " + result.user.displayName);
+                                    } else {
+                                        alert("Tài khoản " + result.user.email + " không có quyền Admin!");
+                                        firebase.auth().signOut();
+                                    }
+                                });
+                        }
+                    },
+                });
+                console.log("Google Client đã sẵn sàng!");
+            },
 
         // CẬP NHẬT HÀM loginAdmin ĐỂ HIỆN CỬA SỔ CHỌN TÀI KHOẢN
         loginAdmin() {
