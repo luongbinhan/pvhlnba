@@ -522,12 +522,11 @@ function app() {
             return savedOrder.filter(b => activeBlocks.includes(b)).concat(activeBlocks.filter(b => !savedOrder.includes(b)));
         },
 
-       getPeopleByGroupAndBlock(g, b, cat) { 
-            return this.dataFilteredAll().filter(p => {
-                const inGroup = (this.catGroups[p.category] || 'CIP') === g;
-                const matchPos = (p.category === cat && p.block === b) || 
-                                 (p.allPositions && p.allPositions.some(pos => pos.category === cat && pos.block === b));
-                return inGroup && matchPos;
+       getPeopleInDB(cat, block) { 
+            return this.data.filter(p => {
+                const isPrimary = p.category === cat && p.block === block;
+                const isSecondary = p.allPositions && p.allPositions.some(pos => pos.category === cat && pos.block === b);
+                return isPrimary || isSecondary;
             }); 
         },
 
