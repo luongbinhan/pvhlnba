@@ -192,51 +192,12 @@
                 <div class="bg-white p-5 md:p-8 rounded-[2rem] border shadow-xl">
                     <h3 class="font-black text-brand text-xl uppercase mb-6 border-l-8 border-brand pl-4">Hồ sơ Nhân sự</h3>
                     <div class="grid grid-cols-1 gap-4">
-                        
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="text" x-model="form.name" class="input-admin" placeholder="Họ tên *">
-                            <input type="text" x-model="form.mainRole" class="input-admin" placeholder="Chức danh hiển thị *">
-                        </div>
-
-                        <!-- Khóa chọn VIP/CIP -->
-                        <div class="bg-slate-50 p-4 rounded-2xl border-2 border-dashed border-slate-200">
-                            <label class="text-[10px] font-black text-brand uppercase mb-2 block">Loại danh mục:</label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <button type="button" @click="form.filterType = 'VIP'" :class="form.filterType === 'VIP' ? 'bg-[#E11D48] text-white shadow-md' : 'bg-white text-slate-400 border'" class="py-2 rounded-lg font-black text-xs transition-all">VIP</button>
-                                <button type="button" @click="form.filterType = 'CIP'" :class="form.filterType === 'CIP' ? 'bg-[#1FA3B0] text-white shadow-md' : 'bg-white text-slate-400 border'" class="py-2 rounded-lg font-black text-xs transition-all">CIP</button>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input type="text" x-model="form.name" class="input-admin" placeholder="Họ tên *">
+                                <input type="text" x-model="form.mainRole" class="input-admin" placeholder="Chức danh *">
                             </div>
-                        </div>
-
-                        <!-- Dropdown bậc thang đa vị trí -->
-                        <div class="space-y-3">
-                            <label class="text-[10px] font-black text-slate-500 uppercase ml-2">Phân bổ vị trí & khối:</label>
-                            <template x-for="(pos, index) in form.positions" :key="index">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 shadow-inner" 
-                                     x-show="index === 0 || (form.positions[index-1].category && form.positions[index-1].block)">
-                                    <div class="flex flex-col gap-1">
-                                        <span class="text-[8px] font-black text-slate-400 uppercase ml-1" x-text="'Vị trí ' + (index + 1)"></span>
-                                        <select x-model="pos.category" @change="pos.block = ''" class="input-admin !py-2 text-xs">
-                                            <option value="">-- Chọn Vị trí --</option>
-                                            <template x-for="cat in categories.filter(c => catGroups[c] === form.filterType)" :key="cat">
-                                                <option :value="cat" x-text="cat"></option>
-                                            </template>
-                                        </select>
-                                    </div>
-                                    <div class="flex flex-col gap-1">
-                                        <span class="text-[8px] font-black text-slate-400 uppercase ml-1">Thuộc Khối</span>
-                                        <select x-model="pos.block" class="input-admin !py-2 text-xs">
-                                            <option value="">-- Chọn Khối --</option>
-                                            <template x-for="b in (blocks[pos.category] || [])" :key="b">
-                                                <option :value="b" x-text="b"></option>
-                                            </template>
-                                        </select>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-
-                        <input type="text" x-model="form.partyRole" class="input-admin !text-[#FB8500]" placeholder="Chức danh Đảng">
+                            <input type="text" x-model="form.partyRole" class="input-admin !text-[#FB8500]" placeholder="Chức danh Đảng">
                             <div class="grid grid-cols-2 gap-3">
                                 <input type="text" x-model="form.dob" class="input-admin text-sm" placeholder="Ngày sinh">
                                 <input type="text" x-model="form.hometown" class="input-admin text-sm" placeholder="Quê quán">
@@ -379,14 +340,11 @@
             blocksOrder: {}, 
             data: [], 
             types: ['Giữ nguyên', 'Tái cử', 'Lần đầu'],
-            
-            editingId: null,
             form: { 
                 name: '', mainRole: '', partyRole: '', type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '',
                 filterType: 'VIP', 
                 positions: [{ category: '', block: '' }, { category: '', block: '' }, { category: '', block: '' }]
             },
-
             adminEmails: ["luongbinhan@gmail.com", "pvhl.nba@gmail.com", "trannhung200677@gmail.com"],
 
             async init() {
@@ -482,54 +440,27 @@
 
             getPeopleByGroupAndBlock(g, b, cat) { return this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === g && p.block === b && p.category === cat); },
             async saveConfig() { await this.db.collection("config").doc("master_structure_v29").set({ categories: this.categories, blocks: this.blocks, catGroups: this.catGroups, blocksOrder: this.blocksOrder }); },
-            
             async savePersonnel() { 
                 if(!this.form.name) return alert("Vui lòng nhập họ tên!"); 
-                
-                // Lọc các vị trí đã chọn (có đủ category và block)
                 const validPos = this.form.positions.filter(p => p.category && p.block);
                 if(validPos.length === 0) return alert("Vui lòng chọn ít nhất 1 vị trí!");
-
                 const payload = { 
                     ...this.form, 
-                    category: validPos[0].category, // Giữ để tương thích bản cũ
+                    category: validPos[0].category, 
                     block: validPos[0].block,
-                    allPositions: validPos // Mảng chứa toàn bộ vị trí
+                    allPositions: validPos 
                 };
-
-                if(this.editingId) {
-                    await this.db.collection("personnel_v8").doc(this.editingId).update(payload); 
-                } else {
-                    await this.db.collection("personnel_v8").add({...payload, order: this.data.length}); 
-                } 
-                this.resetForm(); 
-                alert("Đã lưu thành công!"); 
+                if(this.editingId) await this.db.collection("personnel_v8").doc(this.editingId).update(payload); 
+                else await this.db.collection("personnel_v8").add({...payload, order: this.data.length}); 
+                this.resetForm(); alert("Đã lưu thành công!"); 
             },
-
-            
             editPersonnel(p) { 
                 this.editingId = p.id; 
-                this.form = { 
-                    ...p, 
-                    positions: p.allPositions || [{ category: p.category, block: p.block }, { category: '', block: '' }, { category: '', block: '' }] 
-                }; 
-                // Đảm bảo luôn có 3 slot để nhập
-                while(this.form.positions.length < 3) {
-                    this.form.positions.push({ category: '', block: '' });
-                }
+                this.form = { ...p, positions: p.allPositions || [{ category: p.category, block: p.block }, { category: '', block: '' }, { category: '', block: '' }] }; 
+                while(this.form.positions.length < 3) this.form.positions.push({ category: '', block: '' });
                 window.scrollTo({top: 0, behavior: 'smooth'}); 
             },
-
-            
-            resetForm() { 
-                this.editingId = null; 
-                this.form = { 
-                    name: '', mainRole: '', partyRole: '', type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '',
-                    filterType: 'VIP', 
-                    positions: [{ category: '', block: '' }, { category: '', block: '' }, { category: '', block: '' }]
-                }; 
-            },
-
+            resetForm() { this.editingId = null; this.form = { name: '', mainRole: '', partyRole: '', category: this.categories[0], block: (this.blocks[this.categories[0]] || [])[0], type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' }; },
             deletePersonnel(id) { if(confirm("Bạn có chắc chắn muốn xóa hồ sơ này?")) this.db.collection("personnel_v8").doc(id).delete(); },
             addNewCategory() { if(this.newCatName) { this.categories.push(this.newCatName); this.blocks[this.newCatName] = ['Mặc định']; this.catGroups[this.newCatName] = 'CIP'; this.saveConfig(); this.newCatName = ''; } },
             deleteCategory(name) { if(confirm(`Xóa hoàn toàn Tab ${name}?`)) { this.categories = this.categories.filter(c => c !== name); this.saveConfig(); } },
@@ -546,15 +477,7 @@
             },
             setActiveGroup(g) { this.activeGroup = g; this.filterCategory = 'Tất cả'; this.search = ''; },
             hasPeopleInGroup() { return this.dataFilteredAll().length > 0; },
-            
-            getPeopleInDB(cat, block) { 
-                return this.data.filter(p => {
-                    if (p.category === cat && p.block === block) return true;
-                    if (p.allPositions && p.allPositions.some(pos => pos.category === cat && pos.block === block)) return true;
-                    return false;
-                });
-            },
-
+            getPeopleInDB(cat, block) { return this.data.filter(p => p.category === cat && p.block === block); },
             async updatePersonnelOrder(el) { const batch = this.db.batch(); Array.from(el.children).forEach((it, idx) => { if(it.dataset.id) batch.update(this.db.collection("personnel_v8").doc(it.dataset.id), { order: idx }); }); await batch.commit(); },
             get filteredCategories() { return this.categories.filter(c => (this.catGroups[c] || 'CIP') === this.activeGroup); }
         }
