@@ -522,7 +522,17 @@ function app() {
             return savedOrder.filter(b => activeBlocks.includes(b)).concat(activeBlocks.filter(b => !savedOrder.includes(b)));
         },
 
-        getPeopleByGroupAndBlock(g, b, cat) { return this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === g && p.block === b && p.category === cat); },
+        getPeopleByGroupAndBlock(g, b, cat) { 
+    return this.dataFilteredAll().filter(p => {
+        const inGroup = (this.catGroups[p.category] || 'CIP') === g;
+        
+        // Kiểm tra xem cặp cat/block hiện tại có khớp với bất kỳ vị trí nào của nhân sự không
+        const matchPos = (p.category === cat && p.block === b) || 
+                         (p.allPositions && p.allPositions.some(pos => pos.category === cat && pos.block === b));
+        
+        return inGroup && matchPos;
+    }); 
+},
 
         async saveConfig() { await this.db.collection("config").doc("master_structure_v29").set({ categories: this.categories, blocks: this.blocks, catGroups: this.catGroups, blocksOrder: this.blocksOrder }); },
 
@@ -589,7 +599,17 @@ function app() {
 
         hasPeopleInGroup(g) { return this.dataFilteredAll().some(p => (this.catGroups[p.category] || 'CIP') === g); },
 
-        getPeopleInDB(cat, block) { return this.data.filter(p => p.category === cat && p.block === block); },
+        getPeopleInDB(cat, block) { 
+    return this.data.filter(p => {
+        // Kiểm tra vị trí chính (Vị trí 1)
+        const isPrimary = p.category === cat && p.block === block;
+        
+        // Kiểm tra trong danh sách các vị trí phụ (Vị trí 2, 3...)
+        const isSecondary = p.allPositions && p.allPositions.some(pos => pos.category === cat && pos.block === block);
+        
+        return isPrimary || isSecondary;
+    }); 
+}
 
         async updatePersonnelOrder(el) { const batch = this.db.batch(); Array.from(el.children).forEach((it, idx) => { if(it.dataset.id) batch.update(this.db.collection("personnel_v8").doc(it.dataset.id), { order: idx }); }); await batch.commit(); },
 
