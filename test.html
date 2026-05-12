@@ -324,7 +324,7 @@
     <script>
     function app() {
         return {
-            isAdmin: false, 
+            isAdmin: false, selectedPersonnel: null, 
             adminSearch: '',
             search: '', 
             activeGroup: 'VIP', 
@@ -340,11 +340,7 @@
             blocksOrder: {}, 
             data: [], 
             types: ['Giữ nguyên', 'Tái cử', 'Lần đầu'],
-            form: { 
-                name: '', mainRole: '', partyRole: '', type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '',
-                filterType: 'VIP', 
-                positions: [{ category: '', block: '' }, { category: '', block: '' }, { category: '', block: '' }]
-            },
+            form: { name: '', mainRole: '', partyRole: '', category: '', block: '', type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' },
             adminEmails: ["luongbinhan@gmail.com", "pvhl.nba@gmail.com", "trannhung200677@gmail.com"],
 
             async init() {
@@ -441,25 +437,12 @@
             getPeopleByGroupAndBlock(g, b, cat) { return this.dataFilteredAll().filter(p => (this.catGroups[p.category] || 'CIP') === g && p.block === b && p.category === cat); },
             async saveConfig() { await this.db.collection("config").doc("master_structure_v29").set({ categories: this.categories, blocks: this.blocks, catGroups: this.catGroups, blocksOrder: this.blocksOrder }); },
             async savePersonnel() { 
-                if(!this.form.name) return alert("Vui lòng nhập họ tên!"); 
-                const validPos = this.form.positions.filter(p => p.category && p.block);
-                if(validPos.length === 0) return alert("Vui lòng chọn ít nhất 1 vị trí!");
-                const payload = { 
-                    ...this.form, 
-                    category: validPos[0].category, 
-                    block: validPos[0].block,
-                    allPositions: validPos 
-                };
-                if(this.editingId) await this.db.collection("personnel_v8").doc(this.editingId).update(payload); 
-                else await this.db.collection("personnel_v8").add({...payload, order: this.data.length}); 
-                this.resetForm(); alert("Đã lưu thành công!"); 
+                if(!this.form.name) return alert("Vui lòng nhập Họ tên!"); 
+                if(this.editingId) await this.db.collection("personnel_v8").doc(this.editingId).update(this.form); 
+                else { await this.db.collection("personnel_v8").add({...this.form, order: this.data.length}); } 
+                this.resetForm(); alert("Dữ liệu đã được lưu!"); 
             },
-            editPersonnel(p) { 
-                this.editingId = p.id; 
-                this.form = { ...p, positions: p.allPositions || [{ category: p.category, block: p.block }, { category: '', block: '' }, { category: '', block: '' }] }; 
-                while(this.form.positions.length < 3) this.form.positions.push({ category: '', block: '' });
-                window.scrollTo({top: 0, behavior: 'smooth'}); 
-            },
+            editPersonnel(p) { this.editingId = p.id; this.form = { ...p }; window.scrollTo({top: 0, behavior: 'smooth'}); },
             resetForm() { this.editingId = null; this.form = { name: '', mainRole: '', partyRole: '', category: this.categories[0], block: (this.blocks[this.categories[0]] || [])[0], type: 'Giữ nguyên', img: '', dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '' }; },
             deletePersonnel(id) { if(confirm("Bạn có chắc chắn muốn xóa hồ sơ này?")) this.db.collection("personnel_v8").doc(id).delete(); },
             addNewCategory() { if(this.newCatName) { this.categories.push(this.newCatName); this.blocks[this.newCatName] = ['Mặc định']; this.catGroups[this.newCatName] = 'CIP'; this.saveConfig(); this.newCatName = ''; } },
@@ -468,13 +451,25 @@
             deleteBlockAt(cat, blockName) { if(confirm(`Xóa khối ${blockName}?`)) { this.blocks[cat] = this.blocks[cat].filter(b => b !== blockName); this.saveConfig(); } },
             toggleTab(cat) { this.openTabs[cat] = !this.openTabs[cat]; },
             formatList(t) { return t ? t.split('\n').filter(l => l.trim()).map(l => `<li>• ${l}</li>`).join('') : ''; },
+            
             dataFilteredAll() {
-                let base = this.data.filter(p => (this.catGroups[p.category] || 'CIP') === this.activeGroup);
-                if (this.filterCategory !== 'Tất cả' && this.search === '') base = base.filter(p => p.category === this.filterCategory);
-                const s = (this.search || '').toLowerCase();
-                if (!s) return base;
-                return base.filter(p => (p.name?.toLowerCase().includes(s)) || (p.mainRole?.toLowerCase().includes(s)) || (p.hometown?.toLowerCase().includes(s)) || (p.partyRole?.toLowerCase().includes(s)) || (p.block?.toLowerCase().includes(s)));
+                let d = this.data;
+                if(this.filterCategory !== 'Tất cả') {
+                    d = d.filter(p => {
+                        if (p.category === this.filterCategory) return true;
+                        if (p.allPositions && p.allPositions.some(pos => pos.category === this.filterCategory)) return true;
+                        return false;
+                    });
+                }
+                if(!this.search) return d;
+                const s = this.search.toLowerCase();
+                return d.filter(p => 
+                    p.name.toLowerCase().includes(s) || 
+                    (p.mainRole && p.mainRole.toLowerCase().includes(s)) ||
+                    (p.partyRole && p.partyRole.toLowerCase().includes(s))
+                );
             },
+
             setActiveGroup(g) { this.activeGroup = g; this.filterCategory = 'Tất cả'; this.search = ''; },
             hasPeopleInGroup() { return this.dataFilteredAll().length > 0; },
             getPeopleInDB(cat, block) { return this.data.filter(p => p.category === cat && p.block === block); },
