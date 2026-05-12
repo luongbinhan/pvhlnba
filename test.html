@@ -8,16 +8,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 	<script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.tailwindcss.com"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-
-<script defer src="https://unpkg.com/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-
-<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script defer src="https://unpkg.com/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         :root { --brand: #1FA3B0; --highlight: #FB8500; --bg-main: #E0F2FE; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: #1e293b; overflow-x: hidden; }
@@ -255,36 +251,36 @@
                             <div class="grid grid-cols-2 gap-2"><input type="text" x-model="form.dob" class="input-admin text-xs" placeholder="Ngày sinh"><input type="text" x-model="form.hometown" class="input-admin text-xs" placeholder="Quê quán"></div>
                             <div class="grid grid-cols-2 gap-2"><input type="text" x-model="form.ethnic" class="input-admin text-xs" placeholder="Dân tộc"><input type="text" x-model="form.education" class="input-admin text-xs" placeholder="Trình độ"></div>
                             <div class="bg-slate-50 p-4 rounded-xl border-2 border-dashed border-slate-200 mb-4">
-    <label class="text-[10px] font-black text-brand uppercase mb-2 block text-center">Lọc phân loại Menu:</label>
-    <div class="grid grid-cols-2 gap-2">
-        <button type="button" @click="form.filterType = 'VIP'" :class="form.filterType === 'VIP' ? 'bg-[#E11D48] text-white' : 'bg-white text-slate-400'" class="py-2 rounded-lg font-black text-xs border">VIP</button>
-        <button type="button" @click="form.filterType = 'CIP'" :class="form.filterType === 'CIP' ? 'bg-[#1FA3B0] text-white' : 'bg-white text-slate-400'" class="py-2 rounded-lg font-black text-xs border">CIP</button>
-    </div>
-</div>
+                                <label class="text-[10px] font-black text-brand uppercase mb-2 block text-center">Lọc phân loại Menu:</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button type="button" @click="form.filterType = 'VIP'" :class="form.filterType === 'VIP' ? 'bg-[#E11D48] text-white' : 'bg-white text-slate-400'" class="py-2 rounded-lg font-black text-xs border">VIP</button>
+                                    <button type="button" @click="form.filterType = 'CIP'" :class="form.filterType === 'CIP' ? 'bg-[#1FA3B0] text-white' : 'bg-white text-slate-400'" class="py-2 rounded-lg font-black text-xs border">CIP</button>
+                                </div>
+                            </div>
 
-<div class="space-y-3">
-    <label class="text-[10px] font-black text-slate-500 uppercase ml-2">Vị trí & Khối hiển thị:</label>
-    <template x-for="(pos, idx) in form.positions" :key="idx">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 p-3 bg-slate-50 rounded-xl border" x-show="idx === 0 || (form.positions[idx-1].category && form.positions[idx-1].block)">
-            <div class="flex flex-col gap-1">
-                <span class="text-[8px] font-black text-slate-400 uppercase" x-text="'Vị trí ' + (idx+1)"></span>
-                <select x-model="pos.category" @change="pos.block = ''" class="input-admin !py-2 text-xs">
-                    <option value="">-- Chọn Vị trí --</option>
-                    <template x-for="cat in categories.filter(c => catGroups[c] === form.filterType)" :key="cat">
-                        <option :value="cat" x-text="cat"></option>
-                    </template>
-                </select>
-            </div>
-            <div class="flex flex-col gap-1">
-                <span class="text-[8px] font-black text-slate-400 uppercase">Khối nội bộ</span>
-                <select x-model="pos.block" class="input-admin !py-2 text-xs">
-                    <option value="">-- Chọn Khối --</option>
-                    <template x-for="b in (blocks[pos.category] || [])" :key="b"><option :value="b" x-text="b"></option></template>
-                </select>
-            </div>
-        </div>
-    </template>
-</div>
+                            <div class="space-y-3">
+                                <label class="text-[10px] font-black text-slate-500 uppercase ml-2">Vị trí & Khối hiển thị:</label>
+                                <template x-for="(pos, idx) in form.positions" :key="idx">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 p-3 bg-slate-50 rounded-xl border" x-show="idx === 0 || (form.positions[idx-1].category && form.positions[idx-1].block)">
+                                        <div class="flex flex-col gap-1">
+                                            <span class="text-[8px] font-black text-slate-400 uppercase" x-text="'Vị trí ' + (idx+1)"></span>
+                                            <select x-model="pos.category" @change="pos.block = ''" class="input-admin !py-2 text-xs">
+                                                <option value="">-- Chọn Vị trí --</option>
+                                                <template x-for="cat in categories.filter(c => catGroups[c] === form.filterType)" :key="cat">
+                                                    <option :value="cat" x-text="cat"></option>
+                                                </template>
+                                            </select>
+                                        </div>
+                                        <div class="flex flex-col gap-1">
+                                            <span class="text-[8px] font-black text-slate-400 uppercase">Khối nội bộ</span>
+                                            <select x-model="pos.block" class="input-admin !py-2 text-xs">
+                                                <option value="">-- Chọn Khối --</option>
+                                                <template x-for="b in (blocks[pos.category] || [])" :key="b"><option :value="b" x-text="b"></option></template>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
                             <select x-model="form.type" class="p-2 border rounded font-black text-[9px] w-full bg-white text-black"><template x-for="t in types" :key="t"><option :value="t" x-text="t"></option></template></select>
                             <input type="text" x-model="form.img" class="input-admin text-xs" placeholder="Drive Image ID">
                         </div>
@@ -293,93 +289,94 @@
                     <button @click="savePersonnel()" class="w-full mt-6 bg-[#1FA3B0] text-white py-4 rounded-xl font-black shadow-lg uppercase text-xs">Lưu hồ sơ</button>
                 </div>
 
-<div class="bg-white p-8 rounded-3xl border shadow-xl flex flex-col text-black h-full max-h-[85vh]">
-    <h3 class="font-black text-xl uppercase border-l-8 border-highlight pl-5 mb-6 shrink-0">DATABASE</h3>
+                <div class="bg-white p-8 rounded-3xl border shadow-xl flex flex-col text-black h-full max-h-[85vh]">
+                    <h3 class="font-black text-xl uppercase border-l-8 border-highlight pl-5 mb-6 shrink-0">DATABASE</h3>
 
-    <div class="mb-6 shrink-0">
-        <input type="text" 
-               x-model="adminSearch" 
-               placeholder="🔍 Tìm nhanh nhân sự (tên, chức danh, khối...)" 
-               class="w-full border-2 border-brand/30 rounded-xl px-4 py-3 font-bold focus:border-brand outline-none shadow-sm"></div>
-
-    <div class="space-y-12 scroll-admin-db no-scrollbar flex-1 overflow-y-auto">
-        
-        <template x-if="adminSearch.length > 0">
-            <div class="bg-blue-50 p-4 rounded-2xl border-2 border-dashed border-blue-200 mb-6">
-                <p class="text-[10px] font-black text-blue-500 uppercase mb-3">Kết quả tìm kiếm:</p>
-                <div class="space-y-2">
-                    <template x-for="p in data.filter(i => 
-                        i.name?.toLowerCase().includes(adminSearch.toLowerCase()) || 
-                        i.mainRole?.toLowerCase().includes(adminSearch.toLowerCase()) ||
-                        i.category?.toLowerCase().includes(adminSearch.toLowerCase()) ||
-                        i.block?.toLowerCase().includes(adminSearch.toLowerCase())
-                    )" :key="'search-'+p.id">
-                        <div class="db-row flex items-center justify-between bg-white p-3 rounded-xl border shadow-sm">
-                            <div class="flex items-center gap-3">
-                                <img :src="getImgUrl(p.img)" class="w-10 h-10 rounded-full object-cover">
-                                <div>
-                                    <p class="text-sm font-black text-red-600" x-text="p.name"></p>
-                                    <p class="text-[10px] font-bold text-slate-500">
-                                        <span x-text="p.mainRole"></span> | 
-                                        <span class="text-brand" x-text="p.category"></span> - <span x-text="p.block"></span>
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="flex gap-2">
-                                <button @click="editPersonnel(p)" class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg font-black text-[10px]">Sửa</button>
-                                <button @click="deletePersonnel(p.id)" class="bg-red-100 text-red-600 px-3 py-1 rounded-lg font-black text-[10px]">Xóa</button>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
-        </template>
-
-        <div x-show="adminSearch.length === 0">
-            <template x-for="cat in categories" :key="cat">
-                <div class="p-6 rounded-[2.5rem] bg-slate-50 border-2 border-white mb-6" x-init="openTabs[cat] = true">
-                    <div class="flex justify-between items-center mb-6 border-b pb-3">
-                        <div class="flex items-center gap-3 cursor-pointer group" @click="toggleTab(cat)">
-                            <svg class="w-5 h-5 transition-transform duration-300" :class="openTabs[cat] ? 'rotate-0' : '-rotate-90'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
-                            <h4 class="font-black text-brand uppercase text-[13px] group-hover:text-highlight" x-text="cat"></h4>
-                        </div>
-                        <div class="flex gap-1">
-                            <input type="text" :id="'new-block-'+cat" placeholder="Khối..." class="border p-1.5 rounded text-[10px] font-bold w-32 outline-none">
-                            <button @click="addNewBlockAt(cat)" class="bg-red-600 text-white px-3 rounded text-[12px] font-black">+</button>
-                        </div>
+                    <div class="mb-6 shrink-0">
+                        <input type="text" 
+                               x-model="adminSearch" 
+                               placeholder="🔍 Tìm nhanh nhân sự (tên, chức danh, khối...)" 
+                               class="w-full border-2 border-brand/30 rounded-xl px-4 py-3 font-bold focus:border-brand outline-none shadow-sm">
                     </div>
-                    <div x-show="openTabs[cat]" x-collapse x-cloak>
-                        <template x-for="blockName in (blocks[cat] || [])" :key="blockName">
-                            <div class="mb-8">
-                                <div class="flex justify-between items-center mb-3">
-                                    <p class="text-[11px] font-black text-slate-400 uppercase" x-text="blockName"></p>
-                                    <button @click="deleteBlockAt(cat, blockName)" class="text-red-500 text-[9px] font-bold uppercase">Xóa Khối</button>
-                                </div>
-                                <div :id="'sortable-db-' + cat + '-' + blockName" class="space-y-2 min-h-[30px] p-1">
-                                    <template x-for="p in getPeopleInDB(cat, blockName)" :key="p.id">
-                                        <div :data-id="p.id" class="db-row flex items-center justify-between group shadow-sm bg-white p-2 rounded-lg">
-                                            <div class="flex items-center gap-4">
-                                                <span class="text-slate-300 font-bold">☰</span>
+
+                    <div class="space-y-12 scroll-admin-db no-scrollbar flex-1 overflow-y-auto">
+                        <template x-if="adminSearch.length > 0">
+                            <div class="bg-blue-50 p-4 rounded-2xl border-2 border-dashed border-blue-200 mb-6">
+                                <p class="text-[10px] font-black text-blue-500 uppercase mb-3">Kết quả tìm kiếm:</p>
+                                <div class="space-y-2">
+                                    <template x-for="p in data.filter(i => 
+                                        i.name?.toLowerCase().includes(adminSearch.toLowerCase()) || 
+                                        i.mainRole?.toLowerCase().includes(adminSearch.toLowerCase()) ||
+                                        i.category?.toLowerCase().includes(adminSearch.toLowerCase()) ||
+                                        i.block?.toLowerCase().includes(adminSearch.toLowerCase())
+                                    )" :key="'search-'+p.id">
+                                        <div class="db-row flex items-center justify-between bg-white p-3 rounded-xl border shadow-sm">
+                                            <div class="flex items-center gap-3">
                                                 <img :src="getImgUrl(p.img)" class="w-10 h-10 rounded-full object-cover">
-                                                <p class="text-[13px] font-black" x-text="p.name"></p>
+                                                <div>
+                                                    <p class="text-sm font-black text-red-600" x-text="p.name"></p>
+                                                    <p class="text-[10px] font-bold text-slate-500">
+                                                        <span x-text="p.mainRole"></span> | 
+                                                        <span class="text-brand" x-text="p.category"></span> - <span x-text="p.block"></span>
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div class="flex gap-3 opacity-0 group-hover:opacity-100 transition-all">
-                                                <button @click="editPersonnel(p)" class="text-blue-500 font-black text-[10px]">Sửa</button>
-                                                <button @click="deletePersonnel(p.id)" class="text-red-500 font-black text-[10px]">Xóa</button>
+                                            <div class="flex gap-2">
+                                                <button @click="editPersonnel(p)" class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg font-black text-[10px]">Sửa</button>
+                                                <button @click="deletePersonnel(p.id)" class="bg-red-100 text-red-600 px-3 py-1 rounded-lg font-black text-[10px]">Xóa</button>
                                             </div>
                                         </div>
                                     </template>
                                 </div>
                             </div>
                         </template>
+
+                        <div x-show="adminSearch.length === 0">
+                            <template x-for="cat in categories" :key="cat">
+                                <div class="p-6 rounded-[2.5rem] bg-slate-50 border-2 border-white mb-6" x-init="openTabs[cat] = true">
+                                    <div class="flex justify-between items-center mb-6 border-b pb-3">
+                                        <div class="flex items-center gap-3 cursor-pointer group" @click="toggleTab(cat)">
+                                            <svg class="w-5 h-5 transition-transform duration-300" :class="openTabs[cat] ? 'rotate-0' : '-rotate-90'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
+                                            <h4 class="font-black text-brand uppercase text-[13px] group-hover:text-highlight" x-text="cat"></h4>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <input type="text" :id="'new-block-'+cat" placeholder="Khối..." class="border p-1.5 rounded text-[10px] font-bold w-32 outline-none">
+                                            <button @click="addNewBlockAt(cat)" class="bg-red-600 text-white px-3 rounded text-[12px] font-black">+</button>
+                                        </div>
+                                    </div>
+                                    <div x-show="openTabs[cat]" x-collapse x-cloak>
+                                        <template x-for="blockName in (blocks[cat] || [])" :key="blockName">
+                                            <div class="mb-8">
+                                                <div class="flex justify-between items-center mb-3">
+                                                    <p class="text-[11px] font-black text-slate-400 uppercase" x-text="blockName"></p>
+                                                    <button @click="deleteBlockAt(cat, blockName)" class="text-red-500 text-[9px] font-bold uppercase">Xóa Khối</button>
+                                                </div>
+                                                <div :id="'sortable-db-' + cat + '-' + blockName" class="space-y-2 min-h-[30px] p-1">
+                                                    <template x-for="p in getPeopleInDB(cat, blockName)" :key="p.id">
+                                                        <div :data-id="p.id" class="db-row flex items-center justify-between group shadow-sm bg-white p-2 rounded-lg">
+                                                            <div class="flex items-center gap-4">
+                                                                <span class="text-slate-300 font-bold">☰</span>
+                                                                <img :src="getImgUrl(p.img)" class="w-10 h-10 rounded-full object-cover">
+                                                                <p class="text-[13px] font-black" x-text="p.name"></p>
+                                                            </div>
+                                                            <div class="flex gap-3 opacity-0 group-hover:opacity-100 transition-all">
+                                                                <button @click="editPersonnel(p)" class="text-blue-500 font-black text-[10px]">Sửa</button>
+                                                                <button @click="deletePersonnel(p.id)" class="text-red-500 font-black text-[10px]">Xóa</button>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                 </div>
-            </template>
+            </div>
         </div>
     </div>
-</div>
-
-        
 
     <script>
 function app() {
@@ -387,7 +384,7 @@ function app() {
         // --- CẤU HÌNH BIẾN HỆ THỐNG ---
         isAdmin: false, 
         showLoginModal: false, 
-	adminSearch: '',
+        adminSearch: '',
         loginInput: '', 
         search: '', 
         activeGroup: 'VIP', 
@@ -404,11 +401,11 @@ function app() {
         data: [], 
         types: ['Giữ nguyên', 'Tái cử', 'Lần đầu'],
         form: { 
-    name: '', mainRole: '', partyRole: '', type: 'Giữ nguyên', img: '', 
-    dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '',
-    filterType: 'VIP', // Khóa lọc mặc định
-    positions: [{ category: '', block: '' }, { category: '', block: '' }, { category: '', block: '' }]
-},
+            name: '', mainRole: '', partyRole: '', type: 'Giữ nguyên', img: '', 
+            dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '',
+            filterType: 'VIP',
+            positions: [{ category: '', block: '' }, { category: '', block: '' }, { category: '', block: '' }]
+        },
         
         adminEmails: ["luongbinhan@gmail.com", "pvhl.nba@gmail.com", "trannhung200677@gmail.com"],
 
@@ -422,15 +419,13 @@ function app() {
             if (!firebase.apps.length) firebase.initializeApp(cfg);
             this.db = firebase.firestore();
 
-            // Tự động nhận diện Admin khi quay lại từ trang chủ hoặc F5
             firebase.auth().onAuthStateChanged(user => {
-    if (user && this.adminEmails.includes(user.email)) {
-        // Chỉ xác thực ngầm, KHÔNG tự động đặt this.isAdmin = true ở đây nữa
-        console.log("Admin đã đăng nhập ngầm:", user.email);
-    } else {
-        this.isAdmin = false;
-    }
-});
+                if (user && this.adminEmails.includes(user.email)) {
+                    console.log("Admin đã đăng nhập ngầm:", user.email);
+                } else {
+                    this.isAdmin = false;
+                }
+            });
 
             this.db.collection("personnel_v8").orderBy("order", "asc").onSnapshot(s => { 
                 this.data = s.docs.map(d => ({id: d.id, ...d.data()})); 
@@ -456,10 +451,8 @@ function app() {
                 this.isAdmin = true;
                 return;
             }
-
             const provider = new firebase.auth.GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
-
             firebase.auth().signInWithPopup(provider)
                 .then((result) => {
                     if (this.adminEmails.includes(result.user.email)) {
@@ -487,11 +480,12 @@ function app() {
             }
         },
 
-        getImgUrl(u) { 
-            if(!u) return 'https://placehold.co/400x533?text=No+Image'; 
-            const d = u.match(/[-\w]{25,}/); 
-            return d ? `https://lh3.googleusercontent.com/d/${d[0]}` : u; 
-        },
+         getImgUrl(u) { 
+    if(!u) return 'https://placehold.co/400x533?text=No+Image'; 
+    const d = u.match(/[-\w]{25,}/); 
+    // Thêm dấu $ vào trước {d[0]}
+    return d ? `https://lh3.googleusercontent.com/d/${d[0]}` : u; 
+},
 
         reinitSortables() {
             const blockEl = document.getElementById('sortable-blocks-admin');
@@ -522,52 +516,42 @@ function app() {
             return savedOrder.filter(b => activeBlocks.includes(b)).concat(activeBlocks.filter(b => !savedOrder.includes(b)));
         },
 
-       getPeopleInDB(cat, block) { 
-            return this.data.filter(p => {
-                const isPrimary = p.category === cat && p.block === block;
-                const isSecondary = p.allPositions && p.allPositions.some(pos => pos.category === cat && pos.block === b);
-                return isPrimary || isSecondary;
-            }); 
-        },
-
         async saveConfig() { await this.db.collection("config").doc("master_structure_v29").set({ categories: this.categories, blocks: this.blocks, catGroups: this.catGroups, blocksOrder: this.blocksOrder }); },
 
         async savePersonnel() { 
-    if(!this.form.name) return alert("Vui lòng nhập Họ tên!"); 
-    const validPos = this.form.positions.filter(p => p.category && p.block);
-    if(validPos.length === 0) return alert("Chọn ít nhất 1 Vị trí và Khối!");
-    
-    const payload = { 
-        ...this.form, 
-        category: validPos[0].category, // Để tương thích code hiển thị cũ
-        block: validPos[0].block,
-        allPositions: validPos // Lưu mảng để hiển thị đa vị trí
-    };
-    
-    if(this.editingId) await this.db.collection("personnel_v8").doc(this.editingId).update(payload); 
-    else await this.db.collection("personnel_v8").add({...payload, order: this.data.length}); 
-    this.resetForm(); alert("Đã lưu hồ sơ thành công!"); 
-},
+            if(!this.form.name) return alert("Vui lòng nhập Họ tên!"); 
+            const validPos = this.form.positions.filter(p => p.category && p.block);
+            if(validPos.length === 0) return alert("Chọn ít nhất 1 Vị trí và Khối!");
+            const payload = { 
+                ...this.form, 
+                category: validPos[0].category, 
+                block: validPos[0].block,
+                allPositions: validPos 
+            };
+            if(this.editingId) await this.db.collection("personnel_v8").doc(this.editingId).update(payload); 
+            else await this.db.collection("personnel_v8").add({...payload, order: this.data.length}); 
+            this.resetForm(); alert("Đã lưu hồ sơ thành công!"); 
+        },
 
         editPersonnel(p) { 
-    this.editingId = p.id; 
-    this.form = { 
-        ...p, 
-        positions: p.allPositions || [{category: p.category, block: p.block}, {category: '', block: ''}, {category: '', block: ''}],
-        filterType: this.catGroups[p.category] || 'VIP' 
-    }; 
-    window.scrollTo({top: 0, behavior: 'smooth'}); 
-},
+            this.editingId = p.id; 
+            this.form = { 
+                ...p, 
+                positions: p.allPositions || [{category: p.category, block: p.block}, {category: '', block: ''}, {category: '', block: ''}],
+                filterType: this.catGroups[p.category] || 'VIP' 
+            }; 
+            window.scrollTo({top: 0, behavior: 'smooth'}); 
+        },
 
         resetForm() { 
-    this.editingId = null; 
-    this.form = { 
-        name: '', mainRole: '', partyRole: '', type: 'Giữ nguyên', img: '', 
-        dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '',
-        filterType: 'VIP',
-        positions: [{ category: '', block: '' }, { category: '', block: '' }, { category: '', block: '' }]
-    }; 
-},
+            this.editingId = null; 
+            this.form = { 
+                name: '', mainRole: '', partyRole: '', type: 'Giữ nguyên', img: '', 
+                dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '',
+                filterType: 'VIP',
+                positions: [{ category: '', block: '' }, { category: '', block: '' }, { category: '', block: '' }]
+            }; 
+        },
 
         deletePersonnel(id) { if(confirm("Xác nhận xóa?")) this.db.collection("personnel_v8").doc(id).delete(); },
 
@@ -602,6 +586,13 @@ function app() {
                                  (p.allPositions && p.allPositions.some(pos => pos.category === cat && pos.block === b));
                 return inGroup && matchPos;
             }); 
+        },
+
+        getPeopleInDB(cat, block) { 
+            return this.data.filter(p => 
+                (p.category === cat && p.block === block) || 
+                (p.allPositions && p.allPositions.some(pos => pos.category === cat && pos.block === block))
+            ); 
         },
 
         async updatePersonnelOrder(el) { const batch = this.db.batch(); Array.from(el.children).forEach((it, idx) => { if(it.dataset.id) batch.update(this.db.collection("personnel_v8").doc(it.dataset.id), { order: idx }); }); await batch.commit(); },
