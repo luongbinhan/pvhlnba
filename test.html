@@ -511,10 +511,28 @@ function app() {
         },
 
         getBlocksInOrder(catName, groupName) {
-            const activeBlocks = [...new Set(this.dataFilteredAll().filter(p => p.category === catName).map(it => it.block))];
-            const savedOrder = this.blocksOrder[catName] || this.blocks[catName] || [];
-            return savedOrder.filter(b => activeBlocks.includes(b)).concat(activeBlocks.filter(b => !savedOrder.includes(b)));
-        },
+    // Lấy tất cả các Block có liên quan đến Category này từ toàn bộ database đã lọc
+    const peopleInThisCat = this.dataFilteredAll().filter(p => 
+        p.category === catName || 
+        (p.allPositions && p.allPositions.some(pos => pos.category === catName))
+    );
+
+    const activeBlocks = [];
+    peopleInThisCat.forEach(p => {
+        if (p.category === catName) activeBlocks.push(p.block);
+        if (p.allPositions) {
+            p.allPositions.forEach(pos => {
+                if (pos.category === catName) activeBlocks.push(pos.block);
+            });
+        }
+    });
+
+    const uniqueActiveBlocks = [...new Set(activeBlocks)];
+    const savedOrder = this.blocksOrder[catName] || this.blocks[catName] || [];
+    
+    return savedOrder.filter(b => uniqueActiveBlocks.includes(b))
+                     .concat(uniqueActiveBlocks.filter(b => !savedOrder.includes(b)));
+},
 
         async saveConfig() { await this.db.collection("config").doc("master_structure_v29").set({ categories: this.categories, blocks: this.blocks, catGroups: this.catGroups, blocksOrder: this.blocksOrder }); },
 
@@ -568,52 +586,52 @@ function app() {
         formatList(t) { return t ? t.split('\n').filter(l => l.trim()).map(l => `<li>• ${l}</li>`).join('') : ''; },
 
         dataFilteredAll() {
-            // 1. Lấy danh sách nhân sự thuộc nhóm VIP hoặc CIP đang chọn
-            let base = this.data.filter(p => (this.catGroups[p.category] || 'CIP') === this.activeGroup);
-            
-            // 2. Lọc theo Tab (Vị trí) khi nhấn các nút chức năng phía trên
-            if (this.filterCategory !== 'Tất cả' && this.search === '') {
-                base = base.filter(p => 
-                    p.category === this.filterCategory || 
-                    (p.allPositions && p.allPositions.some(pos => pos.category === this.filterCategory))
-                );
-            }
+    let base = this.data.filter(p => (this.catGroups[p.category] || 'CIP') === this.activeGroup);
+    
+    // Lọc theo Tab khi nhấn các nút Category phía trên
+    if (this.filterCategory !== 'Tất cả' && this.search === '') {
+        base = base.filter(p => 
+            p.category === this.filterCategory || 
+            (p.allPositions && p.allPositions.some(pos => pos.category === this.filterCategory))
+        );
+    }
 
-            const s = this.search.toLowerCase();
-            if (!s) return base;
+    const s = this.search.toLowerCase();
+    if (!s) return base;
 
-            // 3. Logic tìm kiếm từ khóa: Quét qua Tên, Chức danh và TOÀN BỘ các vị trí/khối đã lưu
-            return base.filter(p => {
-                // Khớp thông tin cơ bản
-                const matchBasic = (p.name?.toLowerCase().includes(s)) || 
-                                   (p.mainRole?.toLowerCase().includes(s)) || 
-                                   (p.hometown?.toLowerCase().includes(s)) || 
-                                   (p.partyRole?.toLowerCase().includes(s));
-                
-                // Khớp bất kỳ cặp Vị trí/Khối nào trong danh sách đa vị trí
-                const matchPositions = (p.category?.toLowerCase().includes(s)) || 
-                                       (p.block?.toLowerCase().includes(s)) ||
-                                       (p.allPositions && p.allPositions.some(pos => 
-                                           pos.category?.toLowerCase().includes(s) || 
-                                           pos.block?.toLowerCase().includes(s)
-                                       ));
-
-                return matchBasic || matchPositions;
-            });
-        },
+    // Tìm kiếm từ khóa
+    return base.filter(p => {
+        const matchBasic = (p.name?.toLowerCase().includes(s)) || 
+                           (p.mainRole?.toLowerCase().includes(s)) || 
+                           (p.hometown?.toLowerCase().includes(s));
+                           
+        const matchPositions = (p.category?.toLowerCase().includes(s)) || 
+                               (p.block?.toLowerCase().includes(s)) ||
+                               (p.allPositions && p.allPositions.some(pos => 
+                                    pos.category?.toLowerCase().includes(s) || 
+                                    pos.block?.toLowerCase().includes(s)
+                               ));
+        return matchBasic || matchPositions;
+    });
+},
 
         setActiveGroup(g) { this.activeGroup = g; this.filterCategory = 'Tất cả'; this.search = ''; },
 
         hasPeopleInGroup(g) { return this.dataFilteredAll().some(p => (this.catGroups[p.category] || 'CIP') === g); },
 
         getPeopleByGroupAndBlock(g, b, cat) { 
-            return this.dataFilteredAll().filter(p => {
-                const inGroup = (this.catGroups[p.category] || 'CIP') === g;
-                const matchPos = (p.category === cat && p.block === b) || 
-                                 (p.allPositions && p.allPositions.some(pos => pos.category === cat && pos.block === b));
-                return inGroup && matchPos;
-            }); 
-        },
+    return this.dataFilteredAll().filter(p => {
+        // 1. Kiểm tra nhóm (VIP/CIP)
+        const inGroup = (this.catGroups[p.category] || 'CIP') === g;
+        
+        // 2. Kiểm tra xem cặp cat/block hiện tại có nằm trong danh sách vị trí của người này không
+        // Ta kiểm tra cả vị trí chính (category/block) và mảng phụ (allPositions)
+        const hasMatch = (p.category === cat && p.block === b) || 
+                         (p.allPositions && p.allPositions.some(pos => pos.category === cat && pos.block === b));
+        
+        return inGroup && hasMatch;
+    }); 
+},
 
         getPeopleInDB(cat, block) { 
             return this.data.filter(p => 
