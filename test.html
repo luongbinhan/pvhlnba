@@ -112,7 +112,9 @@
                                                         </div>
                                                         <div class="p-2 md:p-3 text-center border-t border-slate-50 bg-white flex-grow flex flex-col justify-center text-black relative z-10">
                                                             <h5 class="text-[#E11D48] font-black text-[11px] md:text-[13px] leading-tight uppercase mb-1" x-text="person.name"></h5>
-                                                            <p class="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase" x-text="person.mainRole"></p>
+                                                            <p class="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase" 
+   x-text="person.allPositions?.find(pos => pos.category === catName && pos.block === blockName)?.role || person.mainRole">
+</p>
                                                             <template x-if="person.partyRole"><p class="text-[9px] !text-[#FB8500] font-black uppercase mt-0.5" x-text="person.partyRole"></p></template>
                                                         </div>
                                                         <template x-if="person.type === 'Tái cử'"><div class="badge-taicu"></div></template>
@@ -136,7 +138,11 @@
                     <img :src="getImgUrl(selectedPerson?.img)" class="img-profile-mini">
                     <div class="modal-content-wrapper">
                         <div class="mb-6 pb-6 border-b border-slate-100">
-                            <p class="text-[#1FA3B0] font-black text-[10px] md:text-xs uppercase mb-2" x-text="selectedPerson?.mainRole"></p>
+                            <p class="text-[#1FA3B0] font-black text-[10px] md:text-xs uppercase mb-2">
+    <template x-if="selectedPerson?.allPositions">
+        <span x-text="selectedPerson.allPositions.map(p => p.role).join(' / ')"></span>
+    </template>
+</p>
                             <h2 class="text-[#E11D48] font-black text-2xl md:text-3xl uppercase italic leading-tight" x-text="selectedPerson?.name"></h2>
                             <template x-if="selectedPerson?.partyRole"><p class="!text-[#FB8500] font-black text-xs md:text-sm uppercase mt-1 mb-6" x-text="selectedPerson?.partyRole"></p></template>
                             <div class="grid grid-cols-2 gap-y-3 gap-x-6 md:gap-x-10">
@@ -282,9 +288,11 @@
             <div>
                 <select x-model="pos.block" class="input-admin !py-2 text-[10px]">
                     <option value="">-- Chọn Khối --</option>
-                    <template x-for="b in (blocks[pos.category] || [])" :key="b">
-                        <option :value="b" x-text="b" :selected="b === pos.block"></option>
-                    </template>
+                    <template x-for="b in (blocks[pos.category] || [])" :key="pos.category + b">
+    <option :value="b" 
+            x-text="b" 
+            :selected="pos.block === b"></option>
+</template>
                 </select>
             </div>
 
