@@ -112,7 +112,9 @@
                                                         </div>
                                                         <div class="p-2 md:p-3 text-center border-t border-slate-50 bg-white flex-grow flex flex-col justify-center text-black relative z-10">
                                                             <h5 class="text-[#E11D48] font-black text-[11px] md:text-[13px] leading-tight uppercase mb-1" x-text="person.name"></h5>
-                                                            <p class="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase" x-text="person.mainRole"></p>
+                                                            <p class="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase" 
+   x-text="person.allPositions?.find(pos => pos.category === catName && pos.block === blockName)?.role || person.mainRole">
+</p>
                                                             <template x-if="person.partyRole"><p class="text-[9px] !text-[#FB8500] font-black uppercase mt-0.5" x-text="person.partyRole"></p></template>
                                                         </div>
                                                         <template x-if="person.type === 'Tái cử'"><div class="badge-taicu"></div></template>
@@ -136,7 +138,13 @@
                     <img :src="getImgUrl(selectedPerson?.img)" class="img-profile-mini">
                     <div class="modal-content-wrapper">
                         <div class="mb-6 pb-6 border-b border-slate-100">
-                            <p class="text-[#1FA3B0] font-black text-[10px] md:text-xs uppercase mb-2" x-text="selectedPerson?.mainRole"></p>
+                            <p class="text-[#1FA3B0] font-black text-[10px] md:text-xs uppercase mb-2" 
+   x-text="selectedPerson?.allPositions?.[0]?.role || selectedPerson?.mainRole">
+</p>
+    <template x-if="selectedPerson?.allPositions">
+        <span x-text="selectedPerson.allPositions.map(p => p.role).join(' / ')"></span>
+    </template>
+</p>
                             <h2 class="text-[#E11D48] font-black text-2xl md:text-3xl uppercase italic leading-tight" x-text="selectedPerson?.name"></h2>
                             <template x-if="selectedPerson?.partyRole"><p class="!text-[#FB8500] font-black text-xs md:text-sm uppercase mt-1 mb-6" x-text="selectedPerson?.partyRole"></p></template>
                             <div class="grid grid-cols-2 gap-y-3 gap-x-6 md:gap-x-10">
@@ -235,59 +243,129 @@
                     </div>
                     <button @click="saveBlockOrder()" class="w-full mt-3 bg-[#1FA3B0] text-white py-2.5 rounded font-black text-[10px] uppercase hover:brightness-110 transition-all">Lưu thứ tự Khối</button>
                 </div>
-            </div>
+
+                <!-- Mục 3: Hệ thống & Dữ liệu -->
+                <div class="admin-box mt-6 space-y-2 border-t border-white/10 pt-6">
+                    <label class="text-[9px] font-black text-slate-400 uppercase mb-3 block">3. Hệ thống & Dữ liệu</label>
+                    
+                    <button @click="exportData()" class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-black text-[10px] uppercase shadow-md hover:bg-blue-700 transition-all">
+                        📥 Backup dữ liệu (JSON)
+                    </button>
+
+                    <button @click="$refs.fileInput.click()" class="w-full bg-purple-600 text-white py-2.5 rounded-lg font-black text-[10px] uppercase shadow-md hover:bg-purple-700 transition-all">
+                        📤 Khôi phục dữ liệu
+                    </button>
+                    <input type="file" x-ref="fileInput" @change="importData($event)" class="hidden" accept=".json">
+                </div>
+            </div> <!-- Kết thúc phần space-y-5 -->
+            
+            <!-- Nút đăng xuất nằm dưới cùng sidebar -->
             <button @click="logoutAdmin()" class="w-full mt-auto bg-red-600 text-white py-2.5 rounded font-black text-[10px] uppercase hover:bg-red-700 transition-all">Đăng xuất Admin</button>
         </aside>
 
         <div class="flex-1 p-5 md:p-8 overflow-y-auto bg-[#F1F5F9] no-scrollbar text-black">
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                <div class="bg-white p-6 rounded-2xl border shadow-lg h-fit sticky top-0">
-                    <h3 class="font-black text-brand text-lg uppercase mb-6 border-b pb-3">Hồ sơ Nhân sự</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="space-y-3">
-                            <input type="text" x-model="form.name" class="input-admin text-xs" placeholder="Họ tên *">
-                            <input type="text" x-model="form.mainRole" class="input-admin text-xs" placeholder="Chức danh *">
-                            <input type="text" x-model="form.partyRole" class="input-admin text-xs font-bold" placeholder="Chức danh Đảng">
-                            <div class="grid grid-cols-2 gap-2"><input type="text" x-model="form.dob" class="input-admin text-xs" placeholder="Ngày sinh"><input type="text" x-model="form.hometown" class="input-admin text-xs" placeholder="Quê quán"></div>
-                            <div class="grid grid-cols-2 gap-2"><input type="text" x-model="form.ethnic" class="input-admin text-xs" placeholder="Dân tộc"><input type="text" x-model="form.education" class="input-admin text-xs" placeholder="Trình độ"></div>
-                            <div class="bg-slate-50 p-4 rounded-xl border-2 border-dashed border-slate-200 mb-4">
-                                <label class="text-[10px] font-black text-brand uppercase mb-2 block text-center">Lọc phân loại Menu:</label>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <button type="button" @click="form.filterType = 'VIP'" :class="form.filterType === 'VIP' ? 'bg-[#E11D48] text-white' : 'bg-white text-slate-400'" class="py-2 rounded-lg font-black text-xs border">VIP</button>
-                                    <button type="button" @click="form.filterType = 'CIP'" :class="form.filterType === 'CIP' ? 'bg-[#1FA3B0] text-white' : 'bg-white text-slate-400'" class="py-2 rounded-lg font-black text-xs border">CIP</button>
-                                </div>
-                            </div>
+                <div class="bg-white p-6 rounded-2xl border shadow-lg h-fit sticky top-0 text-black">
+    <h3 class="font-black text-brand text-lg uppercase mb-6 border-b pb-3">Hồ sơ Nhân sự</h3>
+    
+    <div class="space-y-4">
+        <!-- 1. PHÂN LOẠI MENU (Đưa lên đầu) -->
+        <div class="bg-slate-50 p-4 rounded-xl border-2 border-dashed border-slate-200">
+            <label class="text-[10px] font-black text-brand uppercase mb-2 block text-center">Lọc phân loại Menu:</label>
+            <div class="grid grid-cols-2 gap-2 max-w-sm mx-auto">
+                <button type="button" @click="form.filterType = 'VIP'" :class="form.filterType === 'VIP' ? 'bg-[#E11D48] text-white' : 'bg-white text-slate-400'" class="py-2 rounded-lg font-black text-xs border shadow-sm transition-all">VIP</button>
+                <button type="button" @click="form.filterType = 'CIP'" :class="form.filterType === 'CIP' ? 'bg-[#1FA3B0] text-white' : 'bg-white text-slate-400'" class="py-2 rounded-lg font-black text-xs border shadow-sm transition-all">CIP</button>
+            </div>
+        </div>
 
-                            <div class="space-y-3">
-                                <label class="text-[10px] font-black text-slate-500 uppercase ml-2">Vị trí & Khối hiển thị:</label>
-                                <template x-for="(pos, idx) in form.positions" :key="idx">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 p-3 bg-slate-50 rounded-xl border" x-show="idx === 0 || (form.positions[idx-1].category && form.positions[idx-1].block)">
-                                        <div class="flex flex-col gap-1">
-                                            <span class="text-[8px] font-black text-slate-400 uppercase" x-text="'Vị trí ' + (idx+1)"></span>
-                                            <select x-model="pos.category" @change="pos.block = ''" class="input-admin !py-2 text-xs">
-                                                <option value="">-- Chọn Vị trí --</option>
-                                                <template x-for="cat in categories.filter(c => catGroups[c] === form.filterType)" :key="cat">
-                                                    <option :value="cat" x-text="cat"></option>
-                                                </template>
-                                            </select>
-                                        </div>
-                                        <div class="flex flex-col gap-1">
-                                            <span class="text-[8px] font-black text-slate-400 uppercase">Khối nội bộ</span>
-                                            <select x-model="pos.block" class="input-admin !py-2 text-xs">
-                                                <option value="">-- Chọn Khối --</option>
-                                                <template x-for="b in (blocks[pos.category] || [])" :key="b"><option :value="b" x-text="b"></option></template>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-                            <select x-model="form.type" class="p-2 border rounded font-black text-[9px] w-full bg-white text-black"><template x-for="t in types" :key="t"><option :value="t" x-text="t"></option></template></select>
-                            <input type="text" x-model="form.img" class="input-admin text-xs" placeholder="Drive Image ID">
-                        </div>
-                        <div class="space-y-3 text-black"><textarea x-model="form.roles" class="input-admin h-28 text-xs font-bold" placeholder="Chức vụ..."></textarea><textarea x-model="form.bio" class="input-admin h-32 text-xs" placeholder="Tiểu sử..."></textarea></div>
-                    </div>
-                    <button @click="savePersonnel()" class="w-full mt-6 bg-[#1FA3B0] text-white py-4 rounded-xl font-black shadow-lg uppercase text-xs">Lưu hồ sơ</button>
+        <!-- 2. THÔNG TIN CƠ BẢN (Chia 2 cột) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Cột trái: Các ô nhập liệu ngắn -->
+            <div class="space-y-3">
+                <input type="text" x-model="form.name" class="input-admin text-xs" placeholder="Họ tên *">
+                <input type="text" x-model="form.partyRole" class="input-admin text-xs font-bold" placeholder="Chức danh Đảng">
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" x-model="form.dob" class="input-admin text-xs" placeholder="Ngày sinh">
+                    <input type="text" x-model="form.hometown" class="input-admin text-xs" placeholder="Quê quán">
                 </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" x-model="form.ethnic" class="input-admin text-xs" placeholder="Dân tộc">
+                    <input type="text" x-model="form.education" class="input-admin text-xs" placeholder="Trình độ">
+                </div>
+                <input type="text" x-model="form.img" class="input-admin text-xs" placeholder="Link ảnh hoặc Drive ID">
+            </div>
+
+            <!-- Cột phải: Các ô nhập liệu dài (Textarea) -->
+            <div class="space-y-3">
+                <textarea x-model="form.roles" class="input-admin h-[110px] text-xs font-bold" placeholder="Chức vụ công tác..."></textarea>
+                <textarea x-model="form.bio" class="input-admin h-[110px] text-xs" placeholder="Tiểu sử tóm tắt..."></textarea>
+            </div>
+        </div>
+
+        <hr class="border-slate-100">
+
+        <!-- 3. CẤU HÌNH VỊ TRÍ & CHỨC DANH (Xuống cuối và mở rộng tối đa) -->
+        <div class="space-y-3">
+            <label class="text-[11px] font-black text-[#1FA3B0] uppercase flex items-center gap-2">
+                <span class="bg-[#1FA3B0] text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]">!</span>
+                Cấu hình Vị trí hiển thị & Chức danh tương ứng:
+            </label>
+            
+            <template x-for="(pos, idx) in form.positions" :key="idx">
+                <div class="p-4 bg-white rounded-xl border-2 border-slate-100 hover:border-brand/30 transition-colors shadow-sm" 
+                     x-show="idx === 0 || (form.positions[idx-1].category && form.positions[idx-1].block)">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                        <!-- Vị trí (chiếm 3/12) -->
+                        <div class="md:col-span-3">
+                            <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Vị trí (Tab)</label>
+                            <select x-model="pos.category" @change="pos.block = ''" class="input-admin !py-2.5 text-xs bg-slate-50">
+                                <option value="">-- Chọn Vị trí --</option>
+                                <template x-for="cat in categories.filter(c => catGroups[c] === form.filterType)" :key="cat">
+                                    <option :value="cat" x-text="cat"></option>
+                                </template>
+                            </select>
+                        </div>
+
+                        <!-- Khối (chiếm 3/12) -->
+                        <div class="md:col-span-3">
+                            <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Khối nội bộ</label>
+                            <select x-model="pos.block" class="input-admin !py-2.5 text-xs bg-slate-50">
+                                <option value="">-- Chọn Khối --</option>
+                                <template x-for="b in (blocks[pos.category] || [])" :key="pos.category + b">
+                                    <option :value="b" x-text="b" :selected="b === pos.block"></option>
+                                </template>
+                            </select>
+                        </div>
+
+                        <!-- Chức danh (chiếm 6/12 - Mở rộng tối đa) -->
+                        <div class="md:col-span-6">
+    <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Chức danh cụ thể</label>
+    <input type="text" 
+           x-model="pos.role" 
+           :placeholder="idx === 0 ? 'Nhập chức danh chính...' : 'Nhập chức danh kiêm nhiệm...'" 
+           class="input-admin !py-2.5 text-xs border-brand/40 font-bold w-full bg-white">
+</div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Nút thao tác -->
+    <div class="flex gap-4 mt-8">
+        <button @click="if(confirm('Xác nhận hủy và làm mới toàn bộ form?')) resetForm()" 
+                class="flex-1 bg-[#FB8500] text-white py-4 rounded-xl font-black shadow-lg uppercase text-xs hover:scale-[1.02] transition-all">
+            Hủy / Làm mới
+        </button>
+        <button @click="savePersonnel()" 
+                class="flex-[2] bg-[#1FA3B0] text-white py-4 rounded-xl font-black shadow-lg uppercase text-xs hover:scale-[1.02] transition-all border-b-4 border-black/20">
+            Lưu hồ sơ nhân sự
+        </button>
+    </div>
+</div>
 
                 <div class="bg-white p-8 rounded-3xl border shadow-xl flex flex-col text-black h-full max-h-[85vh]">
                     <h3 class="font-black text-xl uppercase border-l-8 border-highlight pl-5 mb-6 shrink-0">DATABASE</h3>
@@ -537,39 +615,86 @@ function app() {
         async saveConfig() { await this.db.collection("config").doc("master_structure_v29").set({ categories: this.categories, blocks: this.blocks, catGroups: this.catGroups, blocksOrder: this.blocksOrder }); },
 
         async savePersonnel() { 
-            if(!this.form.name) return alert("Vui lòng nhập Họ tên!"); 
-            const validPos = this.form.positions.filter(p => p.category && p.block);
-            if(validPos.length === 0) return alert("Chọn ít nhất 1 Vị trí và Khối!");
-            const payload = { 
-                ...this.form, 
-                category: validPos[0].category, 
-                block: validPos[0].block,
-                allPositions: validPos 
-            };
-            if(this.editingId) await this.db.collection("personnel_v8").doc(this.editingId).update(payload); 
-            else await this.db.collection("personnel_v8").add({...payload, order: this.data.length}); 
-            this.resetForm(); alert("Đã lưu hồ sơ thành công!"); 
-        },
+    if(!this.form.name) return alert("Vui lòng nhập Họ tên!"); 
+    
+    const validPos = this.form.positions.filter(p => p.category && p.block);
+    if(validPos.length === 0) return alert("Chọn ít nhất 1 Vị trí và Khối!");
+
+    const payload = { 
+        ...this.form, 
+        category: validPos[0].category, 
+        block: validPos[0].block,
+        // Dòng này cực kỳ quan trọng để sửa lỗi hiển thị cho Modal
+        mainRole: validPos[0].role, 
+        allPositions: validPos 
+    };
+
+    if(this.editingId) await this.db.collection("personnel_v8").doc(this.editingId).update(payload); 
+    else await this.db.collection("personnel_v8").add({...payload, order: this.data.length}); 
+    
+    this.resetForm(); 
+    alert("Đã lưu hồ sơ thành công!"); 
+},
 
         editPersonnel(p) { 
-            this.editingId = p.id; 
-            this.form = { 
-                ...p, 
-                positions: p.allPositions || [{category: p.category, block: p.block}, {category: '', block: ''}, {category: '', block: ''}],
-                filterType: this.catGroups[p.category] || 'VIP' 
-            }; 
-            window.scrollTo({top: 0, behavior: 'smooth'}); 
-        },
+    this.editingId = p.id; 
+    
+    // 1. Lấy danh sách vị trí hiện có
+    // Nếu là nhân sự cũ chưa có allPositions, ta tạo mảng từ category/block/mainRole gốc
+    let existingPositions = [];
+    
+    if (p.allPositions && p.allPositions.length > 0) {
+        // Clone sâu mảng để tránh chỉnh sửa trực tiếp vào dữ liệu gốc của 'data'
+        existingPositions = JSON.parse(JSON.stringify(p.allPositions));
+    } else {
+        existingPositions = [{
+            category: p.category || '', 
+            block: p.block || '', 
+            role: p.mainRole || '' // Đổ chức danh cũ vào ô role của Vị trí 1
+        }];
+    }
+    
+    // 2. Luôn đảm bảo mảng có đủ 3 phần tử để các ô input hiển thị sẵn trên Form
+    while(existingPositions.length < 3) {
+        existingPositions.push({ category: '', block: '', role: '' });
+    }
+
+    // 3. Gán toàn bộ dữ liệu vào form để Alpine.js hiển thị lên giao diện
+    this.form = { 
+        ...p, 
+        positions: existingPositions,
+        filterType: this.catGroups[p.category] || 'VIP' 
+    }; 
+
+    // 4. Cuộn màn hình lên trên cùng để bắt đầu sửa
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+},
 
         resetForm() { 
-            this.editingId = null; 
-            this.form = { 
-                name: '', mainRole: '', partyRole: '', type: 'Giữ nguyên', img: '', 
-                dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '',
-                filterType: 'VIP',
-                positions: [{ category: '', block: '' }, { category: '', block: '' }, { category: '', block: '' }]
-            }; 
-        },
+    this.editingId = null; 
+    this.form = { 
+        name: '', 
+        mainRole: '', // Vẫn giữ để đồng bộ database cũ
+        partyRole: '', 
+        type: 'Giữ nguyên', 
+        img: '', 
+        dob: '', 
+        hometown: '', 
+        ethnic: 'Kinh', 
+        education: '', 
+        roles: '', 
+        bio: '',
+        filterType: 'VIP',
+        // THÊM trường role vào từng vị trí ở đây:
+        positions: [
+            { category: '', block: '', role: '' }, 
+            { category: '', block: '', role: '' }, 
+            { category: '', block: '', role: '' }
+        ]
+    };
+    // Cuộn lên đầu trang để người dùng bắt đầu nhập mới
+    window.scrollTo({top: 0, behavior: 'smooth'}); 
+},
 
         deletePersonnel(id) { if(confirm("Xác nhận xóa?")) this.db.collection("personnel_v8").doc(id).delete(); },
 
@@ -621,11 +746,11 @@ function app() {
 
         getPeopleByGroupAndBlock(g, b, cat) { 
     return this.dataFilteredAll().filter(p => {
-        // 1. Kiểm tra nhóm (VIP/CIP)
+        // 1. Xác định nhóm của nhân sự dựa trên Vị trí chính (Category gốc)
         const inGroup = (this.catGroups[p.category] || 'CIP') === g;
         
-        // 2. Kiểm tra xem cặp cat/block hiện tại có nằm trong danh sách vị trí của người này không
-        // Ta kiểm tra cả vị trí chính (category/block) và mảng phụ (allPositions)
+        // 2. Kiểm tra xem cặp cat/block đang xét có tồn tại trong dữ liệu của nhân sự không
+        // Kiểm tra ở Vị trí chính HOẶC trong mảng các Vị trí phụ (allPositions)
         const hasMatch = (p.category === cat && p.block === b) || 
                          (p.allPositions && p.allPositions.some(pos => pos.category === cat && pos.block === b));
         
@@ -639,6 +764,89 @@ function app() {
                 (p.allPositions && p.allPositions.some(pos => pos.category === cat && pos.block === block))
             ); 
         },
+
+
+
+
+// Hàm Xuất dữ liệu ra file JSON (Backup)
+exportData() {
+    try {
+        const now = new Date();
+        const date = now.toLocaleDateString('vi-VN').replace(/\//g, '-');
+        const time = now.getHours() + 'h' + now.getMinutes();
+        const fileName = `VIP_TOOL_BACKUP_${date}_${time}.json`;
+
+        const backupContent = {
+            metadata: {
+                export_at: now.toLocaleString('vi-VN'),
+                author: "Admin VIP Tool"
+            },
+            personnel: this.data, // Lưu danh sách nhân sự hiện tại
+            config: {
+                categories: this.categories,
+                blocks: this.blocks,
+                catGroups: this.catGroups,
+                blocksOrder: this.blocksOrder
+            }
+        };
+
+        const blob = new Blob([JSON.stringify(backupContent, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(url);
+        console.log("Đã backup dữ liệu lúc: " + now.toLocaleString());
+    } catch (e) { 
+        alert("Lỗi khi tạo bản sao lưu: " + e.message); 
+    }
+},
+
+// Hàm Nhập dữ liệu từ file JSON (Khôi phục)
+async importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Cảnh báo người dùng trước khi ghi đè
+    if (!confirm("CẢNH BÁO: Hành động này sẽ GHI ĐÈ toàn bộ dữ liệu hiện tại trên Database bằng dữ liệu từ file backup. Bạn có chắc chắn muốn tiếp tục?")) {
+        event.target.value = ''; // Reset input file
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const json = JSON.parse(e.target.result);
+            const batch = this.db.batch();
+
+            // 1. Khôi phục danh sách Nhân sự (Personnel)
+            if (json.personnel && Array.isArray(json.personnel)) {
+                json.personnel.forEach(p => {
+                    const ref = this.db.collection("personnel_v8").doc(p.id);
+                    const { id, ...dataWithoutId } = p;
+                    batch.set(ref, dataWithoutId);
+                });
+            }
+
+            // 2. Khôi phục Cấu hình hệ thống (Config)
+            if (json.config) {
+                const configRef = this.db.collection("config").doc("master_structure_v29");
+                batch.set(configRef, json.config);
+            }
+
+            await batch.commit();
+            alert("Khôi phục dữ liệu thành công! Trang sẽ tự động tải lại.");
+            location.reload();
+        } catch (err) {
+            console.error(err);
+            alert("Lỗi: Định dạng file backup không hợp lệ hoặc có lỗi trong quá trình ghi dữ liệu.");
+        }
+    };
+    reader.readAsText(file);
+},
+
+
 
         async updatePersonnelOrder(el) { const batch = this.db.batch(); Array.from(el.children).forEach((it, idx) => { if(it.dataset.id) batch.update(this.db.collection("personnel_v8").doc(it.dataset.id), { order: idx }); }); await batch.commit(); },
 
