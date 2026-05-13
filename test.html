@@ -248,69 +248,96 @@
         <div class="flex-1 p-5 md:p-8 overflow-y-auto bg-[#F1F5F9] no-scrollbar text-black">
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
                 <div class="bg-white p-6 rounded-2xl border shadow-lg h-fit sticky top-0">
-                    <h3 class="font-black text-brand text-lg uppercase mb-6 border-b pb-3">Hồ sơ Nhân sự</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="space-y-3">
-                            <input type="text" x-model="form.name" class="input-admin text-xs" placeholder="Họ tên *">
-                            <input type="text" x-model="form.mainRole" class="input-admin text-xs" placeholder="Chức danh *">
-                            <input type="text" x-model="form.partyRole" class="input-admin text-xs font-bold" placeholder="Chức danh Đảng">
-                            <div class="grid grid-cols-2 gap-2"><input type="text" x-model="form.dob" class="input-admin text-xs" placeholder="Ngày sinh"><input type="text" x-model="form.hometown" class="input-admin text-xs" placeholder="Quê quán"></div>
-                            <div class="grid grid-cols-2 gap-2"><input type="text" x-model="form.ethnic" class="input-admin text-xs" placeholder="Dân tộc"><input type="text" x-model="form.education" class="input-admin text-xs" placeholder="Trình độ"></div>
-                            <div class="bg-slate-50 p-4 rounded-xl border-2 border-dashed border-slate-200 mb-4">
-                                <label class="text-[10px] font-black text-brand uppercase mb-2 block text-center">Lọc phân loại Menu:</label>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <button type="button" @click="form.filterType = 'VIP'" :class="form.filterType === 'VIP' ? 'bg-[#E11D48] text-white' : 'bg-white text-slate-400'" class="py-2 rounded-lg font-black text-xs border">VIP</button>
-                                    <button type="button" @click="form.filterType = 'CIP'" :class="form.filterType === 'CIP' ? 'bg-[#1FA3B0] text-white' : 'bg-white text-slate-400'" class="py-2 rounded-lg font-black text-xs border">CIP</button>
-                                </div>
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="text-[10px] font-black text-slate-500 uppercase ml-2">Vị trí & Khối hiển thị:</label>
-                                <template x-for="(pos, idx) in form.positions" :key="idx">
-    <div class="p-3 bg-slate-50 rounded-xl border mb-3" x-show="idx === 0 || (form.positions[idx-1].category && form.positions[idx-1].block)">
-        <div class="flex items-center justify-between mb-2">
-            <span class="text-[8px] font-black text-[#1FA3B0] uppercase" x-text="'Cấu hình Vị trí ' + (idx+1)"></span>
-        </div>
-        
-        <!-- Grid 3 cột: Vị trí | Khối | Chức danh riêng -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-            <!-- 1. Chọn Vị trí -->
-            <div>
-                <select x-model="pos.category" @change="pos.block = ''" class="input-admin !py-2 text-[10px]">
-                    <option value="">-- Chọn Vị trí --</option>
-                    <template x-for="cat in categories.filter(c => catGroups[c] === form.filterType)" :key="cat">
-                        <option :value="cat" x-text="cat"></option>
-                    </template>
-                </select>
+    <h3 class="font-black text-brand text-lg uppercase mb-6 border-b pb-3">Hồ sơ Nhân sự</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-3">
+            <!-- Thông tin cơ bản -->
+            <input type="text" x-model="form.name" class="input-admin text-xs" placeholder="Họ tên *">
+            
+            <!-- Chức danh Đảng (Ô chức danh cũ đã được xóa để gộp xuống dưới) -->
+            <input type="text" x-model="form.partyRole" class="input-admin text-xs font-bold" placeholder="Chức danh Đảng">
+            
+            <div class="grid grid-cols-2 gap-2">
+                <input type="text" x-model="form.dob" class="input-admin text-xs" placeholder="Ngày sinh">
+                <input type="text" x-model="form.hometown" class="input-admin text-xs" placeholder="Quê quán">
             </div>
 
-            <!-- 2. Chọn Khối -->
-            <div>
-                <select x-model="pos.block" class="input-admin !py-2 text-[10px]">
-                    <option value="">-- Chọn Khối --</option>
-                    <template x-for="b in (blocks[pos.category] || [])" :key="pos.category + b">
-    <option :value="b" 
-            x-text="b" 
-            :selected="pos.block === b"></option>
-</template>
-                </select>
-            </div>
-
-            <!-- 3. Nhập Chức danh riêng cho vị trí này -->
-            <div>
-                <input type="text" x-model="pos.role" placeholder="Chức danh tại vị trí này..." class="input-admin !py-2 text-[10px] border-[#1FA3B0]/30 font-bold">
-            </div>
-        </div>
-    </div>
-</template>
-                            </div>
-                            <select x-model="form.type" class="p-2 border rounded font-black text-[9px] w-full bg-white text-black"><template x-for="t in types" :key="t"><option :value="t" x-text="t"></option></template></select>
-                            <input type="text" x-model="form.img" class="input-admin text-xs" placeholder="Drive Image ID">
-                        </div>
-                        <div class="space-y-3 text-black"><textarea x-model="form.roles" class="input-admin h-28 text-xs font-bold" placeholder="Chức vụ..."></textarea><textarea x-model="form.bio" class="input-admin h-32 text-xs" placeholder="Tiểu sử..."></textarea></div>
-                    </div>
-                    <button @click="savePersonnel()" class="w-full mt-6 bg-[#1FA3B0] text-white py-4 rounded-xl font-black shadow-lg uppercase text-xs">Lưu hồ sơ</button>
+            <!-- Phân loại Menu -->
+            <div class="bg-slate-50 p-4 rounded-xl border-2 border-dashed border-slate-200 my-4">
+                <label class="text-[10px] font-black text-brand uppercase mb-2 block text-center">Lọc phân loại Menu:</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" @click="form.filterType = 'VIP'" :class="form.filterType === 'VIP' ? 'bg-[#E11D48] text-white' : 'bg-white text-slate-400'" class="py-2 rounded-lg font-black text-xs border">VIP</button>
+                    <button type="button" @click="form.filterType = 'CIP'" :class="form.filterType === 'CIP' ? 'bg-[#1FA3B0] text-white' : 'bg-white text-slate-400'" class="py-2 rounded-lg font-black text-xs border">CIP</button>
                 </div>
+            </div>
+
+            <!-- Cấu hình Vị trí & Chức danh (Gộp chức danh vào đây) -->
+            <div class="space-y-3">
+                <label class="text-[10px] font-black text-slate-500 uppercase ml-2">Cấu hình Vị trí & Chức danh:</label>
+                <template x-for="(pos, idx) in form.positions" :key="idx">
+                    <div class="p-3 bg-slate-50 rounded-xl border mb-3" x-show="idx === 0 || (form.positions[idx-1].category && form.positions[idx-1].block)">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[8px] font-black text-[#1FA3B0] uppercase" x-text="'Lựa chọn ' + (idx+1)"></span>
+                        </div>
+                        
+                        <!-- Grid 4 cột: Vị trí(1) | Khối(1) | Chức danh(2) -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+                            <div>
+                                <select x-model="pos.category" @change="pos.block = ''" class="input-admin !py-2 text-[10px]">
+                                    <option value="">-- Vị trí --</option>
+                                    <template x-for="cat in categories.filter(c => catGroups[c] === form.filterType)" :key="cat">
+                                        <option :value="cat" x-text="cat"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div>
+                                <select x-model="pos.block" class="input-admin !py-2 text-[10px]">
+                                    <option value="">-- Khối --</option>
+                                    <template x-for="b in (blocks[pos.category] || [])" :key="b">
+                                        <option :value="b" x-text="b" :selected="b === pos.block"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <!-- Ô nhập chức danh chiếm 2 cột để hiển thị nội dung dài -->
+                            <div class="md:col-span-2">
+                                <input type="text" x-model="pos.role" 
+                                       :placeholder="idx === 0 ? 'Nhập chức danh chính *' : 'Nhập chức danh kiêm nhiệm...'" 
+                                       class="input-admin !py-2 text-[10px] border-brand/40 font-bold w-full">
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Thông tin bổ sung -->
+            <div class="grid grid-cols-2 gap-2 pt-2">
+                <input type="text" x-model="form.ethnic" class="input-admin text-xs" placeholder="Dân tộc">
+                <input type="text" x-model="form.education" class="input-admin text-xs" placeholder="Trình độ">
+            </div>
+            <input type="text" x-model="form.img" class="input-admin text-xs" placeholder="Drive Image ID">
+        </div>
+
+        <!-- Cột phải: Chức vụ và Tiểu sử -->
+        <div class="space-y-3 text-black">
+            <textarea x-model="form.roles" class="input-admin h-[180px] text-xs font-bold" placeholder="Danh sách chức vụ công tác..."></textarea>
+            <textarea x-model="form.bio" class="input-admin h-[230px] text-xs" placeholder="Tiểu sử tóm tắt..."></textarea>
+        </div>
+   </div>
+    <!-- Cụm nút thao tác: Hủy và Lưu -->
+    <div class="flex gap-3 mt-6">
+        <!-- Nút Hủy (Màu vàng đậm) -->
+        <button @click="if(confirm('Xác nhận hủy và làm mới toàn bộ form?')) resetForm()" 
+                class="flex-1 bg-[#FB8500] text-white py-4 rounded-xl font-black shadow-lg uppercase text-[10px] md:text-xs hover:brightness-110 transition-all">
+            Hủy / Làm mới
+        </button>
+
+        <!-- Nút Lưu (Màu Brand) -->
+        <button @click="savePersonnel()" 
+                class="flex-[2] bg-[#1FA3B0] text-white py-4 rounded-xl font-black shadow-lg uppercase text-[10px] md:text-xs hover:brightness-110 transition-all border-b-4 border-black/20">
+            Lưu hồ sơ nhân sự
+        </button>
+    </div>
+</div>
 
                 <div class="bg-white p-8 rounded-3xl border shadow-xl flex flex-col text-black h-full max-h-[85vh]">
                     <h3 class="font-black text-xl uppercase border-l-8 border-highlight pl-5 mb-6 shrink-0">DATABASE</h3>
@@ -562,15 +589,15 @@ function app() {
         async savePersonnel() { 
     if(!this.form.name) return alert("Vui lòng nhập Họ tên!"); 
     
-    // Lọc các vị trí hợp lệ
     const validPos = this.form.positions.filter(p => p.category && p.block);
     if(validPos.length === 0) return alert("Chọn ít nhất 1 Vị trí và Khối!");
+    if(!validPos[0].role) return alert("Vui lòng nhập Chức danh cho vị trí đầu tiên!");
 
     const payload = { 
         ...this.form, 
         category: validPos[0].category, 
         block: validPos[0].block,
-        mainRole: validPos[0].role || this.form.mainRole, // Lấy chức danh vị trí 1 làm chính
+        mainRole: validPos[0].role, // Chức danh chính lấy từ ô nhập của vị trí 1
         allPositions: validPos 
     };
 
@@ -600,14 +627,30 @@ function app() {
 },
 
         resetForm() { 
-            this.editingId = null; 
-            this.form = { 
-                name: '', mainRole: '', partyRole: '', type: 'Giữ nguyên', img: '', 
-                dob: '', hometown: '', ethnic: 'Kinh', education: '', roles: '', bio: '',
-                filterType: 'VIP',
-                positions: [{ category: '', block: '' }, { category: '', block: '' }, { category: '', block: '' }]
-            }; 
-        },
+    this.editingId = null; 
+    this.form = { 
+        name: '', 
+        mainRole: '', // Vẫn giữ để đồng bộ database cũ
+        partyRole: '', 
+        type: 'Giữ nguyên', 
+        img: '', 
+        dob: '', 
+        hometown: '', 
+        ethnic: 'Kinh', 
+        education: '', 
+        roles: '', 
+        bio: '',
+        filterType: 'VIP',
+        // THÊM trường role vào từng vị trí ở đây:
+        positions: [
+            { category: '', block: '', role: '' }, 
+            { category: '', block: '', role: '' }, 
+            { category: '', block: '', role: '' }
+        ]
+    };
+    // Cuộn lên đầu trang để người dùng bắt đầu nhập mới
+    window.scrollTo({top: 0, behavior: 'smooth'}); 
+},
 
         deletePersonnel(id) { if(confirm("Xác nhận xóa?")) this.db.collection("personnel_v8").doc(id).delete(); },
 
