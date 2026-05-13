@@ -138,7 +138,9 @@
                     <img :src="getImgUrl(selectedPerson?.img)" class="img-profile-mini">
                     <div class="modal-content-wrapper">
                         <div class="mb-6 pb-6 border-b border-slate-100">
-                            <p class="text-[#1FA3B0] font-black text-[10px] md:text-xs uppercase mb-2">
+                            <p class="text-[#1FA3B0] font-black text-[10px] md:text-xs uppercase mb-2" 
+   x-text="selectedPerson?.allPositions?.[0]?.role || selectedPerson?.mainRole">
+</p>
     <template x-if="selectedPerson?.allPositions">
         <span x-text="selectedPerson.allPositions.map(p => p.role).join(' / ')"></span>
     </template>
@@ -601,13 +603,13 @@ function app() {
     
     const validPos = this.form.positions.filter(p => p.category && p.block);
     if(validPos.length === 0) return alert("Chọn ít nhất 1 Vị trí và Khối!");
-    if(!validPos[0].role) return alert("Vui lòng nhập Chức danh cho vị trí đầu tiên!");
 
     const payload = { 
         ...this.form, 
         category: validPos[0].category, 
         block: validPos[0].block,
-        mainRole: validPos[0].role, // Chức danh chính lấy từ ô nhập của vị trí 1
+        // Dòng này cực kỳ quan trọng để sửa lỗi hiển thị cho Modal
+        mainRole: validPos[0].role, 
         allPositions: validPos 
     };
 
