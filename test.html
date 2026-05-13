@@ -324,11 +324,12 @@
 
                         <!-- Chức danh (chiếm 6/12 - Mở rộng tối đa) -->
                         <div class="md:col-span-6">
-                            <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Chức danh cụ thể</label>
-                            <input type="text" x-model="pos.role" 
-                                   :placeholder="idx === 0 ? 'Nhập chức danh chính...' : 'Nhập chức danh kiêm nhiệm...'" 
-                                   class="input-admin !py-2.5 text-xs border-brand/40 font-bold w-full bg-white">
-                        </div>
+    <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Chức danh cụ thể</label>
+    <input type="text" 
+           x-model="pos.role" 
+           :placeholder="idx === 0 ? 'Nhập chức danh chính...' : 'Nhập chức danh kiêm nhiệm...'" 
+           class="input-admin !py-2.5 text-xs border-brand/40 font-bold w-full bg-white">
+</div>
                     </div>
                 </div>
             </template>
@@ -619,20 +620,36 @@ function app() {
 
         editPersonnel(p) { 
     this.editingId = p.id; 
-    // Logic: Nếu p.allPositions chưa tồn tại, tạo mảng mới lấy vị trí chính làm phần tử đầu tiên
-    const existingPositions = p.allPositions || [{category: p.category, block: p.block, role: p.mainRole}];
     
-    // Đảm bảo mảng luôn có đủ 3 ô nhập liệu trong Form
+    // 1. Lấy danh sách vị trí hiện có
+    // Nếu là nhân sự cũ chưa có allPositions, ta tạo mảng từ category/block/mainRole gốc
+    let existingPositions = [];
+    
+    if (p.allPositions && p.allPositions.length > 0) {
+        // Clone sâu mảng để tránh chỉnh sửa trực tiếp vào dữ liệu gốc của 'data'
+        existingPositions = JSON.parse(JSON.stringify(p.allPositions));
+    } else {
+        existingPositions = [{
+            category: p.category || '', 
+            block: p.block || '', 
+            role: p.mainRole || '' // Đổ chức danh cũ vào ô role của Vị trí 1
+        }];
+    }
+    
+    // 2. Luôn đảm bảo mảng có đủ 3 phần tử để các ô input hiển thị sẵn trên Form
     while(existingPositions.length < 3) {
-        existingPositions.push({category: '', block: '', role: ''});
+        existingPositions.push({ category: '', block: '', role: '' });
     }
 
+    // 3. Gán toàn bộ dữ liệu vào form để Alpine.js hiển thị lên giao diện
     this.form = { 
         ...p, 
-        positions: JSON.parse(JSON.stringify(existingPositions)), // Clone mảng để tránh lỗi tham chiếu
+        positions: existingPositions,
         filterType: this.catGroups[p.category] || 'VIP' 
     }; 
-    window.scrollTo({top: 0, behavior: 'smooth'}); 
+
+    // 4. Cuộn màn hình lên trên cùng để bắt đầu sửa
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
 },
 
         resetForm() { 
