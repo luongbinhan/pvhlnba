@@ -568,11 +568,38 @@ function app() {
         formatList(t) { return t ? t.split('\n').filter(l => l.trim()).map(l => `<li>• ${l}</li>`).join('') : ''; },
 
         dataFilteredAll() {
+            // 1. Lấy danh sách nhân sự thuộc nhóm VIP hoặc CIP đang chọn
             let base = this.data.filter(p => (this.catGroups[p.category] || 'CIP') === this.activeGroup);
-            if (this.filterCategory !== 'Tất cả' && this.search === '') base = base.filter(p => p.category === this.filterCategory);
+            
+            // 2. Lọc theo Tab (Vị trí) khi nhấn các nút chức năng phía trên
+            if (this.filterCategory !== 'Tất cả' && this.search === '') {
+                base = base.filter(p => 
+                    p.category === this.filterCategory || 
+                    (p.allPositions && p.allPositions.some(pos => pos.category === this.filterCategory))
+                );
+            }
+
             const s = this.search.toLowerCase();
             if (!s) return base;
-            return base.filter(p => (p.name?.toLowerCase().includes(s)) || (p.mainRole?.toLowerCase().includes(s)) || (p.hometown?.toLowerCase().includes(s)) || (p.partyRole?.toLowerCase().includes(s)) || (p.block?.toLowerCase().includes(s)));
+
+            // 3. Logic tìm kiếm từ khóa: Quét qua Tên, Chức danh và TOÀN BỘ các vị trí/khối đã lưu
+            return base.filter(p => {
+                // Khớp thông tin cơ bản
+                const matchBasic = (p.name?.toLowerCase().includes(s)) || 
+                                   (p.mainRole?.toLowerCase().includes(s)) || 
+                                   (p.hometown?.toLowerCase().includes(s)) || 
+                                   (p.partyRole?.toLowerCase().includes(s));
+                
+                // Khớp bất kỳ cặp Vị trí/Khối nào trong danh sách đa vị trí
+                const matchPositions = (p.category?.toLowerCase().includes(s)) || 
+                                       (p.block?.toLowerCase().includes(s)) ||
+                                       (p.allPositions && p.allPositions.some(pos => 
+                                           pos.category?.toLowerCase().includes(s) || 
+                                           pos.block?.toLowerCase().includes(s)
+                                       ));
+
+                return matchBasic || matchPositions;
+            });
         },
 
         setActiveGroup(g) { this.activeGroup = g; this.filterCategory = 'Tất cả'; this.search = ''; },
