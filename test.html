@@ -261,25 +261,40 @@
                             <div class="space-y-3">
                                 <label class="text-[10px] font-black text-slate-500 uppercase ml-2">Vị trí & Khối hiển thị:</label>
                                 <template x-for="(pos, idx) in form.positions" :key="idx">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 p-3 bg-slate-50 rounded-xl border" x-show="idx === 0 || (form.positions[idx-1].category && form.positions[idx-1].block)">
-                                        <div class="flex flex-col gap-1">
-                                            <span class="text-[8px] font-black text-slate-400 uppercase" x-text="'Vị trí ' + (idx+1)"></span>
-                                            <select x-model="pos.category" @change="pos.block = ''" class="input-admin !py-2 text-xs">
-                                                <option value="">-- Chọn Vị trí --</option>
-                                                <template x-for="cat in categories.filter(c => catGroups[c] === form.filterType)" :key="cat">
-                                                    <option :value="cat" x-text="cat"></option>
-                                                </template>
-                                            </select>
-                                        </div>
-                                        <div class="flex flex-col gap-1">
-                                            <span class="text-[8px] font-black text-slate-400 uppercase">Khối nội bộ</span>
-                                            <select x-model="pos.block" class="input-admin !py-2 text-xs">
-                                                <option value="">-- Chọn Khối --</option>
-                                                <template x-for="b in (blocks[pos.category] || [])" :key="b"><option :value="b" x-text="b"></option></template>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </template>
+    <div class="p-3 bg-slate-50 rounded-xl border mb-3" x-show="idx === 0 || (form.positions[idx-1].category && form.positions[idx-1].block)">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-[8px] font-black text-[#1FA3B0] uppercase" x-text="'Cấu hình Vị trí ' + (idx+1)"></span>
+        </div>
+        
+        <!-- Grid 3 cột: Vị trí | Khối | Chức danh riêng -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <!-- 1. Chọn Vị trí -->
+            <div>
+                <select x-model="pos.category" @change="pos.block = ''" class="input-admin !py-2 text-[10px]">
+                    <option value="">-- Chọn Vị trí --</option>
+                    <template x-for="cat in categories.filter(c => catGroups[c] === form.filterType)" :key="cat">
+                        <option :value="cat" x-text="cat"></option>
+                    </template>
+                </select>
+            </div>
+
+            <!-- 2. Chọn Khối -->
+            <div>
+                <select x-model="pos.block" class="input-admin !py-2 text-[10px]">
+                    <option value="">-- Chọn Khối --</option>
+                    <template x-for="b in (blocks[pos.category] || [])" :key="b">
+                        <option :value="b" x-text="b" :selected="b === pos.block"></option>
+                    </template>
+                </select>
+            </div>
+
+            <!-- 3. Nhập Chức danh riêng cho vị trí này -->
+            <div>
+                <input type="text" x-model="pos.role" placeholder="Chức danh tại vị trí này..." class="input-admin !py-2 text-[10px] border-[#1FA3B0]/30 font-bold">
+            </div>
+        </div>
+    </div>
+</template>
                             </div>
                             <select x-model="form.type" class="p-2 border rounded font-black text-[9px] w-full bg-white text-black"><template x-for="t in types" :key="t"><option :value="t" x-text="t"></option></template></select>
                             <input type="text" x-model="form.img" class="input-admin text-xs" placeholder="Drive Image ID">
@@ -537,29 +552,44 @@ function app() {
         async saveConfig() { await this.db.collection("config").doc("master_structure_v29").set({ categories: this.categories, blocks: this.blocks, catGroups: this.catGroups, blocksOrder: this.blocksOrder }); },
 
         async savePersonnel() { 
-            if(!this.form.name) return alert("Vui lòng nhập Họ tên!"); 
-            const validPos = this.form.positions.filter(p => p.category && p.block);
-            if(validPos.length === 0) return alert("Chọn ít nhất 1 Vị trí và Khối!");
-            const payload = { 
-                ...this.form, 
-                category: validPos[0].category, 
-                block: validPos[0].block,
-                allPositions: validPos 
-            };
-            if(this.editingId) await this.db.collection("personnel_v8").doc(this.editingId).update(payload); 
-            else await this.db.collection("personnel_v8").add({...payload, order: this.data.length}); 
-            this.resetForm(); alert("Đã lưu hồ sơ thành công!"); 
-        },
+    if(!this.form.name) return alert("Vui lòng nhập Họ tên!"); 
+    
+    // Lọc các vị trí hợp lệ
+    const validPos = this.form.positions.filter(p => p.category && p.block);
+    if(validPos.length === 0) return alert("Chọn ít nhất 1 Vị trí và Khối!");
+
+    const payload = { 
+        ...this.form, 
+        category: validPos[0].category, 
+        block: validPos[0].block,
+        mainRole: validPos[0].role || this.form.mainRole, // Lấy chức danh vị trí 1 làm chính
+        allPositions: validPos 
+    };
+
+    if(this.editingId) await this.db.collection("personnel_v8").doc(this.editingId).update(payload); 
+    else await this.db.collection("personnel_v8").add({...payload, order: this.data.length}); 
+    
+    this.resetForm(); 
+    alert("Đã lưu hồ sơ thành công!"); 
+},
 
         editPersonnel(p) { 
-            this.editingId = p.id; 
-            this.form = { 
-                ...p, 
-                positions: p.allPositions || [{category: p.category, block: p.block}, {category: '', block: ''}, {category: '', block: ''}],
-                filterType: this.catGroups[p.category] || 'VIP' 
-            }; 
-            window.scrollTo({top: 0, behavior: 'smooth'}); 
-        },
+    this.editingId = p.id; 
+    // Logic: Nếu p.allPositions chưa tồn tại, tạo mảng mới lấy vị trí chính làm phần tử đầu tiên
+    const existingPositions = p.allPositions || [{category: p.category, block: p.block, role: p.mainRole}];
+    
+    // Đảm bảo mảng luôn có đủ 3 ô nhập liệu trong Form
+    while(existingPositions.length < 3) {
+        existingPositions.push({category: '', block: '', role: ''});
+    }
+
+    this.form = { 
+        ...p, 
+        positions: JSON.parse(JSON.stringify(existingPositions)), // Clone mảng để tránh lỗi tham chiếu
+        filterType: this.catGroups[p.category] || 'VIP' 
+    }; 
+    window.scrollTo({top: 0, behavior: 'smooth'}); 
+},
 
         resetForm() { 
             this.editingId = null; 
@@ -621,11 +651,11 @@ function app() {
 
         getPeopleByGroupAndBlock(g, b, cat) { 
     return this.dataFilteredAll().filter(p => {
-        // 1. Kiểm tra nhóm (VIP/CIP)
+        // 1. Xác định nhóm của nhân sự dựa trên Vị trí chính (Category gốc)
         const inGroup = (this.catGroups[p.category] || 'CIP') === g;
         
-        // 2. Kiểm tra xem cặp cat/block hiện tại có nằm trong danh sách vị trí của người này không
-        // Ta kiểm tra cả vị trí chính (category/block) và mảng phụ (allPositions)
+        // 2. Kiểm tra xem cặp cat/block đang xét có tồn tại trong dữ liệu của nhân sự không
+        // Kiểm tra ở Vị trí chính HOẶC trong mảng các Vị trí phụ (allPositions)
         const hasMatch = (p.category === cat && p.block === b) || 
                          (p.allPositions && p.allPositions.some(pos => pos.category === cat && pos.block === b));
         
