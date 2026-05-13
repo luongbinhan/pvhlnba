@@ -243,23 +243,7 @@
                     </div>
                     <button @click="saveBlockOrder()" class="w-full mt-3 bg-[#1FA3B0] text-white py-2.5 rounded font-black text-[10px] uppercase hover:brightness-110 transition-all">Lưu thứ tự Khối</button>
                 </div>
-
-                <!-- Mục 3: Hệ thống & Dữ liệu -->
-                <div class="admin-box mt-6 space-y-2 border-t border-white/10 pt-6">
-                    <label class="text-[9px] font-black text-slate-400 uppercase mb-3 block">3. Hệ thống & Dữ liệu</label>
-                    
-                    <button @click="exportData()" class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-black text-[10px] uppercase shadow-md hover:bg-blue-700 transition-all">
-                        📥 Backup dữ liệu (JSON)
-                    </button>
-
-                    <button @click="$refs.fileInput.click()" class="w-full bg-purple-600 text-white py-2.5 rounded-lg font-black text-[10px] uppercase shadow-md hover:bg-purple-700 transition-all">
-                        📤 Khôi phục dữ liệu
-                    </button>
-                    <input type="file" x-ref="fileInput" @change="importData($event)" class="hidden" accept=".json">
-                </div>
-            </div> <!-- Kết thúc phần space-y-5 -->
-            
-            <!-- Nút đăng xuất nằm dưới cùng sidebar -->
+            </div>
             <button @click="logoutAdmin()" class="w-full mt-auto bg-red-600 text-white py-2.5 rounded font-black text-[10px] uppercase hover:bg-red-700 transition-all">Đăng xuất Admin</button>
         </aside>
 
@@ -764,89 +748,6 @@ function app() {
                 (p.allPositions && p.allPositions.some(pos => pos.category === cat && pos.block === block))
             ); 
         },
-
-
-
-
-// Hàm Xuất dữ liệu ra file JSON (Backup)
-exportData() {
-    try {
-        const now = new Date();
-        const date = now.toLocaleDateString('vi-VN').replace(/\//g, '-');
-        const time = now.getHours() + 'h' + now.getMinutes();
-        const fileName = `VIP_TOOL_BACKUP_${date}_${time}.json`;
-
-        const backupContent = {
-            metadata: {
-                export_at: now.toLocaleString('vi-VN'),
-                author: "Admin VIP Tool"
-            },
-            personnel: this.data, // Lưu danh sách nhân sự hiện tại
-            config: {
-                categories: this.categories,
-                blocks: this.blocks,
-                catGroups: this.catGroups,
-                blocksOrder: this.blocksOrder
-            }
-        };
-
-        const blob = new Blob([JSON.stringify(backupContent, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        link.click();
-        URL.revokeObjectURL(url);
-        console.log("Đã backup dữ liệu lúc: " + now.toLocaleString());
-    } catch (e) { 
-        alert("Lỗi khi tạo bản sao lưu: " + e.message); 
-    }
-},
-
-// Hàm Nhập dữ liệu từ file JSON (Khôi phục)
-async importData(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    // Cảnh báo người dùng trước khi ghi đè
-    if (!confirm("CẢNH BÁO: Hành động này sẽ GHI ĐÈ toàn bộ dữ liệu hiện tại trên Database bằng dữ liệu từ file backup. Bạn có chắc chắn muốn tiếp tục?")) {
-        event.target.value = ''; // Reset input file
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-        try {
-            const json = JSON.parse(e.target.result);
-            const batch = this.db.batch();
-
-            // 1. Khôi phục danh sách Nhân sự (Personnel)
-            if (json.personnel && Array.isArray(json.personnel)) {
-                json.personnel.forEach(p => {
-                    const ref = this.db.collection("personnel_v8").doc(p.id);
-                    const { id, ...dataWithoutId } = p;
-                    batch.set(ref, dataWithoutId);
-                });
-            }
-
-            // 2. Khôi phục Cấu hình hệ thống (Config)
-            if (json.config) {
-                const configRef = this.db.collection("config").doc("master_structure_v29");
-                batch.set(configRef, json.config);
-            }
-
-            await batch.commit();
-            alert("Khôi phục dữ liệu thành công! Trang sẽ tự động tải lại.");
-            location.reload();
-        } catch (err) {
-            console.error(err);
-            alert("Lỗi: Định dạng file backup không hợp lệ hoặc có lỗi trong quá trình ghi dữ liệu.");
-        }
-    };
-    reader.readAsText(file);
-},
-
-
 
         async updatePersonnelOrder(el) { const batch = this.db.batch(); Array.from(el.children).forEach((it, idx) => { if(it.dataset.id) batch.update(this.db.collection("personnel_v8").doc(it.dataset.id), { order: idx }); }); await batch.commit(); },
 
